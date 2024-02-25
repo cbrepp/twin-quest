@@ -1,41 +1,22 @@
-' Twin Quest version 0.0.1
-' Copyright (C) 2024 Wayne Chung Enterprises
-'
-' To Run: F5
-' To Exit: Enter "EXIT" at any prompt
-'
-' =======================================================================
-'
-' Grab your favorite twin and embark on a magical adventure!
-' Will you find fame?  Will you find fortune?
-' Or will you find... doom and despair?
-'
-' Goals:
-' 1) Find the gold.
-' 2) Slay the fearsome dragon.
-' 3) Tame the adorable black cat.
-' 4) Exit the world through the hidden magic door.
-'
-
 DECLARE FUNCTION GridCell$ (x AS INTEGER, y AS INTEGER)
 
-COMMON SHARED playerX AS INTEGER, playerY AS INTEGER, playerDirection AS INTEGER, gameOver AS INTEGER
+Common Shared playerX As Integer, playerY As Integer, playerDirection As Integer, gameOver As Integer
 
-GOSUB TitleScreen
-GOSUB Init
+GoSub TitleScreen
+GoSub Init
 
-DO
-        GOSUB RefreshScreen
-        GOSUB GetInput
-LOOP WHILE gameOver% = 0
+Do
+    GoSub RefreshScreen
+    GoSub GetInput
+Loop While gameOver% = 0
 
-END
+End
 
 Init:
 score% = 0
 playerX% = 2
 playerY% = 1
-DIM directions(4) AS STRING
+Dim directions(4) As String
 directions(1) = "NORTH"
 directions(2) = "EAST"
 directions(3) = "SOUTH"
@@ -44,7 +25,7 @@ playerDirection% = 3
 gameOver% = 0
 basicChoices$ = "LOOK,MOVE AHEAD,TURN LEFT,TURN RIGHT,CREDITS,EXIT"
 choices$ = basicChoices$
-DIM world(3, 3) AS STRING
+Dim world(3, 3) As String
 world(1, 1) = "WILDERNESS"
 world(2, 1) = "WILDERNESS"
 world(3, 1) = "MAGIC RING OF TOADSTOOLS"
@@ -59,650 +40,650 @@ choice$ = "LOOK"
 inventory$ = "NOTHING"
 dragonDead% = 0
 catTamed% = 0
-GOSUB SelectCharacter
-RETURN
+GoSub SelectCharacter
+Return
 
 SelectCharacter:
 availableCharacters$ = "GREYSON,ZARA"
-DO
-        GOSUB PrintHeader
-        PRINT
-        PRINT "Select Player:"
-        PRINT " " + availableCharacters$
-        PRINT
-        INPUT "Enter Choice: ", character$
-        character$ = RTRIM$(LTRIM$(UCASE$(character$)))
-LOOP WHILE INSTR(1, ("," + availableCharacters$ + ",GREY,EXIT,"), ("," + character$ + ",")) = 0
-IF character$ = "ZARA" THEN
-        world(1, 3) = "ZARA'S STORE"
-ELSE
-        IF (character$ = "GREYSON") OR (character$ = "GREY") THEN
-                character$ = "GREYSON"
-                world(1, 3) = "GREYSON'S GAME ROOM"
-        ELSE
-                END
-        END IF
-END IF
+Do
+    GoSub PrintHeader
+    Print
+    Print "Select Player:"
+    Print " " + availableCharacters$
+    Print
+    Input "Enter Choice: ", character$
+    character$ = RTrim$(LTrim$(UCase$(character$)))
+Loop While InStr(1, ("," + availableCharacters$ + ",GREY,EXIT,"), ("," + character$ + ",")) = 0
+If character$ = "ZARA" Then
+    world(1, 3) = "ZARA'S STORE"
+Else
+    If (character$ = "GREYSON") Or (character$ = "GREY") Then
+        character$ = "GREYSON"
+        world(1, 3) = "GREYSON'S GAME ROOM"
+    Else
+        End
+    End If
+End If
 
-RETURN
+Return
 
 TitleScreen:
-SCREEN 12
-GOSUB PrintHeader
-COLOR 4
-PRINT
-PRINT "                              ___, ____--'"
-PRINT "                         _,-.'_,-'      ("
-PRINT "                      ,-' _.-''....____("
-PRINT "            ,))_     /  ,'\ `'-.     (          /\"
-PRINT "    __ ,+..a`  \(_   ) /   \    `'-..(         /  \"
-PRINT "    )`-;...,_   \(_ ) /     \  ('''    ;'^^`\ <./\.>"
-PRINT "        ,_   )   |( )/   ,./^``_..._  < /^^\ \_.))"
-PRINT "       `=;; (    (/_')-- -'^^`      ^^-.`_.-` >-'"
-PRINT "       `=\\ (                             _,./"
-PRINT "         ,\`(                         )^^^"
-PRINT "           ``;         __-'^^\       /"
-PRINT "             / _>---^^^   `\..`-.    ``'."
-PRINT "            / /               / /``'`; /"
-PRINT "           / /          ,-=='-`=-'  / /"
-PRINT "     ,-=='-`=-.               ,-=='-`=-."
-PRINT "   *******************************************"
-PRINT
-PRINT
-COLOR 15
-PRINT "Press any key to continue"
-DO
-LOOP UNTIL INKEY$ <> ""
-RETURN
+Screen 12
+GoSub PrintHeader
+Color 4
+Print
+Print "                              ___, ____--'"
+Print "                         _,-.'_,-'      ("
+Print "                      ,-' _.-''....____("
+Print "            ,))_     /  ,'\ `'-.     (          /\"
+Print "    __ ,+..a`  \(_   ) /   \    `'-..(         /  \"
+Print "    )`-;...,_   \(_ ) /     \  ('''    ;'^^`\ <./\.>"
+Print "        ,_   )   |( )/   ,./^``_..._  < /^^\ \_.))"
+Print "       `=;; (    (/_')-- -'^^`      ^^-.`_.-` >-'"
+Print "       `=\\ (                             _,./"
+Print "         ,\`(                         )^^^"
+Print "           ``;         __-'^^\       /"
+Print "             / _>---^^^   `\..`-.    ``'."
+Print "            / /               / /``'`; /"
+Print "           / /          ,-=='-`=-'  / /"
+Print "     ,-=='-`=-.               ,-=='-`=-."
+Print "   *******************************************"
+Print
+Print
+Color 15
+Print "Press any key to continue"
+Do
+Loop Until InKey$ <> ""
+Return
 
 PrintHeader:
-CLS
-LOCATE 1, 1
-COLOR 3
-PRINT "Twin Quest version 0.0.1                Wayne Chung Enterprises"
-COLOR 15
-PRINT
-COLOR 8
-PRINT "_" + character$ + STRING$(62 - LEN(character$), "_")
-COLOR 15
-RETURN
+Cls
+Locate 1, 1
+Color 3
+Print "Twin Quest version 0.0.1                Wayne Chung Enterprises"
+Color 15
+Print
+Color 8
+Print "_" + character$ + String$(62 - Len(character$), "_")
+Color 15
+Return
 
 RefreshScreen:
-GOSUB PrintHeader
-IF choice$ = "EXIT" THEN
-        GOSUB ExitAction
-END IF
-IF choice$ = "CREDITS" THEN
-        GOSUB CreditsAction
-END IF
-IF choice$ = "LOOK" THEN
-        GOSUB LookAction
-END IF
-IF choice$ = "MOVE AHEAD" THEN
-        GOSUB MoveAheadAction
-END IF
-IF choice$ = "TURN LEFT" THEN
-        GOSUB TurnLeftAction
-END IF
-IF choice$ = "TURN RIGHT" THEN
-        GOSUB TurnRightAction
-END IF
-IF (choice$ = "PLAY GAME") AND (INSTR(1, choices$, "PLAY GAME") > 0) THEN
-        GOSUB PlayGameAction
-END IF
-IF (choice$ = "SPEAK NAME") AND (INSTR(1, choices$, "SPEAK NAME") > 0) THEN
-        GOSUB SpeakNameAction
-END IF
-IF (choice$ = "CHASE BUNNIES") AND (INSTR(1, choices$, "CHASE BUNNIES") > 0) THEN
-        GOSUB ChaseBunniesAction
-END IF
-IF (choice$ = "TAME FLUFF") AND (INSTR(1, choices$, "TAME FLUFF") > 0) THEN
-        GOSUB TameFluffAction
-END IF
-IF (choice$ = "TAKE GOLD") AND (INSTR(1, choices$, "TAKE GOLD") > 0) THEN
-        GOSUB TakeGoldAction
-ELSE
-        ' TODO - Dumb place to put this but TAKE GOLD removes a choice
-        IF INSTR(1, ("," + choices$ + ","), ("," + choice$ + ",")) = 0 THEN
-                GOSUB DumbAction
-        END IF
-END IF
-COLOR 8
-PRINT "_______________________________________________________________"
-COLOR 7
-curRow% = CSRLIN
-PRINT "Inventory: " + inventory$
-LOCATE curRow%, 54
-PRINT "Score:" + STR$(score%)
-PRINT
-IF (playerX% > 0) AND (playerY% > 0) AND (gameOver% = 0) THEN
-        mapInfo1$ = "Location:" + STR$(playerX%) + "," + LTRIM$(STR$(playerY%))
-        mapInfo2$ = "Facing: " + directions(playerDirection%)
-ELSE
-        mapInfo1$ = ""
-        mapInfo2$ = ""
-END IF
-PRINT " Map"
-PRINT "--" + "*" + "--"
-PRINT "|" + GridCell$(1, 1) + GridCell$(2, 1) + GridCell$(3, 1) + "|" + "   " + mapInfo1$
-PRINT "|" + GridCell$(1, 2) + GridCell$(2, 2) + GridCell$(3, 2) + "|" + "   " + mapInfo2$
-PRINT "|" + GridCell$(1, 3) + GridCell$(2, 3) + GridCell$(3, 3) + "|"
-PRINT "-----"'
-COLOR 15
-RETURN
+GoSub PrintHeader
+If choice$ = "EXIT" Then
+    GoSub ExitAction
+End If
+If choice$ = "CREDITS" Then
+    GoSub CreditsAction
+End If
+If choice$ = "LOOK" Then
+    GoSub LookAction
+End If
+If choice$ = "MOVE AHEAD" Then
+    GoSub MoveAheadAction
+End If
+If choice$ = "TURN LEFT" Then
+    GoSub TurnLeftAction
+End If
+If choice$ = "TURN RIGHT" Then
+    GoSub TurnRightAction
+End If
+If (choice$ = "PLAY GAME") And (InStr(1, choices$, "PLAY GAME") > 0) Then
+    GoSub PlayGameAction
+End If
+If (choice$ = "SPEAK NAME") And (InStr(1, choices$, "SPEAK NAME") > 0) Then
+    GoSub SpeakNameAction
+End If
+If (choice$ = "CHASE BUNNIES") And (InStr(1, choices$, "CHASE BUNNIES") > 0) Then
+    GoSub ChaseBunniesAction
+End If
+If (choice$ = "TAME FLUFF") And (InStr(1, choices$, "TAME FLUFF") > 0) Then
+    GoSub TameFluffAction
+End If
+If (choice$ = "TAKE GOLD") And (InStr(1, choices$, "TAKE GOLD") > 0) Then
+    GoSub TakeGoldAction
+Else
+    ' TODO - Dumb place to put this but TAKE GOLD removes a choice
+    If InStr(1, ("," + choices$ + ","), ("," + choice$ + ",")) = 0 Then
+        GoSub DumbAction
+    End If
+End If
+Color 8
+Print "_______________________________________________________________"
+Color 7
+curRow% = CsrLin
+Print "Inventory: " + inventory$
+Locate curRow%, 54
+Print "Score:" + Str$(score%)
+Print
+If (playerX% > 0) And (playerY% > 0) And (gameOver% = 0) Then
+    mapInfo1$ = "Location:" + Str$(playerX%) + "," + LTrim$(Str$(playerY%))
+    mapInfo2$ = "Facing: " + directions(playerDirection%)
+Else
+    mapInfo1$ = ""
+    mapInfo2$ = ""
+End If
+Print " Map"
+Print "--" + "*" + "--"
+Print "|" + GridCell$(1, 1) + GridCell$(2, 1) + GridCell$(3, 1) + "|" + "   " + mapInfo1$
+Print "|" + GridCell$(1, 2) + GridCell$(2, 2) + GridCell$(3, 2) + "|" + "   " + mapInfo2$
+Print "|" + GridCell$(1, 3) + GridCell$(2, 3) + GridCell$(3, 3) + "|"
+Print "-----" '
+Color 15
+Return
 
 GetInput:
-IF gameOver% = 1 THEN
-        END
-END IF
-PRINT
-PRINT "Choices:"
-PRINT " " + choices$
-PRINT
-INPUT "Enter Choice: ", choice$
-choice$ = RTRIM$(LTRIM$(UCASE$(choice$)))
-RETURN
+If gameOver% = 1 Then
+    End
+End If
+Print
+Print "Choices:"
+Print " " + choices$
+Print
+Input "Enter Choice: ", choice$
+choice$ = RTrim$(LTrim$(UCase$(choice$)))
+Return
 
 ExitAction:
 gameOver% = 1
-PRINT
-IF INSTR(1, ("," + inventory$ + ","), ",GOLD,") > 0 THEN
-        PRINT "But you were doing so well!  The magic door is out there."
-        PRINT "You found the gold but didn't bring it home."
-END IF
-        PRINT "Your quest has ended... no fame.  And certainly no fortune."
-        PRINT "REMEMBER: Quitters never win."
-PRINT
-RETURN
+Print
+If InStr(1, ("," + inventory$ + ","), ",GOLD,") > 0 Then
+    Print "But you were doing so well!  The magic door is out there."
+    Print "You found the gold but didn't bring it home."
+End If
+Print "Your quest has ended... no fame.  And certainly no fortune."
+Print "REMEMBER: Quitters never win."
+Print
+Return
 
 CreditsAction:
-COLOR 3
-PRINT
-PRINT "CREDITS"
-PRINT
-PRINT "Business Manager: Wayne Chung"
-PRINT "Executive Producer: Wayne Chung"
-PRINT "Power of Attorney: Wayne Chung"
-PRINT "Development: Mylee and Mr. Chris"
-PRINT "Creative Design: Zara and Greyson"
-PRINT "Hair and Makeup: Ima Sue Pretty"
-PRINT "Wardrobe Design: Aslan"
-COLOR 15
-RETURN
+Color 3
+Print
+Print "CREDITS"
+Print
+Print "Business Manager: Wayne Chung"
+Print "Executive Producer: Wayne Chung"
+Print "Power of Attorney: Wayne Chung"
+Print "Development: Mylee and Mr. Chris"
+Print "Creative Design: Zara and Greyson"
+Print "Hair and Makeup: Ima Sue Pretty"
+Print "Wardrobe Design: Aslan"
+Color 15
+Return
 
 LookAction:
 playerView$ = world(playerX%, playerY%)
-PRINT
-PRINT "You are in " + playerView$ + "."
-IF playerView$ = "WILDERNESS" THEN
-        COLOR 2
-        PRINT "You see nothing but tall grass and cute bunnies."
-END IF
-IF playerView$ = "WOODS" THEN
-        COLOR 7
-        RANDOMIZE TIMER
-        nightOwlChance% = INT(RND * 3) + 1
-        IF nightOwlChance% = 3 THEN
-                PRINT "The sky is dark and you hear the sound of flapping wings."
-                PRINT "By the time you look up it's too late.  Night Owl has claimed"
-                PRINT "you as his prey!  What an unfortunate way to end your journey."
-                PRINT
-                COLOR 15
-                PRINT "You have died."
-                IF score% > 0 THEN
-                        PRINT "Score -" + LTRIM$(STR$(score%))
-                        score% = 0
-                END IF
-                gameOver% = 1
-        ELSE
-                IF nightOwlChance% = 2 THEN
-                        PRINT "The sky is dark and you hear the sound of flapping wings."
-                        PRINT "By the time you look up there's already a scream close by"
-                        PRINT "as Night Owl has claimed a poor creature as his prey.  You"
-                        PRINT "have escaped death.  But... for how long?"
-                ELSE
-                        PRINT "The sky is dark and Night Owl is hiding somewhere.  You must"
-                        PRINT "take care to tread lightly lest a noise alert Night Owl to"
-                        PRINT "your whereabouts.  Be very, very quiet."
-                END IF
-        END IF
-END IF
-IF playerView$ = "MAGIC RING OF TOADSTOOLS" THEN
-        COLOR 6
-        PRINT "A magical place of faeries and giant mushrooms!"
-        PRINT "A simple wooden sign sits in the center of this place.  On"
-        PRINT "this sign reads a simple message..."
-        PRINT
-        PRINT "'Speak the name of the spirit that dwells in this place and"
-        PRINT "be gifted with a magical item.'"
-END IF
-IF playerView$ = "MOUNT FLUFF" THEN
-        COLOR 15
-        PRINT "You come upon the base of a mountain and see a gallant white"
-        PRINT "tom cat wearing boots and playing a spanish guitar.  His"
-        PRINT "melody hypnotizes you.  And my... he is so fluffy!"
-        PRINT "You are astonished to learn that this cat can speak.  He"
-        PRINT "enjoys challenging others to a guessing game.  If you solve"
-        PRINT "his riddle, he might just give you a prize."
-END IF
-IF playerView$ = "GIANNI'S DEN" THEN
-        COLOR 8
-        PRINT "You find yourself in a dark cave.  A fire burns deep inside."
-        PRINT "You explore the cave and find yourself face to face with an"
-        PRINT "adorable black cat curled up on a Pittsburgh Steelers blanket."
-        PRINT "He's so cuuuuuuute!"
-        PRINT
-        IF INSTR(1, ("," + inventory$ + ","), ",RING OF TAMING") > 0 THEN
-                IF catTamed% = 0 THEN
-                        catTamed% = 1
-                        PRINT "You use your ring of taming on him and he jumps into"
-                        PRINT "your waiting arms.  You pet him for hours and hours."
-                        COLOR 15
-                        PRINT "Score +100"
-                        score% = score% + 100
-                ELSE
-                        PRINT "He meows with delight when he sees you and jumps into"
-                        PRINT "your waiting arms.  Oh what a wonderful cat he is!"
-                END IF
-        ELSE
-                PRINT "You attempt to pet him but he runs away.  If only you could"
-                PRINT "tame him.  But such a feat would require strong magic..."
-        END IF
-END IF
-IF playerView$ = "DRAGON'S DEN" THEN
-        COLOR 4
-        IF dragonDead% = 0 THEN
-                PRINT "You find yourself in a dark cave.  A fire burns deep inside."
-                PRINT "You explore the cave and find yourself face to face with a"
-                PRINT "ferocious dragon!"
-        ELSE
-                PRINT "The dragon once lived here until you, an amazing hero, slew it!"
-                PRINT "Paintings depicting your heroic act now cover the wall, a tribute"
-                PRINT "from the townspeople you saved!"
-        END IF
-        IF (INSTR(1, ("," + inventory$ + ","), ",GOLD,") > 0) AND (INSTR(1, ("," + inventory$ + ","), ",SWORD,") = 0) AND (INSTR(1, ("," + inventory$ + ","), ",UNO REVERSE,") = 0) THEN
-                PRINT "The greedy dragon sees your gold and blasts you with"
-                PRINT "its burning fire.  With no defense, you are burned to death."
-                PRINT "Alas, this is the end of your quest."
-                PRINT
-                COLOR 15
-                PRINT "You have died."
-                PRINT "Score -" + LTRIM$(STR$(score%))
-                score% = 0
-                gameOver% = 1
-        ELSE
-                IF INSTR(1, ("," + inventory$ + ","), ",GOLD,") = 0 THEN
-                        PRINT "With nothing heavy to carry you are able to run away"
-                        PRINT "before the dragon can end your quest."
-                ELSE
-                        IF (INSTR(1, ("," + inventory$ + ","), ",SWORD,") > 0) AND (dragonDead% = 0) THEN
-                                PRINT "With quick reflexes you use your mighty sword to slay the dragon."
-                                PRINT "The townspeople are saved.  And you are today a hero!!!"
-                                score% = score% + 100
-                                COLOR 15
-                                PRINT "Score +100"
-                                dragonDead% = 1
-                        ELSE
-                                IF (INSTR(1, ("," + inventory$ + ","), ",UNO REVERSE,") > 0) AND (dragonDead% = 0) THEN
-                                        PRINT "With quick reflexes you use your UNO REVERSE card to send the dragon's"
-                                        PRINT "flames back at it.  With each fiery burst, the dragon destroys itself."
-                                        PRINT "The townspeople are saved.  And you are today a hero!!!"
-                                        score% = score% + 100
-                                        COLOR 15
-                                        PRINT "Score +100"
-                                        dragonDead% = 1
-                                END IF
-                        END IF
-                END IF
-        END IF
-END IF
-IF playerView$ = "CASTLE" THEN
-        COLOR 14
-        PRINT "What a magnificent castle!  But no one is home."
-END IF
-IF playerView$ = "ZARA'S STORE" THEN
-        COLOR 5
-        PRINT "There are a lot of fun things to buy. Of particular note you"
-        PRINT "see a mighty silver sword, fit for slaying a dragon."
-        IF (INSTR(1, ("," + inventory$ + ","), ",GOLD,") > 0) AND (INSTR(1, ("," + inventory$ + ","), ",SWORD,") = 0) THEN
-                PRINT "You deposit some gold coins into the vending machine..."
-                inventory$ = inventory$ + ",SWORD"
-                COLOR 15
-                PRINT "Inventory +SWORD"
-        ELSE
-                IF INSTR(1, ("," + inventory$ + ","), ",SWORD,") > 0 THEN
-                        PRINT "That mighty sword is in your hand... perhaps you should"
-                        PRINT "use it for some heroic deed?"
-                ELSE
-                        PRINT "Maybe some day you'll return when you have some money."
-                END IF
-        END IF
-END IF
-IF playerView$ = "GREYSON'S GAME ROOM" THEN
-        COLOR 1
-        PRINT "Oh my!  Every game known to mankind can be found for sale in"
-        PRINT "this room.  A particular game catches your eye... UNO."
-        IF (INSTR(1, ("," + inventory$ + ","), ",GOLD,") > 0) AND (INSTR(1, ("," + inventory$ + ","), ",UNO REVERSE,") = 0) THEN
-                PRINT "You leave some gold coins on the table in exchange for the UNO deck."
-                PRINT "You look at the cards and discover the legendary... UNO REVERSE!!!"
-                inventory$ = inventory$ + ",UNO REVERSE"
-                COLOR 15
-                PRINT "Inventory +UNO REVERSE"
-        ELSE
-                IF INSTR(1, ("," + inventory$ + ","), ",UNO REVERSE,") > 0 THEN
-                        PRINT "That mighty deck is in your hand... perhaps you should"
-                        PRINT "use it for some heroic deed?"
-                ELSE
-                        PRINT "Maybe some day you'll return when you have some money."
-                END IF
-        END IF
-END IF
-PRINT
-IF (playerView$ = "CASTLE") AND (INSTR(1, ("," + inventory$ + ","), ",GOLD,") = 0) THEN
-        COLOR 14
-        PRINT "Beautiful gold coins are scattered around.  Will you take them?"
-        PRINT
-END IF
+Print
+Print "You are in " + playerView$ + "."
+If playerView$ = "WILDERNESS" Then
+    Color 2
+    Print "You see nothing but tall grass and cute bunnies."
+End If
+If playerView$ = "WOODS" Then
+    Color 7
+    Randomize Timer
+    nightOwlChance% = Int(Rnd * 3) + 1
+    If nightOwlChance% = 3 Then
+        Print "The sky is dark and you hear the sound of flapping wings."
+        Print "By the time you look up it's too late.  Night Owl has claimed"
+        Print "you as his prey!  What an unfortunate way to end your journey."
+        Print
+        Color 15
+        Print "You have died."
+        If score% > 0 Then
+            Print "Score -" + LTrim$(Str$(score%))
+            score% = 0
+        End If
+        gameOver% = 1
+    Else
+        If nightOwlChance% = 2 Then
+            Print "The sky is dark and you hear the sound of flapping wings."
+            Print "By the time you look up there's already a scream close by"
+            Print "as Night Owl has claimed a poor creature as his prey.  You"
+            Print "have escaped death.  But... for how long?"
+        Else
+            Print "The sky is dark and Night Owl is hiding somewhere.  You must"
+            Print "take care to tread lightly lest a noise alert Night Owl to"
+            Print "your whereabouts.  Be very, very quiet."
+        End If
+    End If
+End If
+If playerView$ = "MAGIC RING OF TOADSTOOLS" Then
+    Color 6
+    Print "A magical place of faeries and giant mushrooms!"
+    Print "A simple wooden sign sits in the center of this place.  On"
+    Print "this sign reads a simple message..."
+    Print
+    Print "'Speak the name of the spirit that dwells in this place and"
+    Print "be gifted with a magical item.'"
+End If
+If playerView$ = "MOUNT FLUFF" Then
+    Color 15
+    Print "You come upon the base of a mountain and see a gallant white"
+    Print "tom cat wearing boots and playing a spanish guitar.  His"
+    Print "melody hypnotizes you.  And my... he is so fluffy!"
+    Print "You are astonished to learn that this cat can speak.  He"
+    Print "enjoys challenging others to a guessing game.  If you solve"
+    Print "his riddle, he might just give you a prize."
+End If
+If playerView$ = "GIANNI'S DEN" Then
+    Color 8
+    Print "You find yourself in a dark cave.  A fire burns deep inside."
+    Print "You explore the cave and find yourself face to face with an"
+    Print "adorable black cat curled up on a Pittsburgh Steelers blanket."
+    Print "He's so cuuuuuuute!"
+    Print
+    If InStr(1, ("," + inventory$ + ","), ",RING OF TAMING") > 0 Then
+        If catTamed% = 0 Then
+            catTamed% = 1
+            Print "You use your ring of taming on him and he jumps into"
+            Print "your waiting arms.  You pet him for hours and hours."
+            Color 15
+            Print "Score +100"
+            score% = score% + 100
+        Else
+            Print "He meows with delight when he sees you and jumps into"
+            Print "your waiting arms.  Oh what a wonderful cat he is!"
+        End If
+    Else
+        Print "You attempt to pet him but he runs away.  If only you could"
+        Print "tame him.  But such a feat would require strong magic..."
+    End If
+End If
+If playerView$ = "DRAGON'S DEN" Then
+    Color 4
+    If dragonDead% = 0 Then
+        Print "You find yourself in a dark cave.  A fire burns deep inside."
+        Print "You explore the cave and find yourself face to face with a"
+        Print "ferocious dragon!"
+    Else
+        Print "The dragon once lived here until you, an amazing hero, slew it!"
+        Print "Paintings depicting your heroic act now cover the wall, a tribute"
+        Print "from the townspeople you saved!"
+    End If
+    If (InStr(1, ("," + inventory$ + ","), ",GOLD,") > 0) And (InStr(1, ("," + inventory$ + ","), ",SWORD,") = 0) And (InStr(1, ("," + inventory$ + ","), ",UNO REVERSE,") = 0) Then
+        Print "The greedy dragon sees your gold and blasts you with"
+        Print "its burning fire.  With no defense, you are burned to death."
+        Print "Alas, this is the end of your quest."
+        Print
+        Color 15
+        Print "You have died."
+        Print "Score -" + LTrim$(Str$(score%))
+        score% = 0
+        gameOver% = 1
+    Else
+        If InStr(1, ("," + inventory$ + ","), ",GOLD,") = 0 Then
+            Print "With nothing heavy to carry you are able to run away"
+            Print "before the dragon can end your quest."
+        Else
+            If (InStr(1, ("," + inventory$ + ","), ",SWORD,") > 0) And (dragonDead% = 0) Then
+                Print "With quick reflexes you use your mighty sword to slay the dragon."
+                Print "The townspeople are saved.  And you are today a hero!!!"
+                score% = score% + 100
+                Color 15
+                Print "Score +100"
+                dragonDead% = 1
+            Else
+                If (InStr(1, ("," + inventory$ + ","), ",UNO REVERSE,") > 0) And (dragonDead% = 0) Then
+                    Print "With quick reflexes you use your UNO REVERSE card to send the dragon's"
+                    Print "flames back at it.  With each fiery burst, the dragon destroys itself."
+                    Print "The townspeople are saved.  And you are today a hero!!!"
+                    score% = score% + 100
+                    Color 15
+                    Print "Score +100"
+                    dragonDead% = 1
+                End If
+            End If
+        End If
+    End If
+End If
+If playerView$ = "CASTLE" Then
+    Color 14
+    Print "What a magnificent castle!  But no one is home."
+End If
+If playerView$ = "ZARA'S STORE" Then
+    Color 5
+    Print "There are a lot of fun things to buy. Of particular note you"
+    Print "see a mighty silver sword, fit for slaying a dragon."
+    If (InStr(1, ("," + inventory$ + ","), ",GOLD,") > 0) And (InStr(1, ("," + inventory$ + ","), ",SWORD,") = 0) Then
+        Print "You deposit some gold coins into the vending machine..."
+        inventory$ = inventory$ + ",SWORD"
+        Color 15
+        Print "Inventory +SWORD"
+    Else
+        If InStr(1, ("," + inventory$ + ","), ",SWORD,") > 0 Then
+            Print "That mighty sword is in your hand... perhaps you should"
+            Print "use it for some heroic deed?"
+        Else
+            Print "Maybe some day you'll return when you have some money."
+        End If
+    End If
+End If
+If playerView$ = "GREYSON'S GAME ROOM" Then
+    Color 1
+    Print "Oh my!  Every game known to mankind can be found for sale in"
+    Print "this room.  A particular game catches your eye... UNO."
+    If (InStr(1, ("," + inventory$ + ","), ",GOLD,") > 0) And (InStr(1, ("," + inventory$ + ","), ",UNO REVERSE,") = 0) Then
+        Print "You leave some gold coins on the table in exchange for the UNO deck."
+        Print "You look at the cards and discover the legendary... UNO REVERSE!!!"
+        inventory$ = inventory$ + ",UNO REVERSE"
+        Color 15
+        Print "Inventory +UNO REVERSE"
+    Else
+        If InStr(1, ("," + inventory$ + ","), ",UNO REVERSE,") > 0 Then
+            Print "That mighty deck is in your hand... perhaps you should"
+            Print "use it for some heroic deed?"
+        Else
+            Print "Maybe some day you'll return when you have some money."
+        End If
+    End If
+End If
+Print
+If (playerView$ = "CASTLE") And (InStr(1, ("," + inventory$ + ","), ",GOLD,") = 0) Then
+    Color 14
+    Print "Beautiful gold coins are scattered around.  Will you take them?"
+    Print
+End If
 aheadX% = playerX%
 aheadY% = playerY%
-IF directions(playerDirection%) = "NORTH" THEN
-        aheadY% = aheadY% - 1
-END IF
-IF directions(playerDirection%) = "EAST" THEN
-        aheadX% = aheadX% + 1
-END IF
-IF directions(playerDirection%) = "SOUTH" THEN
-        aheadY% = aheadY% + 1
-END IF
-IF directions(playerDirection%) = "WEST" THEN
-        aheadX% = aheadX% - 1
-END IF
-IF (aheadX% = doorX%) AND (aheadY% = doorY%) THEN
-        COLOR 6
-        PRINT "Ahead you see a magic door.  Perhaps an exit to this world?"
-ELSE
-        IF gameOver% = 0 THEN
-                IF (aheadX% = 0) OR (aheadX% = 4) OR (aheadY% = 0) OR (aheadY% = 4) THEN
-                        COLOR 15
-                        PRINT "There is nothing ahead.  You are facing the edge of the world."
-                ELSE
-                        COLOR 15
-                        PRINT "Ahead you see " + world(aheadX%, aheadY%) + "."
-                END IF
-        END IF
-END IF
-COLOR 15
-RETURN
+If directions(playerDirection%) = "NORTH" Then
+    aheadY% = aheadY% - 1
+End If
+If directions(playerDirection%) = "EAST" Then
+    aheadX% = aheadX% + 1
+End If
+If directions(playerDirection%) = "SOUTH" Then
+    aheadY% = aheadY% + 1
+End If
+If directions(playerDirection%) = "WEST" Then
+    aheadX% = aheadX% - 1
+End If
+If (aheadX% = doorX%) And (aheadY% = doorY%) Then
+    Color 6
+    Print "Ahead you see a magic door.  Perhaps an exit to this world?"
+Else
+    If gameOver% = 0 Then
+        If (aheadX% = 0) Or (aheadX% = 4) Or (aheadY% = 0) Or (aheadY% = 4) Then
+            Color 15
+            Print "There is nothing ahead.  You are facing the edge of the world."
+        Else
+            Color 15
+            Print "Ahead you see " + world(aheadX%, aheadY%) + "."
+        End If
+    End If
+End If
+Color 15
+Return
 
 MoveAheadAction:
 aheadX% = playerX%
 aheadY% = playerY%
-IF directions(playerDirection%) = "NORTH" THEN
-        aheadY% = aheadY% - 1
-END IF
-IF directions(playerDirection%) = "EAST" THEN
-        aheadX% = aheadX% + 1
-END IF
-IF directions(playerDirection%) = "SOUTH" THEN
-        aheadY% = aheadY% + 1
-END IF
-IF directions(playerDirection%) = "WEST" THEN
-        aheadX% = aheadX% - 1
-END IF
-IF (aheadX% = doorX%) AND (aheadY% = doorY%) THEN
+If directions(playerDirection%) = "NORTH" Then
+    aheadY% = aheadY% - 1
+End If
+If directions(playerDirection%) = "EAST" Then
+    aheadX% = aheadX% + 1
+End If
+If directions(playerDirection%) = "SOUTH" Then
+    aheadY% = aheadY% + 1
+End If
+If directions(playerDirection%) = "WEST" Then
+    aheadX% = aheadX% - 1
+End If
+If (aheadX% = doorX%) And (aheadY% = doorY%) Then
+    playerX% = aheadX%
+    playerY% = aheadY%
+    gameOver% = 1
+    Print
+    Print "You have exited the world."
+    Print
+    If InStr(1, inventory$, "GOLD") > 0 Then
+        Print
+        Print "You have safely brought your riches back home."
+        Print "Fame and fortune are yours."
+        Print "YOU HAVE WON THE GAME!!!"
+        If score% = 300 Then
+            Color 3
+            Print "MAXIMUM SCORE!!!"
+        End If
+    Else
+        Print
+        Print "You did not return home with the gold."
+        Print "This is a horrible fate."
+        Print "YOU HAVE LOST THE GAME."
+    End If
+Else
+    If (aheadX% = 0) Or (aheadX% = 4) Or (aheadY% = 0) Or (aheadY% = 4) Then
+        Print
+        Print "There is nothing ahead.  You are facing the edge of the world."
+        Print
+        Print "Jumping off the edge of the world is NOT allowed in this game."
+    Else
         playerX% = aheadX%
         playerY% = aheadY%
-        gameOver% = 1
-        PRINT
-        PRINT "You have exited the world."
-        PRINT
-        IF INSTR(1, inventory$, "GOLD") > 0 THEN
-                PRINT
-                PRINT "You have safely brought your riches back home."
-                PRINT "Fame and fortune are yours."
-                PRINT "YOU HAVE WON THE GAME!!!"
-                IF score% = 300 THEN
-                        COLOR 3
-                        PRINT "MAXIMUM SCORE!!!"
-                END IF
-        ELSE
-                PRINT
-                PRINT "You did not return home with the gold."
-                PRINT "This is a horrible fate."
-                PRINT "YOU HAVE LOST THE GAME."
-        END IF
-ELSE
-        IF (aheadX% = 0) OR (aheadX% = 4) OR (aheadY% = 0) OR (aheadY% = 4) THEN
-                PRINT
-                PRINT "There is nothing ahead.  You are facing the edge of the world."
-                PRINT
-                PRINT "Jumping off the edge of the world is NOT allowed in this game."
-        ELSE
-                playerX% = aheadX%
-                playerY% = aheadY%
-                IF (world(playerX%, playerY%) = "CASTLE") AND (INSTR(1, ("," + inventory$ + ","), ",GOLD,") = 0) THEN
-                        choices$ = basicChoices$ + ",TAKE GOLD"
-                ELSE
-                        IF world(playerX%, playerY%) = "MOUNT FLUFF" THEN
-                                choices$ = basicChoices$ + ",PLAY GAME"
-                                IF INSTR(1, ("," + inventory$ + ","), ",RING OF TAMING,") > 0 THEN
-                                choices$ = choices$ + ",TAME FLUFF"
-                                END IF
-                        ELSE
-                                IF world(playerX%, playerY%) = "MAGIC RING OF TOADSTOOLS" THEN
-                                        choices$ = basicChoices$ + ",SPEAK NAME"
-                                ELSE
-                                        IF world(playerX%, playerY%) = "WILDERNESS" THEN
-                                                choices$ = basicChoices$ + ",CHASE BUNNIES"
-                                        ELSE
-                                                choices$ = basicChoices$
-                                        END IF
-                                END IF
-                        END IF
-                END IF
-                GOSUB LookAction
-        END IF
-END IF
-RETURN
+        If (world(playerX%, playerY%) = "CASTLE") And (InStr(1, ("," + inventory$ + ","), ",GOLD,") = 0) Then
+            choices$ = basicChoices$ + ",TAKE GOLD"
+        Else
+            If world(playerX%, playerY%) = "MOUNT FLUFF" Then
+                choices$ = basicChoices$ + ",PLAY GAME"
+                If InStr(1, ("," + inventory$ + ","), ",RING OF TAMING,") > 0 Then
+                    choices$ = choices$ + ",TAME FLUFF"
+                End If
+            Else
+                If world(playerX%, playerY%) = "MAGIC RING OF TOADSTOOLS" Then
+                    choices$ = basicChoices$ + ",SPEAK NAME"
+                Else
+                    If world(playerX%, playerY%) = "WILDERNESS" Then
+                        choices$ = basicChoices$ + ",CHASE BUNNIES"
+                    Else
+                        choices$ = basicChoices$
+                    End If
+                End If
+            End If
+        End If
+        GoSub LookAction
+    End If
+End If
+Return
 
 TurnLeftAction:
 playerDirection% = playerDirection% - 1
-IF playerDirection% = 0 THEN
-        playerDirection% = 4
-END IF
-GOSUB LookAction
-RETURN
+If playerDirection% = 0 Then
+    playerDirection% = 4
+End If
+GoSub LookAction
+Return
 
 TurnRightAction:
 playerDirection% = playerDirection% + 1
-IF playerDirection% = 5 THEN
-        playerDirection% = 1
-END IF
-GOSUB LookAction
-RETURN
+If playerDirection% = 5 Then
+    playerDirection% = 1
+End If
+GoSub LookAction
+Return
 
 TakeGoldAction:
 choices$ = basicChoices$
-IF INSTR(1, ("," + inventory$ + ","), ",GOLD,") = 0 THEN
-        score% = score% + 100
-        PRINT
-        PRINT "All the gold now belongs to you!"
-        COLOR 15
-        PRINT "Score +100"
-        PRINT "Inventory +GOLD"
-        PRINT
-        IF inventory$ = "NOTHING" THEN
-                inventory$ = "GOLD"
-        ELSE
-                inventory$ = inventory$ + ",GOLD"
-        END IF
-END IF
-RETURN
+If InStr(1, ("," + inventory$ + ","), ",GOLD,") = 0 Then
+    score% = score% + 100
+    Print
+    Print "All the gold now belongs to you!"
+    Color 15
+    Print "Score +100"
+    Print "Inventory +GOLD"
+    Print
+    If inventory$ = "NOTHING" Then
+        inventory$ = "GOLD"
+    Else
+        inventory$ = inventory$ + ",GOLD"
+    End If
+End If
+Return
 
 PlayGameAction:
-GOSUB PrintHeader
-COLOR 15
-PRINT
-PRINT "Fluffy Cat: Answer me this, and a magical name I will give to you."
-PRINT
-PRINT "What is blue... and is also the sky?"
-PRINT
-INPUT "You: ", riddle$
-riddle$ = RTRIM$(LTRIM$(UCASE$(riddle$)))
-IF (riddle$ = "THE SKY") OR (riddle$ = "THE BLUE SKY") OR (riddle$ = "BLUE SKY") THEN
-        riddle$ = "SKY"
-END IF
-PRINT
-IF riddle$ = "SKY" THEN
-        PRINT "Fluffy Cat: Alas you have bested me!  And that was my"
-        PRINT "finest riddle!  Very well then.  A deal is a deal. The"
-        PRINT "magical name you seek is... SHMEBULOCK."
-ELSE
-        IF riddle$ = "EXIT" THEN
-                GOSUB ExitAction
-        ELSE
-                PRINT "Fluffy Cat: Aha!  It appears that I have bested you!  That"
-                PRINT "answer is INCORRECT.  No one is as clever as I!"
-                PRINT
-                PRINT "Better luck next time."
-        END IF
-END IF
-RETURN
+GoSub PrintHeader
+Color 15
+Print
+Print "Fluffy Cat: Answer me this, and a magical name I will give to you."
+Print
+Print "What is blue... and is also the sky?"
+Print
+Input "You: ", riddle$
+riddle$ = RTrim$(LTrim$(UCase$(riddle$)))
+If (riddle$ = "THE SKY") Or (riddle$ = "THE BLUE SKY") Or (riddle$ = "BLUE SKY") Then
+    riddle$ = "SKY"
+End If
+Print
+If riddle$ = "SKY" Then
+    Print "Fluffy Cat: Alas you have bested me!  And that was my"
+    Print "finest riddle!  Very well then.  A deal is a deal. The"
+    Print "magical name you seek is... SHMEBULOCK."
+Else
+    If riddle$ = "EXIT" Then
+        GoSub ExitAction
+    Else
+        Print "Fluffy Cat: Aha!  It appears that I have bested you!  That"
+        Print "answer is INCORRECT.  No one is as clever as I!"
+        Print
+        Print "Better luck next time."
+    End If
+End If
+Return
 
 SpeakNameAction:
-GOSUB PrintHeader
-COLOR 6
-PRINT
-INPUT "You: ", nameGuess$
-nameGuess$ = RTRIM$(LTRIM$(UCASE$(nameGuess$)))
-PRINT
-IF (nameGuess$ = "SHMEBULOCK") THEN
-        PRINT "           ,"
-        PRINT "          / \"
-        PRINT "         /   \"
-        PRINT "        /     \"
-        PRINT "       /_______\"
-        PRINT "       // . . \\"
-        PRINT "      (/(__7__)\)"
-        PRINT "      |'-' = `-'|"
-        PRINT "      |         |"
-        PRINT "      /\       /\"
-        PRINT "     /  '.   .'  \"
-        PRINT "    / /|  `v`  |\ \"
-        PRINT "    \ \|===[]==|/ /"
-        PRINT "     '-|_______|-'"
-        PRINT "        |__|__|"
-        PRINT "        |--|--|"
-        PRINT "       (__)`(__)"
-        PRINT
-        PRINT "Magic Gnome: Shmebulock!  Shmebulock... Shmebulock."
-        PRINT "Shmebulock?  Shmebulock, Shmebulock.  Shme... bulock!"
-        PRINT
-        PRINT
-        COLOR 15
-        PRINT "Press any key to continue"
-        DO
-        LOOP UNTIL INKEY$ <> ""
-        IF INSTR(1, ("," + inventory$ + ","), (",RING OF TAMING,")) = 0 THEN
-                PRINT
-                PRINT "Inventory +RING OF TAMING"
-                PRINT "(Does not work on large creatures.)"
-        ELSE
-                PRINT
-                PRINT "You look down at your ring and it glows with power."
-        END IF
-        IF inventory$ = "NOTHING" THEN
-                inventory$ = "RING OF TAMING"
-        ELSE
-                IF INSTR(1, ("," + inventory$ + ","), (",RING OF TAMING,")) = 0 THEN
-                        inventory$ = inventory$ + ",RING OF TAMING"
-                END IF
-        END IF
-ELSE
-        IF nameGuess$ = "EXIT" THEN
-                GOSUB ExitAction
-        ELSE
-                IF (nameGuess$ = "MAGNIFICO") OR (nameGuess$ = "DRACO") THEN
-                        PRINT "You wait... and wait some more.  But... nothing happens!"
-                        PRINT "Perhaps you spoke the wrong name?"
-                        PRINT
-                        PRINT "Good guess though!"
-                ELSE
-                        PRINT "You wait... and wait some more.  But... nothing happens!"
-                        PRINT "Perhaps you spoke the wrong name?"
-                        PRINT
-                        PRINT "Better luck next time."
-                END IF
-        END IF
-END IF
-RETURN
+GoSub PrintHeader
+Color 6
+Print
+Input "You: ", nameGuess$
+nameGuess$ = RTrim$(LTrim$(UCase$(nameGuess$)))
+Print
+If (nameGuess$ = "SHMEBULOCK") Then
+    Print "           ,"
+    Print "          / \"
+    Print "         /   \"
+    Print "        /     \"
+    Print "       /_______\"
+    Print "       // . . \\"
+    Print "      (/(__7__)\)"
+    Print "      |'-' = `-'|"
+    Print "      |         |"
+    Print "      /\       /\"
+    Print "     /  '.   .'  \"
+    Print "    / /|  `v`  |\ \"
+    Print "    \ \|===[]==|/ /"
+    Print "     '-|_______|-'"
+    Print "        |__|__|"
+    Print "        |--|--|"
+    Print "       (__)`(__)"
+    Print
+    Print "Magic Gnome: Shmebulock!  Shmebulock... Shmebulock."
+    Print "Shmebulock?  Shmebulock, Shmebulock.  Shme... bulock!"
+    Print
+    Print
+    Color 15
+    Print "Press any key to continue"
+    Do
+    Loop Until InKey$ <> ""
+    If InStr(1, ("," + inventory$ + ","), (",RING OF TAMING,")) = 0 Then
+        Print
+        Print "Inventory +RING OF TAMING"
+        Print "(Does not work on large creatures.)"
+    Else
+        Print
+        Print "You look down at your ring and it glows with power."
+    End If
+    If inventory$ = "NOTHING" Then
+        inventory$ = "RING OF TAMING"
+    Else
+        If InStr(1, ("," + inventory$ + ","), (",RING OF TAMING,")) = 0 Then
+            inventory$ = inventory$ + ",RING OF TAMING"
+        End If
+    End If
+Else
+    If nameGuess$ = "EXIT" Then
+        GoSub ExitAction
+    Else
+        If (nameGuess$ = "MAGNIFICO") Or (nameGuess$ = "DRACO") Then
+            Print "You wait... and wait some more.  But... nothing happens!"
+            Print "Perhaps you spoke the wrong name?"
+            Print
+            Print "Good guess though!"
+        Else
+            Print "You wait... and wait some more.  But... nothing happens!"
+            Print "Perhaps you spoke the wrong name?"
+            Print
+            Print "Better luck next time."
+        End If
+    End If
+End If
+Return
 
 TameFluffAction:
-GOSUB PrintHeader
-COLOR 15
-PRINT
-PRINT "                ____"
-PRINT "                \ _ `\ "
-PRINT "                 | \  `\._"
-PRINT "                 |  |  _/ `-.._"
-PRINT "                 |  /-'  // /.'`-. .--.__"
-PRINT "                 /-'    || // //  |    __\"
-PRINT "               ./   .` |\///_//   \  /'   |"
-PRINT "             .'.-.__.` \ |/'-' .'  \|    /"
-PRINT "            / ( ____`.\ |/ .' '.'   |\  /"
-PRINT "           /  -//   \     /- _  '     `'|"
-PRINT "           |  ||o    ;       __`--      |"
-PRINT "           |   \\   /      //  `.  \    |"
-PRINT "           \    `---'     |/o    \_ )   \"
-PRINT "         _ _\_    /       |      /       |"
-PRINT "       _-_`-__-_.-'|__    \`-..-'       /"
-PRINT "      '  .--_--_-.. \_\/_              /"
-PRINT "        ' /    \... / .. \_-___       / \"
-PRINT "         /      `-._| ..-._--___     /   \"
-PRINT "        /    .---.|  `-.__/`--.__---'     |"
-PRINT "       /_.--/ . . \__/   _   `--._-.      |"
-PRINT "    .-'    | || | |   .-' `-.     \ `\    |"
-PRINT "  .'       `-\/\|-'  |  / /  \     `\ \   |"
-PRINT " /                    \/ | .  |           |"
-PRINT "/                      \_/_/ / \          |"
-PRINT "|  magnifico               \/   \         |"
-PRINT
-PRINT
-PRINT "Press any key to continue"
-DO
-LOOP UNTIL INKEY$ <> ""
-RETURN
+GoSub PrintHeader
+Color 15
+Print
+Print "                ____"
+Print "                \ _ `\ "
+Print "                 | \  `\._"
+Print "                 |  |  _/ `-.._"
+Print "                 |  /-'  // /.'`-. .--.__"
+Print "                 /-'    || // //  |    __\"
+Print "               ./   .` |\///_//   \  /'   |"
+Print "             .'.-.__.` \ |/'-' .'  \|    /"
+Print "            / ( ____`.\ |/ .' '.'   |\  /"
+Print "           /  -//   \     /- _  '     `'|"
+Print "           |  ||o    ;       __`--      |"
+Print "           |   \\   /      //  `.  \    |"
+Print "           \    `---'     |/o    \_ )   \"
+Print "         _ _\_    /       |      /       |"
+Print "       _-_`-__-_.-'|__    \`-..-'       /"
+Print "      '  .--_--_-.. \_\/_              /"
+Print "        ' /    \... / .. \_-___       / \"
+Print "         /      `-._| ..-._--___     /   \"
+Print "        /    .---.|  `-.__/`--.__---'     |"
+Print "       /_.--/ . . \__/   _   `--._-.      |"
+Print "    .-'    | || | |   .-' `-.     \ `\    |"
+Print "  .'       `-\/\|-'  |  / /  \     `\ \   |"
+Print " /                    \/ | .  |           |"
+Print "/                      \_/_/ / \          |"
+Print "|  magnifico               \/   \         |"
+Print
+Print
+Print "Press any key to continue"
+Do
+Loop Until InKey$ <> ""
+Return
 
 ChaseBunniesAction:
-PRINT
-COLOR 2
-PRINT "Seems like an unimportant thing to do but nonetheless"
-PRINT "you try to chase some of the bunnies.  And... you can't"
-PRINT "catch a single one.  They are too fast!  Oh well, time"
-PRINT "to continue on with your quest."
-RETURN
+Print
+Color 2
+Print "Seems like an unimportant thing to do but nonetheless"
+Print "you try to chase some of the bunnies.  And... you can't"
+Print "catch a single one.  They are too fast!  Oh well, time"
+Print "to continue on with your quest."
+Return
 
 DumbAction:
-PRINT
-PRINT "That is NOT a choice.  Better luck next time."
-PRINT
-RETURN
+Print
+Print "That is NOT a choice.  Better luck next time."
+Print
+Return
 
-FUNCTION GridCell$ (x AS INTEGER, y AS INTEGER)
-        GridCell$ = " "
-        IF (playerX% = x) AND (playerY% = y) AND (gameOver% = 0) THEN
-                IF playerDirection% = 1 THEN
-                        GridCell$ = "^"
-                END IF
-                IF playerDirection% = 2 THEN
-                        GridCell$ = ">"
-                END IF
-                IF playerDirection% = 3 THEN
-                        GridCell$ = "v"
-                END IF
-                IF playerDirection% = 4 THEN
-                        GridCell$ = "<"
-                END IF
-        END IF
-END FUNCTION
+Function GridCell$ (x As Integer, y As Integer)
+    GridCell$ = " "
+    If (playerX% = x) And (playerY% = y) And (gameOver% = 0) Then
+        If playerDirection% = 1 Then
+            GridCell$ = "^"
+        End If
+        If playerDirection% = 2 Then
+            GridCell$ = ">"
+        End If
+        If playerDirection% = 3 Then
+            GridCell$ = "v"
+        End If
+        If playerDirection% = 4 Then
+            GridCell$ = "<"
+        End If
+    End If
+End Function
 

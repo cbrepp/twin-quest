@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Updated line endings
+- Removed header comments in file
+
 ## [0.0.1] - 2024-02-24
 
 ### Added
