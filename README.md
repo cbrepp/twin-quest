@@ -2,7 +2,9 @@
 Twin Quest
 Copyright (C) 2024 Wayne Chung Enterprises
 
-To Run: F5
+This program requires [QB64](https://qb64.com/).
+
+To Run: Open the .BAS file in QB64 and press F5
 To Exit: Enter "EXIT" at any prompt
 
 ---
