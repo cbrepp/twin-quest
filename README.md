@@ -1,7 +1,5 @@
 # twin-quest
 Twin Quest
-
-Twin Quest version 0.0.1
 Copyright (C) 2024 Wayne Chung Enterprises
 
 To Run: F5
