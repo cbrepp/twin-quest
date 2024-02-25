@@ -1,4 +1,4 @@
-Twin Quest  
+# Twin Quest  
 Copyright (C) 2024 Wayne Chung Enterprises  
   
 This program requires [QB64](https://qb64.com/).  
@@ -6,11 +6,13 @@ This program requires [QB64](https://qb64.com/).
 To Run: Open the .BAS file in QB64 and press F5  
 To Exit: Enter "EXIT" at any prompt  
 
----
+## Story
 
 Grab your favorite twin and embark on a magical adventure!  
 Will you find fame?  Will you find fortune?  
 Or will you find... doom and despair?  
+
+## Gameplay
   
 Goals:
 1. Find the gold.
