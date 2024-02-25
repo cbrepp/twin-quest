@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Removed gag entries from credits screen
+- Changed input cursor from white to cyan
 
 ### Fixed
 

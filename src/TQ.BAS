@@ -740,12 +740,14 @@ End Function
 
 Function GetInput$ (prompt As String, enableArrowKeys As Integer)
     inp$ = ""
+    cursor$ = Chr$(178)
     Color 15
     Print prompt + ": "
     currentRow% = CsrLin - 1
     currentCol% = Len(prompt + ": ") + 1
     Locate currentRow%, currentCol%
-    Print Chr$(178)
+    Color 3
+    Print cursor$
     c$ = ""
     While c$ <> Chr$(13)
         c$ = ""
@@ -757,7 +759,11 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer)
             If Len(inp$) < 40 Then
                 inp$ = (inp$ + UCase$(c$))
                 Locate currentRow%, currentCol%
-                Print UCase$(c$) + Chr$(178)
+                Color 15
+                Print UCase$(c$)
+                Locate currentRow%, currentCol% + 1
+                Color 3
+                Print cursor$
                 currentCol% = currentCol% + 1
             Else
                 ' Ignore any input when the string gets too long
@@ -768,7 +774,8 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer)
                 If Len(inp$) > 0 Then
                     inp$ = Left$(inp$, Len(inp$) - 1)
                     Locate currentRow%, currentCol% - 1
-                    Print Chr$(178) + " "
+                    Color 3
+                    Print cursor$ + " "
                     currentCol% = currentCol% - 1
                 Else
                     ' Ignore any backspace when there is nothing left to delete
@@ -781,6 +788,7 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer)
                             inp$ = "MOVE AHEAD"
                             c$ = Chr$(13)
                             Locate currentRow%, currentCol%
+                            Color 15
                             Print inp$
                         End If
                     End If
@@ -794,6 +802,7 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer)
                             inp$ = "TURN LEFT"
                             c$ = Chr$(13)
                             Locate currentRow%, currentCol%
+                            Color 15
                             Print inp$
                         End If
                     End If
@@ -803,6 +812,7 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer)
                             inp$ = "TURN RIGHT"
                             c$ = Chr$(13)
                             Locate currentRow%, currentCol%
+                            Color 15
                             Print inp$
                         End If
                     End If
@@ -811,6 +821,7 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer)
         End If
     Wend
     GetInput$ = RTrim$(LTrim$(inp$))
+    Color 15
 End Function
 
 Function GridCell$ (x As Integer, y As Integer)
