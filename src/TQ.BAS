@@ -24,6 +24,7 @@ directions(4) = "WEST"
 playerDirection% = 3
 gameOver% = 0
 basicChoices$ = "LOOK,MOVE AHEAD,TURN LEFT,TURN RIGHT,CREDITS,EXIT"
+secretChoices$ = "ALL THE THINGS"
 choices$ = basicChoices$
 Dim world(3, 3) As String
 world(1, 1) = "WILDERNESS"
@@ -40,6 +41,7 @@ choice$ = "LOOK"
 inventory$ = "NOTHING"
 dragonDead% = 0
 catTamed% = 0
+level% = 1
 GoSub SelectCharacter
 Return
 
@@ -141,11 +143,14 @@ End If
 If (choice$ = "TAME FLUFF") And (InStr(1, choices$, "TAME FLUFF") > 0) Then
     GoSub TameFluffAction
 End If
+If (choice$ = "ALL THE THINGS") Then
+    GoSub AllTheThingsAction
+End If
 If (choice$ = "TAKE GOLD") And (InStr(1, choices$, "TAKE GOLD") > 0) Then
     GoSub TakeGoldAction
 Else
     ' TODO - Dumb place to put this but TAKE GOLD removes a choice
-    If InStr(1, ("," + choices$ + ","), ("," + choice$ + ",")) = 0 Then
+    If (InStr(1, ("," + choices$ + ","), ("," + choice$ + ",")) = 0) And (InStr(1, ("," + secretChoices$ + ","), ("," + choice$ + ",")) = 0) Then
         GoSub DumbAction
     End If
 End If
@@ -666,6 +671,63 @@ DumbAction:
 Print
 Print "That is NOT a choice.  Better luck next time."
 Print
+Return
+
+AllTheThingsAction:
+Print
+If level% = 1 Then
+    If dragonDead% = 0 Then
+        dragonDead% = 1
+        score% = score% + 100
+        Print "You slew the dragon!"
+        Print "Score +100"
+    End If
+    If catTamed% = 0 Then
+        catTamed% = 1
+        score% = score% + 100
+        Print "You tamed the elusive cat!"
+        Print "Score +100"
+    End If
+    If InStr(1, ("," + inventory$ + ","), (",RING OF TAMING,")) = 0 Then
+        If inventory$ = "NOTHING" Then
+            inventory$ = "RING OF TAMING"
+        Else
+            inventory$ = inventory$ + ",RING OF TAMING"
+        End If
+        Print "You obtained the Ring of Taming!"
+        Print "Inventory +RING OF TAMING"
+        Print "(Does not work on large creatures.)"
+    End If
+    If InStr(1, ("," + inventory$ + ","), (",GOLD,")) = 0 Then
+        If inventory$ = "NOTHING" Then
+            inventory$ = "GOLD"
+        Else
+            inventory$ = inventory$ + ",GOLD"
+        End If
+        score% = score% + 100
+        Print "You obtained the Gold!"
+        Print "Score +100"
+        Print "Inventory +GOLD"
+    End If
+    If (character$ = "GREYSON") And (InStr(1, ("," + inventory$ + ","), (",UNO REVERSE,")) = 0) Then
+        If inventory$ = "NOTHING" Then
+            inventory$ = "UNO REVERSE"
+        Else
+            inventory$ = inventory$ + ",UNO REVERSE"
+        End If
+        Print "You obtained the legendary UNO Reverse card!"
+        Print "Inventory +UNO REVERSE"
+    End If
+    If (character$ = "ZARA") And (InStr(1, ("," + inventory$ + ","), (",SWORD,")) = 0) Then
+        If inventory$ = "NOTHING" Then
+            inventory$ = "SWORD"
+        Else
+            inventory$ = inventory$ + ",SWORD"
+        End If
+        Print "You obtained the legendary SWORD!"
+        Print "Inventory +SWORD"
+    End If
+End If
 Return
 
 Function GridCell$ (x As Integer, y As Integer)

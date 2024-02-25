@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Added secret choice for completing all the quests for the current level
+
 ### Changed
 
 - Updated line endings
