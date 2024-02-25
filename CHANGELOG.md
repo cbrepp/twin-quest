@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Updated line endings
 - Removed header comments in file
+- Removed gag entries from credits screen
 
 ### Fixed
 

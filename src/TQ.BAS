@@ -207,8 +207,6 @@ Print "Executive Producer: Wayne Chung"
 Print "Power of Attorney: Wayne Chung"
 Print "Development: Mylee and Mr. Chris"
 Print "Creative Design: Zara and Greyson"
-Print "Hair and Makeup: Ima Sue Pretty"
-Print "Wardrobe Design: Aslan"
 Color 15
 Return
 
