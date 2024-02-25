@@ -14,6 +14,8 @@ Or will you find... doom and despair?
 
 ## Gameplay
   
+![title screen](/assets/images/title-screen.png)
+  
 Goals:
 1. Find the gold.
 2. Slay the fearsome dragon.
