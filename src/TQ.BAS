@@ -46,6 +46,7 @@ Return
 SelectCharacter:
 availableCharacters$ = "GREYSON,ZARA"
 Do
+    character$ = ""
     GoSub PrintHeader
     Print
     Print "Select Player:"

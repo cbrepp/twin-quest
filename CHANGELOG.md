@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file.
 - Updated line endings
 - Removed header comments in file
 
+### Fixed
+
+- Invalid character entry input is no longer shown in divider
+
 ## [0.0.1] - 2024-02-24
 
 ### Added
