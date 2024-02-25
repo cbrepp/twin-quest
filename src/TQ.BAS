@@ -1,3 +1,4 @@
+DECLARE FUNCTION Contains% (myString AS STRING, token AS STRING, delimiter AS STRING)
 DECLARE FUNCTION GridCell$ (x AS INTEGER, y AS INTEGER)
 
 Common Shared playerX As Integer, playerY As Integer, playerDirection As Integer, gameOver As Integer
@@ -56,7 +57,7 @@ Do
     Print
     Input "Enter Choice: ", character$
     character$ = RTrim$(LTrim$(UCase$(character$)))
-Loop While InStr(1, ("," + availableCharacters$ + ",GREY,EXIT,"), ("," + character$ + ",")) = 0
+Loop While Not Contains%(availableCharacters$ + ",GREY,EXIT", character$, ",")
 If character$ = "ZARA" Then
     world(1, 3) = "ZARA'S STORE"
 Else
@@ -131,26 +132,26 @@ End If
 If choice$ = "TURN RIGHT" Then
     GoSub TurnRightAction
 End If
-If (choice$ = "PLAY GAME") And (InStr(1, choices$, "PLAY GAME") > 0) Then
+If (choice$ = "PLAY GAME") And (Contains%(choices$, "PLAY GAME", ",")) Then
     GoSub PlayGameAction
 End If
-If (choice$ = "SPEAK NAME") And (InStr(1, choices$, "SPEAK NAME") > 0) Then
+If (choice$ = "SPEAK NAME") And (Contains%(choices$, "SPEAK NAME", ",")) Then
     GoSub SpeakNameAction
 End If
-If (choice$ = "CHASE BUNNIES") And (InStr(1, choices$, "CHASE BUNNIES") > 0) Then
+If (choice$ = "CHASE BUNNIES") And (Contains%(choices$, "CHASE BUNNIES", ",")) Then
     GoSub ChaseBunniesAction
 End If
-If (choice$ = "TAME FLUFF") And (InStr(1, choices$, "TAME FLUFF") > 0) Then
+If (choice$ = "TAME FLUFF") And (Contains%(choices$, "TAME FLUFF", ",")) Then
     GoSub TameFluffAction
 End If
 If (choice$ = "ALL THE THINGS") Then
     GoSub AllTheThingsAction
 End If
-If (choice$ = "TAKE GOLD") And (InStr(1, choices$, "TAKE GOLD") > 0) Then
+If (choice$ = "TAKE GOLD") And (Contains%(choices$, "TAKE GOLD", ",")) Then
     GoSub TakeGoldAction
 Else
     ' TODO - Dumb place to put this but TAKE GOLD removes a choice
-    If (InStr(1, ("," + choices$ + ","), ("," + choice$ + ",")) = 0) And (InStr(1, ("," + secretChoices$ + ","), ("," + choice$ + ",")) = 0) Then
+    If (Not Contains%(choices$, choice$, ",")) And (Not Contains%(secretChoices$, choice$, ",")) Then
         GoSub DumbAction
     End If
 End If
@@ -193,7 +194,7 @@ Return
 ExitAction:
 gameOver% = 1
 Print
-If InStr(1, ("," + inventory$ + ","), ",GOLD,") > 0 Then
+If Contains%(inventory$, "GOLD", ",") Then
     Print "But you were doing so well!  The magic door is out there."
     Print "You found the gold but didn't bring it home."
 End If
@@ -277,7 +278,7 @@ If playerView$ = "GIANNI'S DEN" Then
     Print "adorable black cat curled up on a Pittsburgh Steelers blanket."
     Print "He's so cuuuuuuute!"
     Print
-    If InStr(1, ("," + inventory$ + ","), ",RING OF TAMING") > 0 Then
+    If Contains%(inventory$, "RING OF TAMING", ",") Then
         If catTamed% = 0 Then
             catTamed% = 1
             Print "You use your ring of taming on him and he jumps into"
@@ -305,7 +306,7 @@ If playerView$ = "DRAGON'S DEN" Then
         Print "Paintings depicting your heroic act now cover the wall, a tribute"
         Print "from the townspeople you saved!"
     End If
-    If (InStr(1, ("," + inventory$ + ","), ",GOLD,") > 0) And (InStr(1, ("," + inventory$ + ","), ",SWORD,") = 0) And (InStr(1, ("," + inventory$ + ","), ",UNO REVERSE,") = 0) Then
+    If (Contains%(inventory$, "GOLD", ",")) And (Not Contains%(inventory$, "SWORD", ",")) And (Not Contains%(inventory$, "UNO REVERSE", ",")) Then
         Print "The greedy dragon sees your gold and blasts you with"
         Print "its burning fire.  With no defense, you are burned to death."
         Print "Alas, this is the end of your quest."
@@ -316,11 +317,11 @@ If playerView$ = "DRAGON'S DEN" Then
         score% = 0
         gameOver% = 1
     Else
-        If InStr(1, ("," + inventory$ + ","), ",GOLD,") = 0 Then
+        If Not Contains%(inventory$, "GOLD", ",") Then
             Print "With nothing heavy to carry you are able to run away"
             Print "before the dragon can end your quest."
         Else
-            If (InStr(1, ("," + inventory$ + ","), ",SWORD,") > 0) And (dragonDead% = 0) Then
+            If (Contains%(inventory$, "SWORD", ",")) And (dragonDead% = 0) Then
                 Print "With quick reflexes you use your mighty sword to slay the dragon."
                 Print "The townspeople are saved.  And you are today a hero!!!"
                 score% = score% + 100
@@ -328,7 +329,7 @@ If playerView$ = "DRAGON'S DEN" Then
                 Print "Score +100"
                 dragonDead% = 1
             Else
-                If (InStr(1, ("," + inventory$ + ","), ",UNO REVERSE,") > 0) And (dragonDead% = 0) Then
+                If (Contains%(inventory$, "UNO REVERSE", ",")) And (dragonDead% = 0) Then
                     Print "With quick reflexes you use your UNO REVERSE card to send the dragon's"
                     Print "flames back at it.  With each fiery burst, the dragon destroys itself."
                     Print "The townspeople are saved.  And you are today a hero!!!"
@@ -349,13 +350,13 @@ If playerView$ = "ZARA'S STORE" Then
     Color 5
     Print "There are a lot of fun things to buy. Of particular note you"
     Print "see a mighty silver sword, fit for slaying a dragon."
-    If (InStr(1, ("," + inventory$ + ","), ",GOLD,") > 0) And (InStr(1, ("," + inventory$ + ","), ",SWORD,") = 0) Then
+    If (Contains%(inventory$, "GOLD", ",")) And (Not Contains%(inventory$, "SWORD", ",")) Then
         Print "You deposit some gold coins into the vending machine..."
         inventory$ = inventory$ + ",SWORD"
         Color 15
         Print "Inventory +SWORD"
     Else
-        If InStr(1, ("," + inventory$ + ","), ",SWORD,") > 0 Then
+        If Contains%(inventory$, "SWORD", ",") Then
             Print "That mighty sword is in your hand... perhaps you should"
             Print "use it for some heroic deed?"
         Else
@@ -367,14 +368,14 @@ If playerView$ = "GREYSON'S GAME ROOM" Then
     Color 1
     Print "Oh my!  Every game known to mankind can be found for sale in"
     Print "this room.  A particular game catches your eye... UNO."
-    If (InStr(1, ("," + inventory$ + ","), ",GOLD,") > 0) And (InStr(1, ("," + inventory$ + ","), ",UNO REVERSE,") = 0) Then
+    If (Contains%(inventory$, "GOLD", ",")) And (Not Contains%(inventory$, "UNO REVERSE", ",")) Then
         Print "You leave some gold coins on the table in exchange for the UNO deck."
         Print "You look at the cards and discover the legendary... UNO REVERSE!!!"
         inventory$ = inventory$ + ",UNO REVERSE"
         Color 15
         Print "Inventory +UNO REVERSE"
     Else
-        If InStr(1, ("," + inventory$ + ","), ",UNO REVERSE,") > 0 Then
+        If Contains%(inventory$, "UNO REVERSE", ",") Then
             Print "That mighty deck is in your hand... perhaps you should"
             Print "use it for some heroic deed?"
         Else
@@ -383,7 +384,7 @@ If playerView$ = "GREYSON'S GAME ROOM" Then
     End If
 End If
 Print
-If (playerView$ = "CASTLE") And (InStr(1, ("," + inventory$ + ","), ",GOLD,") = 0) Then
+If (playerView$ = "CASTLE") And (Not Contains%(inventory$, "GOLD", ",")) Then
     Color 14
     Print "Beautiful gold coins are scattered around.  Will you take them?"
     Print
@@ -441,7 +442,7 @@ If (aheadX% = doorX%) And (aheadY% = doorY%) Then
     Print
     Print "You have exited the world."
     Print
-    If InStr(1, inventory$, "GOLD") > 0 Then
+    If Contains%(inventory$, "GOLD", ",") Then
         Print
         Print "You have safely brought your riches back home."
         Print "Fame and fortune are yours."
@@ -465,12 +466,12 @@ Else
     Else
         playerX% = aheadX%
         playerY% = aheadY%
-        If (world(playerX%, playerY%) = "CASTLE") And (InStr(1, ("," + inventory$ + ","), ",GOLD,") = 0) Then
+        If (world(playerX%, playerY%) = "CASTLE") And (Not Contains%(inventory$, "GOLD", ",")) Then
             choices$ = basicChoices$ + ",TAKE GOLD"
         Else
             If world(playerX%, playerY%) = "MOUNT FLUFF" Then
                 choices$ = basicChoices$ + ",PLAY GAME"
-                If InStr(1, ("," + inventory$ + ","), ",RING OF TAMING,") > 0 Then
+                If Contains%(inventory$, "RING OF TAMING", ",") Then
                     choices$ = choices$ + ",TAME FLUFF"
                 End If
             Else
@@ -508,7 +509,7 @@ Return
 
 TakeGoldAction:
 choices$ = basicChoices$
-If InStr(1, ("," + inventory$ + ","), ",GOLD,") = 0 Then
+If Not Contains%(inventory$, "GOLD", ",") Then
     score% = score% + 100
     Print
     Print "All the gold now belongs to you!"
@@ -588,7 +589,7 @@ If (nameGuess$ = "SHMEBULOCK") Then
     Print "Press any key to continue"
     Do
     Loop Until InKey$ <> ""
-    If InStr(1, ("," + inventory$ + ","), (",RING OF TAMING,")) = 0 Then
+    If Contains%(inventory$, "RING OF TAMING", ",") Then
         Print
         Print "Inventory +RING OF TAMING"
         Print "(Does not work on large creatures.)"
@@ -599,7 +600,7 @@ If (nameGuess$ = "SHMEBULOCK") Then
     If inventory$ = "NOTHING" Then
         inventory$ = "RING OF TAMING"
     Else
-        If InStr(1, ("," + inventory$ + ","), (",RING OF TAMING,")) = 0 Then
+        If Not Contains%(inventory$, "RING OF TAMING", ",") Then
             inventory$ = inventory$ + ",RING OF TAMING"
         End If
     End If
@@ -675,20 +676,23 @@ Return
 
 AllTheThingsAction:
 Print
+thingDone% = 0
 If level% = 1 Then
     If dragonDead% = 0 Then
         dragonDead% = 1
         score% = score% + 100
         Print "You slew the dragon!"
         Print "Score +100"
+        thingDone% = 1
     End If
     If catTamed% = 0 Then
         catTamed% = 1
         score% = score% + 100
         Print "You tamed the elusive cat!"
         Print "Score +100"
+        thingDone% = 1
     End If
-    If InStr(1, ("," + inventory$ + ","), (",RING OF TAMING,")) = 0 Then
+    If Not Contains%(inventory$, "RING OF TAMING", ",") Then
         If inventory$ = "NOTHING" Then
             inventory$ = "RING OF TAMING"
         Else
@@ -697,8 +701,9 @@ If level% = 1 Then
         Print "You obtained the Ring of Taming!"
         Print "Inventory +RING OF TAMING"
         Print "(Does not work on large creatures.)"
+        thingDone% = 1
     End If
-    If InStr(1, ("," + inventory$ + ","), (",GOLD,")) = 0 Then
+    If Not Contains%(inventory$, "GOLD", ",") Then
         If inventory$ = "NOTHING" Then
             inventory$ = "GOLD"
         Else
@@ -708,8 +713,9 @@ If level% = 1 Then
         Print "You obtained the Gold!"
         Print "Score +100"
         Print "Inventory +GOLD"
+        thingDone% = 1
     End If
-    If (character$ = "GREYSON") And (InStr(1, ("," + inventory$ + ","), (",UNO REVERSE,")) = 0) Then
+    If (character$ = "GREYSON") And (Not Contains%(inventory$, "UNO REVERSE", ",")) Then
         If inventory$ = "NOTHING" Then
             inventory$ = "UNO REVERSE"
         Else
@@ -717,8 +723,9 @@ If level% = 1 Then
         End If
         Print "You obtained the legendary UNO Reverse card!"
         Print "Inventory +UNO REVERSE"
+        thingDone% = 1
     End If
-    If (character$ = "ZARA") And (InStr(1, ("," + inventory$ + ","), (",SWORD,")) = 0) Then
+    If (character$ = "ZARA") And (Not Contains%(inventory$, "SWORD", ",")) Then
         If inventory$ = "NOTHING" Then
             inventory$ = "SWORD"
         Else
@@ -726,9 +733,17 @@ If level% = 1 Then
         End If
         Print "You obtained the legendary SWORD!"
         Print "Inventory +SWORD"
+        thingDone% = 1
+    End If
+    If thingDone% = 0 Then
+        Print "You have done all the things for level " + LTrim$(Str$(level%)) + "."
     End If
 End If
 Return
+
+Function Contains% (myString As String, token As String, delimiter As String)
+    Contains% = InStr(1, (delimiter + myString + delimiter), (delimiter + token + delimiter)) > 0
+End Function
 
 Function GridCell$ (x As Integer, y As Integer)
     GridCell$ = " "
