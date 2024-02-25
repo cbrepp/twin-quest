@@ -1,4 +1,5 @@
 DECLARE FUNCTION Contains% (myString AS STRING, token AS STRING, delimiter AS STRING)
+DECLARE FUNCTION GetInput$ (prompt AS STRING, enableArrowKeys AS INTEGER)
 DECLARE FUNCTION GridCell$ (x AS INTEGER, y AS INTEGER)
 
 Common Shared playerX As Integer, playerY As Integer, playerDirection As Integer, gameOver As Integer
@@ -8,7 +9,14 @@ GoSub Init
 
 Do
     GoSub RefreshScreen
-    GoSub GetInput
+    If gameOver% Then
+        End
+    End If
+    Print
+    Print "Choices:"
+    Print " " + choices$
+    Print
+    choice$ = GetInput$("Enter Choice", 1)
 Loop While gameOver% = 0
 
 End
@@ -55,8 +63,7 @@ Do
     Print "Select Player:"
     Print " " + availableCharacters$
     Print
-    Input "Enter Choice: ", character$
-    character$ = RTrim$(LTrim$(UCase$(character$)))
+    character$ = GetInput$("Enter Choice", 0)
 Loop While Not Contains%(availableCharacters$ + ",GREY,EXIT", character$, ",")
 If character$ = "ZARA" Then
     world(1, 3) = "ZARA'S STORE"
@@ -177,18 +184,6 @@ Print "|" + GridCell$(1, 2) + GridCell$(2, 2) + GridCell$(3, 2) + "|" + "   " + 
 Print "|" + GridCell$(1, 3) + GridCell$(2, 3) + GridCell$(3, 3) + "|"
 Print "-----" '
 Color 15
-Return
-
-GetInput:
-If gameOver% = 1 Then
-    End
-End If
-Print
-Print "Choices:"
-Print " " + choices$
-Print
-Input "Enter Choice: ", choice$
-choice$ = RTrim$(LTrim$(UCase$(choice$)))
 Return
 
 ExitAction:
@@ -533,8 +528,7 @@ Print "Fluffy Cat: Answer me this, and a magical name I will give to you."
 Print
 Print "What is blue... and is also the sky?"
 Print
-Input "You: ", riddle$
-riddle$ = RTrim$(LTrim$(UCase$(riddle$)))
+riddle$ = GetInput$("You", 0)
 If (riddle$ = "THE SKY") Or (riddle$ = "THE BLUE SKY") Or (riddle$ = "BLUE SKY") Then
     riddle$ = "SKY"
 End If
@@ -559,8 +553,7 @@ SpeakNameAction:
 GoSub PrintHeader
 Color 6
 Print
-Input "You: ", nameGuess$
-nameGuess$ = RTrim$(LTrim$(UCase$(nameGuess$)))
+nameGuess$ = GetInput$("You", 0)
 Print
 If (nameGuess$ = "SHMEBULOCK") Then
     Print "           ,"
@@ -743,6 +736,81 @@ Return
 
 Function Contains% (myString As String, token As String, delimiter As String)
     Contains% = InStr(1, (delimiter + myString + delimiter), (delimiter + token + delimiter)) > 0
+End Function
+
+Function GetInput$ (prompt As String, enableArrowKeys As Integer)
+    inp$ = ""
+    Color 15
+    Print prompt + ": "
+    currentRow% = CsrLin - 1
+    currentCol% = Len(prompt + ": ") + 1
+    Locate currentRow%, currentCol%
+    Print Chr$(178)
+    c$ = ""
+    While c$ <> Chr$(13)
+        c$ = ""
+        While c$ = ""
+            c$ = InKey$
+        Wend
+        If (Asc(c$) >= 32) And (Asc(c$) <= 126) Then
+            ' Alphanumeric characters
+            If Len(inp$) < 40 Then
+                inp$ = (inp$ + UCase$(c$))
+                Locate currentRow%, currentCol%
+                Print UCase$(c$) + Chr$(178)
+                currentCol% = currentCol% + 1
+            Else
+                ' Ignore any input when the string gets too long
+            End If
+        Else
+            ' Backspace character
+            If c$ = Chr$(8) Then
+                If Len(inp$) > 0 Then
+                    inp$ = Left$(inp$, Len(inp$) - 1)
+                    Locate currentRow%, currentCol% - 1
+                    Print Chr$(178) + " "
+                    currentCol% = currentCol% - 1
+                Else
+                    ' Ignore any backspace when there is nothing left to delete
+                End If
+            Else
+                If enableArrowKeys = 1 Then
+                    ' Up arrow
+                    If c$ = Chr$(0) + "H" Then
+                        If RTrim$(LTrim$(inp$)) = "" Then
+                            inp$ = "MOVE AHEAD"
+                            c$ = Chr$(13)
+                            Locate currentRow%, currentCol%
+                            Print inp$
+                        End If
+                    End If
+                    ' Down arrow
+                    If c$ = Chr$(0) + "P" Then
+                        ' Unimplemented
+                    End If
+                    ' Left arrow
+                    If c$ = Chr$(0) + "K" Then
+                        If RTrim$(LTrim$(inp$)) = "" Then
+                            inp$ = "TURN LEFT"
+                            c$ = Chr$(13)
+                            Locate currentRow%, currentCol%
+                            Print inp$
+                        End If
+                    End If
+                    ' Right arrow
+                    If c$ = Chr$(0) + "M" Then
+                        If RTrim$(LTrim$(inp$)) = "" Then
+                            inp$ = "TURN RIGHT"
+                            c$ = Chr$(13)
+                            Locate currentRow%, currentCol%
+                            Print inp$
+                        End If
+                    End If
+                End If
+            End If
+        End If
+    Wend
+    GetInput$ = RTrim$(LTrim$(inp$))
 End Function
 
 Function GridCell$ (x As Integer, y As Integer)
