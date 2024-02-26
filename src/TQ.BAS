@@ -13,8 +13,8 @@ Do
         End
     End If
     Print
-    Print "Choices:"
-    Print " " + choices$
+    Print "Choices: " + choices$
+    Print " [Use arrow keys to turn and move]"
     Print
     choice$ = GetInput$("Enter Choice", 1)
 Loop While gameOver% = 0
@@ -32,8 +32,8 @@ directions(3) = "SOUTH"
 directions(4) = "WEST"
 playerDirection% = 3
 gameOver% = 0
-basicChoices$ = "LOOK,MOVE AHEAD,TURN LEFT,TURN RIGHT,CREDITS,EXIT"
-secretChoices$ = "ALL THE THINGS"
+basicChoices$ = "LOOK,CREDITS,EXIT"
+secretChoices$ = "MOVE AHEAD,MOVE BACKWARDS,TURN LEFT,TURN RIGHT,ALL THE THINGS"
 choices$ = basicChoices$
 Dim world(3, 3) As String
 world(1, 1) = "WILDERNESS"
@@ -132,6 +132,9 @@ If choice$ = "LOOK" Then
 End If
 If choice$ = "MOVE AHEAD" Then
     GoSub MoveAheadAction
+End If
+If choice$ = "MOVE BACKWARDS" Then
+    GoSub MoveBackwardsAction
 End If
 If choice$ = "TURN LEFT" Then
     GoSub TurnLeftAction
@@ -486,6 +489,11 @@ Else
 End If
 Return
 
+MoveBackwardsAction:
+Print
+Print "Please don't try walking backwards.  You might trip."
+Return
+
 TurnLeftAction:
 playerDirection% = playerDirection% - 1
 If playerDirection% = 0 Then
@@ -794,7 +802,13 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer)
                     End If
                     ' Down arrow
                     If c$ = Chr$(0) + "P" Then
-                        ' Unimplemented
+                        If RTrim$(LTrim$(inp$)) = "" Then
+                            inp$ = "MOVE BACKWARDS"
+                            c$ = Chr$(13)
+                            Locate currentRow%, currentCol%
+                            Color 15
+                            Print inp$
+                        End If
                     End If
                     ' Left arrow
                     If c$ = Chr$(0) + "K" Then
