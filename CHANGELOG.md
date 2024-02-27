@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Added secret choice for completing all the quests for the current level
 - Added support for arrow keys for turning and moving ahead when nothing else has been entered
 - Added new general choice, "MOVE BACKWARDS"
+- Added opening music and wilderness sounds
 
 ### Changed
 

@@ -4,8 +4,18 @@ DECLARE FUNCTION GridCell$ (x AS INTEGER, y AS INTEGER)
 
 Common Shared playerX As Integer, playerY As Integer, playerDirection As Integer, gameOver As Integer
 
+_Title "Twin Quest"
+
+' https://freesound.org/people/SoundFlakes/sounds/423499/
+' Epic_Heroic_Orchestral_Dramatic.mp3
+titleMusic& = _SndOpen("title.mp3")
+
 GoSub TitleScreen
 GoSub Init
+
+_SndStop titleMusic&
+_SndClose titleMusic&
+
 
 Do
     GoSub RefreshScreen
@@ -103,6 +113,8 @@ Print
 Print
 Color 15
 Print "Press any key to continue"
+_SndPlay titleMusic&
+_SndLoop titleMusic&
 Do
 Loop Until InKey$ <> ""
 Return
@@ -221,6 +233,14 @@ Print "You are in " + playerView$ + "."
 If playerView$ = "WILDERNESS" Then
     Color 2
     Print "You see nothing but tall grass and cute bunnies."
+    ' https://freesound.org/people/newlocknew/sounds/716463/
+    ' AMBGras_Clearing.Near The Big Meadow.Singing Birds.Bees.Distant road 1_EM
+    sceneSound& = _SndOpen("wilderness.wav")
+    _SndPlay sceneSound&
+    _SndLoop sceneSound&
+Else
+    _SndStop sceneSound&
+    _SndClose sceneSound&
 End If
 If playerView$ = "WOODS" Then
     Color 7
