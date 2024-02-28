@@ -16,6 +16,7 @@ GoSub Init
 _SndStop titleMusic&
 _SndClose titleMusic&
 
+choice$ = "MOVE AHEAD"
 
 Do
     GoSub RefreshScreen
@@ -34,7 +35,7 @@ End
 Init:
 score% = 0
 playerX% = 2
-playerY% = 1
+playerY% = 0
 Dim directions(4) As String
 directions(1) = "NORTH"
 directions(2) = "EAST"
@@ -54,6 +55,7 @@ world(2, 2) = "WOODS"
 world(3, 2) = "MOUNT FLUFF"
 world(2, 3) = "CASTLE"
 world(3, 3) = "DRAGON'S DEN"
+sceneSound& = 0
 doorX% = 2
 doorY% = 0
 choice$ = "LOOK"
@@ -233,14 +235,6 @@ Print "You are in " + playerView$ + "."
 If playerView$ = "WILDERNESS" Then
     Color 2
     Print "You see nothing but tall grass and cute bunnies."
-    ' https://freesound.org/people/newlocknew/sounds/716463/
-    ' AMBGras_Clearing.Near The Big Meadow.Singing Birds.Bees.Distant road 1_EM
-    sceneSound& = _SndOpen("wilderness.wav")
-    _SndPlay sceneSound&
-    _SndLoop sceneSound&
-Else
-    _SndStop sceneSound&
-    _SndClose sceneSound&
 End If
 If playerView$ = "WOODS" Then
     Color 7
@@ -482,21 +476,93 @@ Else
         Print
         Print "Jumping off the edge of the world is NOT allowed in this game."
     Else
+        ' Advance the player to the next scene
+        lastScene$ = world(playerX%, playerY%)
         playerX% = aheadX%
         playerY% = aheadY%
-        If (world(playerX%, playerY%) = "CASTLE") And (Not Contains%(inventory$, "GOLD", ",")) Then
+        scene$ = world(playerX%, playerY%)
+
+        ' Update the scene's sound
+        If lastScene$ <> scene$ Then
+            ' Stop playing the current scene's sound, if any
+            If sceneSound& <> 0 Then
+                _SndStop sceneSound&
+                _SndClose sceneSound&
+            End If
+
+            loopSound% = 0
+            If scene$ = "WILDERNESS" Then
+                ' https://freesound.org/people/titi2/sounds/571247/
+                ' birds_210513_0088.mp3
+                sceneSound& = _SndOpen("wilderness.mp3")
+                loopSound% = 1
+            End If
+            If scene$ = "MAGIC RING OF TOADSTOOLS" Then
+                ' https://freesound.org/people/Bastianhallo/sounds/434050/
+                ' Magic.mp3
+                sceneSound& = _SndOpen("magic.mp3")
+            End If
+            If scene$ = "GIANNI'S DEN" Then
+                ' https://freesound.org/people/florianreichelt/sounds/563764/
+                ' bonfire flames sizzling
+                sceneSound& = _SndOpen("gianni.mp3")
+                loopSound% = 1
+            End If
+            If scene$ = "WOODS" Then
+                ' https://freesound.org/people/Luftrum/sounds/48411/
+                ' forestsurroundings.mp3
+                sceneSound& = _SndOpen("woods.mp3")
+                loopSound% = 1
+            End If
+            If scene$ = "MOUNT FLUFF" Then
+                ' https://freesound.org/people/debudding/sounds/44366/
+                ' Spanish Lick I, Acoustic- AB split stereo pair (Oktava).wav
+                sceneSound& = _SndOpen("fluff.wav")
+            End If
+            If scene$ = "CASTLE" Then
+                ' https://freesound.org/people/kbrecordzz/sounds/595865/
+                ' Royal vibes (harp guitar and tuba)
+                sceneSound& = _SndOpen("castle.mp3")
+            End If
+            If scene$ = "DRAGON'S DEN" Then
+                ' https://freesound.org/people/bevibeldesign/sounds/366095/
+                ' The Roar of a 5-Headed Dragon
+                sceneSound& = _SndOpen("dragon.mp3")
+            End If
+            If scene$ = "GREYSON'S GAME ROOM" Then
+                ' https://freesound.org/people/Cloud-10/sounds/647977/
+                ' 8-Bit Coin Or Power Up FX For Retro Video Games
+                sceneSound& = _SndOpen("grey.mp3")
+            End If
+            If scene$ = "ZARA'S STORE" Then
+                ' https://freesound.org/people/kiddpark/sounds/201159/
+                ' Cash Register
+                sceneSound& = _SndOpen("zara.mp3")
+            End If
+
+            ' Play the new scene's sound in an endless loop if the file opened successfully
+            If sceneSound& <> 0 Then
+                _SndPlay sceneSound&
+                If loopSound% Then
+                    _SndLoop sceneSound&
+                End If
+            End If
+        End If
+
+        ' Add special choices specific to the new scene
+        If (scene$ = "CASTLE") And (Not Contains%(inventory$, "GOLD", ",")) Then
             choices$ = basicChoices$ + ",TAKE GOLD"
         Else
-            If world(playerX%, playerY%) = "MOUNT FLUFF" Then
+            If scene$ = "MOUNT FLUFF" Then
                 choices$ = basicChoices$ + ",PLAY GAME"
                 If Contains%(inventory$, "RING OF TAMING", ",") Then
                     choices$ = choices$ + ",TAME FLUFF"
                 End If
             Else
-                If world(playerX%, playerY%) = "MAGIC RING OF TOADSTOOLS" Then
+                If scene$ = "MAGIC RING OF TOADSTOOLS" Then
                     choices$ = basicChoices$ + ",SPEAK NAME"
                 Else
-                    If world(playerX%, playerY%) = "WILDERNESS" Then
+                    If scene$ = "WILDERNESS" Then
                         choices$ = basicChoices$ + ",CHASE BUNNIES"
                     Else
                         choices$ = basicChoices$
@@ -504,6 +570,8 @@ Else
                 End If
             End If
         End If
+
+        ' Refresh the scene's description
         GoSub LookAction
     End If
 End If
