@@ -188,17 +188,19 @@ Locate curRow%, 54
 Print "Score:" + Str$(score%)
 Print
 If (playerX% > 0) And (playerY% > 0) And (gameOver% = 0) Then
-    mapInfo1$ = "Location:" + Str$(playerX%) + "," + LTrim$(Str$(playerY%))
-    mapInfo2$ = "Facing: " + directions(playerDirection%)
+    mapInfo1$ = "Level: " + LTrim$(Str$(level%))
+    mapInfo2$ = "Location: " + LTrim$(Str$(playerX%)) + "," + LTrim$(Str$(playerY%))
+    mapInfo3$ = "Facing: " + directions(playerDirection%)
 Else
     mapInfo1$ = ""
     mapInfo2$ = ""
+    mapInfo3$ = ""
 End If
 Print " Map"
 Print "--" + "*" + "--"
 Print "|" + GridCell$(1, 1) + GridCell$(2, 1) + GridCell$(3, 1) + "|" + "   " + mapInfo1$
 Print "|" + GridCell$(1, 2) + GridCell$(2, 2) + GridCell$(3, 2) + "|" + "   " + mapInfo2$
-Print "|" + GridCell$(1, 3) + GridCell$(2, 3) + GridCell$(3, 3) + "|"
+Print "|" + GridCell$(1, 3) + GridCell$(2, 3) + GridCell$(3, 3) + "|" + "   " + mapInfo3$
 Print "-----" '
 Color 15
 Return
