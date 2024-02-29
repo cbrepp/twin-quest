@@ -1,13 +1,12 @@
 DECLARE FUNCTION Contains% (myString AS STRING, token AS STRING, delimiter AS STRING)
 DECLARE FUNCTION GetInput$ (prompt AS STRING, enableArrowKeys AS INTEGER)
-DECLARE FUNCTION GridCell$ (x AS INTEGER, y AS INTEGER)
 
 Common Shared playerX As Integer, playerY As Integer, playerDirection As Integer, gameOver As Integer
 
 _Title "Twin Quest"
 
-' https://freesound.org/people/SoundFlakes/sounds/423499/
-' Epic_Heroic_Orchestral_Dramatic.mp3
+' https://freesound.org/people/Migfus20/sounds/560454/
+' Epic Trailer Background Music
 titleMusic& = _SndOpen("title.mp3")
 
 GoSub TitleScreen
@@ -16,6 +15,7 @@ GoSub Init
 _SndStop titleMusic&
 _SndClose titleMusic&
 
+GoSub InitLevel1
 choice$ = "MOVE AHEAD"
 
 Do
@@ -34,19 +34,39 @@ End
 
 Init:
 score% = 0
-playerX% = 2
-playerY% = 0
 Dim directions(4) As String
 directions(1) = "NORTH"
 directions(2) = "EAST"
 directions(3) = "SOUTH"
 directions(4) = "WEST"
-playerDirection% = 3
 gameOver% = 0
 basicChoices$ = "LOOK,CREDITS,EXIT"
 secretChoices$ = "MOVE AHEAD,MOVE BACKWARDS,TURN LEFT,TURN RIGHT,ALL THE THINGS"
 choices$ = basicChoices$
-Dim world(3, 3) As String
+Dim world(5, 5) As String
+Dim mapInfo(5) As String
+Dim playerSymbol(4) As String
+playerSymbol(1) = "^"
+playerSymbol(2) = ">"
+playerSymbol(3) = "v"
+playerSymbol(4) = "<"
+sceneSound& = 0
+inventory$ = "NOTHING"
+dragonDead% = 0
+catTamed% = 0
+GoSub SelectCharacter
+Return
+
+InitLevel1:
+level% = 1
+levelSize% = 3
+doorX% = 2
+doorY% = 0
+playerX% = doorX%
+playerY% = doorY%
+playerDirection% = 3
+' TODO - Refactor to make the world a 3 node array, with the first node being the level
+' Future idea is to add a spell for warping to a cell on an unlocked level
 world(1, 1) = "WILDERNESS"
 world(2, 1) = "WILDERNESS"
 world(3, 1) = "MAGIC RING OF TOADSTOOLS"
@@ -55,15 +75,52 @@ world(2, 2) = "WOODS"
 world(3, 2) = "MOUNT FLUFF"
 world(2, 3) = "CASTLE"
 world(3, 3) = "DRAGON'S DEN"
-sceneSound& = 0
-doorX% = 2
+If character$ = "ZARA" Then
+    world(1, 3) = "ZARA'S STORE"
+Else
+    If (character$ = "GREYSON") Or (character$ = "GREY") Then
+        character$ = "GREYSON"
+        world(1, 3) = "GREYSON'S GAME ROOM"
+    Else
+        End
+    End If
+End If
+
+Return
+
+InitLevel2:
+level% = 2
+levelSize% = 5
+doorX% = 3
 doorY% = 0
-choice$ = "LOOK"
-inventory$ = "NOTHING"
-dragonDead% = 0
-catTamed% = 0
-level% = 1
-GoSub SelectCharacter
+playerX% = doorX%
+playerY% = doorY%
+playerDirection% = 3
+world(1, 1) = "WILDERNESS"
+world(2, 1) = "WILDERNESS"
+world(3, 1) = "WILDERNESS"
+world(4, 1) = "WILDERNESS"
+world(5, 1) = "WILDERNESS"
+world(1, 2) = "WILDERNESS"
+world(2, 2) = "WILDERNESS"
+world(3, 2) = "WILDERNESS"
+world(4, 2) = "WILDERNESS"
+world(5, 2) = "WILDERNESS"
+world(1, 3) = "WILDERNESS"
+world(2, 3) = "WILDERNESS"
+world(3, 3) = "WILDERNESS"
+world(4, 3) = "WILDERNESS"
+world(5, 3) = "WILDERNESS"
+world(1, 4) = "WILDERNESS"
+world(2, 4) = "WILDERNESS"
+world(3, 4) = "WILDERNESS"
+world(4, 4) = "WILDERNESS"
+world(5, 4) = "WILDERNESS"
+world(1, 5) = "WILDERNESS"
+world(2, 5) = "WILDERNESS"
+world(3, 5) = "WILDERNESS"
+world(4, 5) = "WILDERNESS"
+world(5, 5) = "WILDERNESS"
 Return
 
 SelectCharacter:
@@ -77,17 +134,6 @@ Do
     Print
     character$ = GetInput$("Enter Choice", 0)
 Loop While Not Contains%(availableCharacters$ + ",GREY,EXIT", character$, ",")
-If character$ = "ZARA" Then
-    world(1, 3) = "ZARA'S STORE"
-Else
-    If (character$ = "GREYSON") Or (character$ = "GREY") Then
-        character$ = "GREYSON"
-        world(1, 3) = "GREYSON'S GAME ROOM"
-    Else
-        End
-    End If
-End If
-
 Return
 
 TitleScreen:
@@ -125,7 +171,7 @@ PrintHeader:
 Cls
 Locate 1, 1
 Color 3
-Print "Twin Quest version 0.0.1                Wayne Chung Enterprises"
+Print "Twin Quest version 0.1.0               Wayne Chung Enterprises"
 Color 15
 Print
 Color 8
@@ -187,22 +233,32 @@ Print "Inventory: " + inventory$
 Locate curRow%, 54
 Print "Score:" + Str$(score%)
 Print
+' Display the map
+For i = 1 To 5 Step 1
+    mapInfo(i) = ""
+Next
 If (playerX% > 0) And (playerY% > 0) And (gameOver% = 0) Then
-    mapInfo1$ = "Level: " + LTrim$(Str$(level%))
-    mapInfo2$ = "Location: " + LTrim$(Str$(playerX%)) + "," + LTrim$(Str$(playerY%))
-    mapInfo3$ = "Facing: " + directions(playerDirection%)
-Else
-    mapInfo1$ = ""
-    mapInfo2$ = ""
-    mapInfo3$ = ""
+    mapInfo(1) = "Level: " + LTrim$(Str$(level%))
+    mapInfo(2) = "Location: " + LTrim$(Str$(playerX%)) + "," + LTrim$(Str$(playerY%))
+    mapInfo(3) = "Facing: " + directions(playerDirection%)
 End If
-Print " Map"
-Print "--" + "*" + "--"
-Print "|" + GridCell$(1, 1) + GridCell$(2, 1) + GridCell$(3, 1) + "|" + "   " + mapInfo1$
-Print "|" + GridCell$(1, 2) + GridCell$(2, 2) + GridCell$(3, 2) + "|" + "   " + mapInfo2$
-Print "|" + GridCell$(1, 3) + GridCell$(2, 3) + GridCell$(3, 3) + "|" + "   " + mapInfo3$
-Print "-----" '
+Print String$((levelSize% - 1) / 2, " ") + "Map"
+curRow% = CsrLin
+Print String$(levelSize% + 2, "-") ' Top border
+For y = 1 To levelSize% Step 1
+    Print "|" + String$(levelSize%, " ") + "|" + "   " + mapInfo(y)
+Next
+Print String$(levelSize% + 2, "-") ' Bottom border
+nextRow% = CsrLin
+Locate curRow% + doorY%, 1 + doorX%
+Print "*"
+If gameOver% = 0 Then
+    symbol$ = playerSymbol(playerDirection%)
+    Locate curRow% + playerY%, 1 + playerX%
+    Print symbol$
+End If
 Color 15
+Locate nextRow%, 1
 Return
 
 ExitAction:
@@ -422,7 +478,7 @@ If (aheadX% = doorX%) And (aheadY% = doorY%) Then
     Print "Ahead you see a magic door.  Perhaps an exit to this world?"
 Else
     If gameOver% = 0 Then
-        If (aheadX% = 0) Or (aheadX% = 4) Or (aheadY% = 0) Or (aheadY% = 4) Then
+        If (aheadX% = 0) Or (aheadX% = (levelSize% + 1)) Or (aheadY% = 0) Or (aheadY% = (levelSize% + 1)) Then
             Color 15
             Print "There is nothing ahead.  You are facing the edge of the world."
         Else
@@ -472,7 +528,7 @@ If (aheadX% = doorX%) And (aheadY% = doorY%) Then
         Print "YOU HAVE LOST THE GAME."
     End If
 Else
-    If (aheadX% = 0) Or (aheadX% = 4) Or (aheadY% = 0) Or (aheadY% = 4) Then
+    If (aheadX% = 0) Or (aheadX% = (levelSize% + 1)) Or (aheadY% = 0) Or (aheadY% = (levelSize% + 1)) Then
         Print
         Print "There is nothing ahead.  You are facing the edge of the world."
         Print
@@ -927,22 +983,3 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer)
     GetInput$ = RTrim$(LTrim$(inp$))
     Color 15
 End Function
-
-Function GridCell$ (x As Integer, y As Integer)
-    GridCell$ = " "
-    If (playerX% = x) And (playerY% = y) And (gameOver% = 0) Then
-        If playerDirection% = 1 Then
-            GridCell$ = "^"
-        End If
-        If playerDirection% = 2 Then
-            GridCell$ = ">"
-        End If
-        If playerDirection% = 3 Then
-            GridCell$ = "v"
-        End If
-        If playerDirection% = 4 Then
-            GridCell$ = "<"
-        End If
-    End If
-End Function
-
