@@ -1,5 +1,4 @@
 Clean up code and gameplay:
-- Fix need for pressing a key twice before title screen clears
 - Comment each code block and subroutine and function
 - Death sound when dying
 - Victory sound when game is won

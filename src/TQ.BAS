@@ -157,6 +157,7 @@ _SndStop wayneChungMusic&
 _SndClose wayneChungMusic&
 Screen 12
 _FreeImage wayneChungImage& ' Free up memory used by the image
+Return
 
 TitleScreen:
 Screen 12
