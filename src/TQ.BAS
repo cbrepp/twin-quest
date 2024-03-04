@@ -152,8 +152,7 @@ Print "Press any key to continue"
 ' Wang Chung "Everybody Have Fun Tonight" snippet
 wayneChungMusic& = _SndOpen("wayne-chung.mp3")
 _SndPlay wayneChungMusic&
-Do
-Loop Until InKey$ <> ""
+Sleep
 _SndStop wayneChungMusic&
 _SndClose wayneChungMusic&
 Screen 12
@@ -186,8 +185,7 @@ Color 15
 Print "Press any key to continue"
 _SndPlay titleMusic&
 _SndLoop titleMusic&
-Do
-Loop Until InKey$ <> ""
+Sleep
 Return
 
 PrintHeader:
@@ -757,8 +755,7 @@ If (nameGuess$ = "SHMEBULOCK") Then
     Print
     Color 15
     Print "Press any key to continue"
-    Do
-    Loop Until InKey$ <> ""
+    Sleep
     If Contains%(inventory$, "RING OF TAMING", ",") Then
         Print
         Print "Inventory +RING OF TAMING"
@@ -825,8 +822,7 @@ Print "|  magnifico               \/   \         |"
 Print
 Print
 Print "Press any key to continue"
-Do
-Loop Until InKey$ <> ""
+Sleep
 Return
 
 ChaseBunniesAction:
