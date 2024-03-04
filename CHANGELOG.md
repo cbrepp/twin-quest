@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Added Wayne Chung splash screen
 - Renamed EXIT action to EXIT GAME
 - Added current level to map display
 - Changed input cursor from white to cyan

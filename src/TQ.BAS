@@ -5,10 +5,11 @@ Common Shared playerX As Integer, playerY As Integer, playerDirection As Integer
 
 _Title "Twin Quest"
 
+GoSub WayneChungScreen
+
 ' https://freesound.org/people/Migfus20/sounds/560454/
 ' Epic Trailer Background Music
 titleMusic& = _SndOpen("title.mp3")
-
 GoSub TitleScreen
 GoSub Init
 
@@ -136,6 +137,27 @@ Do
     character$ = GetInput$("Enter Choice", 0)
 Loop While Not Contains%(availableCharacters$ + ",GREY," + exitGameAction$, character$, ",")
 Return
+
+WayneChungScreen:
+Cls
+wayneChungImage& = _LoadImage("wayne-chung.jpg", 32) 'load the image file to be drawn
+Screen wayneChungImage&
+Color 3
+Locate 7, 2
+Print "Wayne Chung Enterprises"
+Locate 9, 9
+Print "presents"
+Locate 46, 2
+Print "Press any key to continue"
+' Wang Chung "Everybody Have Fun Tonight" snippet
+wayneChungMusic& = _SndOpen("wayne-chung.mp3")
+_SndPlay wayneChungMusic&
+Do
+Loop Until InKey$ <> ""
+_SndStop wayneChungMusic&
+_SndClose wayneChungMusic&
+Screen 12
+_FreeImage wayneChungImage& ' Free up memory used by the image
 
 TitleScreen:
 Screen 12

@@ -1,0 +1,52 @@
+Clean up code and gameplay:
+- Fix need for pressing a key twice before title screen clears
+- Comment each code block and subroutine and function
+- Death sound when dying
+- Victory sound when game is won
+- Game over sound when game is lost or user exits
+- Use cash register sound when aquiring items in inventory... probably use subroutine for this
+- Level up sound when points are earned... probably use subroutine for this
+- Zara's store should use ambiant store sound
+- Any text that might go off-screen should be cleaned up
+- Create "Press any key to continue" function that resets the current cursor position to where it displayed the text
+- Change "EXIT" action to "END GAME"
+- Clean up the "world" data structure to include the level as the first node so that all levels can be loaded into memory at once
+- Review arrays and other data structures to see if strings can be used as subscripts
+- Add more ASCII art... getting the gold, fighting the dragon, taming Gianni, and winning or losing the game
+- Add intro screen... Wayne Chung Enterprises presents... with Wayne Chung's photo
+- Add HIGH SCORES screen that displays when player wins the game.  It uses a simple text file (will need to be ignored by gitignore) with 10 lines, FIFO (if they are all filled up, no more free spots) and ranked by the score... player can add 10-character name and date is automatically added.  Viewing HIGH SCORES will be a secret command.  (Maybe later exposed if a menu is added to UI.)
+- Taming Gianni drops a long-range weapon that differs based on the player... for GREYSON, bow and arrows.  For Zara, the ability to summon cats and launch them.
+- Attempting to fight the dragon with the long-range weapon results in DEATH because the dragon is in a cave.  Mention with UNO REVERSE about how effective it is at short-range deflection.
+- Map colors the cell for a scene with the scene's color... ie, WILDERNESS is green
+- When player is in elevator, their symbol is a diamond colored with their color
+
+New Intro... The Elevator:
+- New function/subroutine for STORY MODE.  Pass an array of strings (if possible) and a special indicator for when "Press any key to continue" breaks should occur.  Function will automatically determine when the final row is used (or will be used) and does a clear screen (and redisplay of title) before displaying a block of text that will overrun the screen.
+- Mylee introduces the player to the game mechanics by presenting the initial list of ACTIONS... LOOK, ASK, LEAVE, END GAME.  ASK adds a prompt with a list of questions the player can ask Mylee for things she mentioned in her introduction... NIGHT OWL, BIG CHUNG, SPELLS, GOLD, ELEVATOR, MYLEE
+- Intro story... Player finds themself in an elevator operated by a black cat who identifies herself as Mylee Marie.  Back and forth dialog between Myles and the player.  She introduces that she operates the elevator used to move from level to level.  Her brother, "Big Chung", captured the player's twin and BIG CHUNG can be found on the top level.  Mylee is afraid that BIG CHUNG will get so hungry that he'll eat the whole universe.
+- Mylee warns the player about NIGHT OWL and to avoid the woods.  NIGHT OWL cannot be defeated while in the dark so don't even try.  (Alluding to bringing Night Owl out of the woods.)  Player is notified before exiting the elevator that the sun is bright through the doors.
+- Mylee hints that NIGHT OWL has a spell book and that the player might need it to continue their quest on the remaining levels
+- Mylee hints that NIGHT OWL works for BIG CHUNG and won't be happy about you continuing on.
+- Mylee introduces the objectives/quests for each level before you exit the elevator.  You can return to the elevator at any time and she'll remind you and dynamically give you a hint if you're unsure of what to do next.  She won't let you advance to the next level until you have sufficient points to prove that you are ready.
+- When re-entering the eleveator, with full points (which means long-range weapon) activates story mode... NIGHT OWL comes racing out of the dark WOODS and into the WILDERNESS and its bright sun. If GREYSON, explanation about UNO REVERSE not being enough because it is a long-range battle.  MINIGAME activates with character-based display of Night Owl on top rows moving back and forth dropping eggs and player on bottom rows shooting weapon up at night owl... 3 hits kill either
+
+Spells:
+- Spells have to be learned, one by one
+- SCRY - Spell that given a level and coordinates will perform the LOOK action remotely.  Level 1 is limited to current level.  Level 2 for any level.  (But only unlocked levels.)
+- TELEPORT - Level 1 of spell lets you move anywhere on a map for the current level.  Level 2 of spell lets you move to any square of any level.  (But only unlocked levels.)
+- SUMMON - Level 1 only works on small creatures (cats/bunnies).  Level 2 can be used on large creatures (BIG CHUNG himself.)
+- TAKE/DROP - Level 1 is for small objects.  Level 2 can be used for an entire scene.
+
+Level 2:
+- Player's twin is in a corner of the map closed off by empty squares that BIG CHUNG ate to imprison the twin... symbol of cell on map is a diamond using the twin's color
+- SUMMON spell can be used to summon your twin once they are free'ed... will be necessary to complete a quest.  Scene viewer changes to the twin's name.
+- Zara wants to see bunnies that ate toxic waste and drop bazookas.  Add a toxic scene with bunnies.
+
+Level 3:
+- Empty map.  Goal is for player to use TAKE/DROP spell to drop individual scenes to try to SUMMON BIG CHUNG who will eat them and die because maybe after a lot of scenes with bunnies he gets tired and will eat a scene with TOXIC BUNNIES?
+
+Level 4:
+- With BIG CHUNG tired and in a weakened state, the final boss battle begins.
+
+Easter Eggs:
+- additional WILDERNESS square on level 1 can be configured dynamically... kind of like a mini game
