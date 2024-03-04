@@ -4,7 +4,7 @@ Copyright (C) 2024 Wayne Chung Enterprises
 This program requires [QB64](https://qb64.com/).  
   
 To Run: Open the .BAS file in QB64 and press F5  
-To Exit: Enter "EXIT" at any prompt  
+To Exit: Enter "EXIT GAME" at any prompt  
 
 ## Story
 

@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Renamed EXIT action to EXIT GAME
 - Added current level to map display
 - Changed input cursor from white to cyan
 - Removed gag entries from credits screen
