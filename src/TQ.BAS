@@ -34,13 +34,14 @@ End
 
 Init:
 score% = 0
+exitGameAction$ = "EXIT GAME"
 Dim directions(4) As String
 directions(1) = "NORTH"
 directions(2) = "EAST"
 directions(3) = "SOUTH"
 directions(4) = "WEST"
 gameOver% = 0
-basicChoices$ = "LOOK,CREDITS,EXIT"
+basicChoices$ = "LOOK,CREDITS," + exitGameAction$
 secretChoices$ = "MOVE AHEAD,MOVE BACKWARDS,TURN LEFT,TURN RIGHT,ALL THE THINGS"
 choices$ = basicChoices$
 Dim world(5, 5) As String
@@ -133,7 +134,7 @@ Do
     Print " " + availableCharacters$
     Print
     character$ = GetInput$("Enter Choice", 0)
-Loop While Not Contains%(availableCharacters$ + ",GREY,EXIT", character$, ",")
+Loop While Not Contains%(availableCharacters$ + ",GREY," + exitGameAction$, character$, ",")
 Return
 
 TitleScreen:
@@ -181,7 +182,7 @@ Return
 
 RefreshScreen:
 GoSub PrintHeader
-If choice$ = "EXIT" Then
+If choice$ = exitGameAction$ Then
     GoSub ExitAction
 End If
 If choice$ = "CREDITS" Then
@@ -692,7 +693,7 @@ If riddle$ = "SKY" Then
     Print "finest riddle!  Very well then.  A deal is a deal. The"
     Print "magical name you seek is... SHMEBULOCK."
 Else
-    If riddle$ = "EXIT" Then
+    If riddle$ = exitGameAction$ Then
         GoSub ExitAction
     Else
         Print "Fluffy Cat: Aha!  It appears that I have bested you!  That"
@@ -752,7 +753,7 @@ If (nameGuess$ = "SHMEBULOCK") Then
         End If
     End If
 Else
-    If nameGuess$ = "EXIT" Then
+    If nameGuess$ = exitGameAction$ Then
         GoSub ExitAction
     Else
         If (nameGuess$ = "MAGNIFICO") Or (nameGuess$ = "DRACO") Then
