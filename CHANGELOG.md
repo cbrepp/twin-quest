@@ -7,15 +7,15 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Added new scene choice-- "LISTEN"
-- Added opening music and sounds for each scene
 - Added new scene choice-- "MOVE BACKWARDS"
-- Added support for arrow keys for turning and moving ahead when nothing else has been entered
 - Added secret choice for completing all the quests for the current level
 
 ### Changed
 
 - Added Wayne Chung splash screen
 - Renamed EXIT action to EXIT GAME
+- Added opening music and sounds for each scene
+- Added support for arrow keys for turning and moving ahead when nothing else has been entered
 - Added current level to map display
 - Changed color of input cursor and available actions from white to cyan
 - Removed gag entries from credits screen
