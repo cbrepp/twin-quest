@@ -910,17 +910,21 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer)
         Wend
         If (Asc(c$) >= 32) And (Asc(c$) <= 126) Then
             ' Alphanumeric characters
-            If Len(inp$) < 40 Then
-                inp$ = (inp$ + UCase$(c$))
-                Locate currentRow%, currentCol%
-                Color 15
-                Print UCase$(c$)
-                Locate currentRow%, currentCol% + 1
-                Color 3
-                Print cursor$
-                currentCol% = currentCol% + 1
+            If (inp$ = "") And ((c$ = " ") Or (c$ = Chr$(13))) Then
+                ' Ignore the space key or enter key if nothing else has been entered
             Else
-                ' Ignore any input when the string gets too long
+                If Len(inp$) < 40 Then
+                    inp$ = (inp$ + UCase$(c$))
+                    Locate currentRow%, currentCol%
+                    Color 15
+                    Print UCase$(c$)
+                    Locate currentRow%, currentCol% + 1
+                    Color 3
+                    Print cursor$
+                    currentCol% = currentCol% + 1
+                Else
+                    ' Ignore any input when the string gets too long
+                End If
             End If
         Else
             ' Backspace character
