@@ -1,20 +1,35 @@
+' Resources:
+' castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
+' dragon.mp3 - The Roar of a 5-Headed Dragon (https://freesound.org/people/bevibeldesign/sounds/366095/)
+' fluff.wav - Spanish Lick I, Acoustic- AB split stereo pair (Oktava).wav (https://freesound.org/people/debudding/sounds/44366/)
+' gianni.mp3 - bonfire flames sizzling (https://freesound.org/people/florianreichelt/sounds/563764/)
+' grey.mp3 - 8-Bit Coin Or Power Up FX For Retro Video Games (https://freesound.org/people/Cloud-10/sounds/647977/)
+' magic.mp3 - Magic.mp3 (https://freesound.org/people/Bastianhallo/sounds/434050/)
+' title.mp3 - Epic Trailer Background Music (https://freesound.org/people/Migfus20/sounds/560454/)
+' wayne-chung.jpg - Image of Wayne Chung wondering what's going on
+' wayne-chung.mp3 - Wang Chung "Everybody Have Fun Tonight" snippet
+' wilderness.mp3 - birds_210513_0088.mp3 (https://freesound.org/people/titi2/sounds/571247/)
+' woods.mp3 - forestsurroundings.mp3 (https://freesound.org/people/Luftrum/sounds/48411/)
+' zara.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
+
+' Declare game functions and subroutines
 DECLARE FUNCTION Contains% (myString AS STRING, token AS STRING, delimiter AS STRING)
 DECLARE FUNCTION GetInput$ (prompt AS STRING, enableArrowKeys AS INTEGER)
+DECLARE FUNCTION PlaySound& (file AS STRING, volume AS SINGLE, loopSound As INTEGER)
+DECLARE SUB ReplaySound (soundHandle AS LONG, volume AS SINGLE, loopSound As INTEGER)
+DECLARE SUB StopSound (soundHandle AS LONG)
 
-Common Shared playerX As Integer, playerY As Integer, playerDirection As Integer, gameOver As Integer
-
+' Configure application window
 _Title "Twin Quest"
 
+' Display splash screen
 GoSub WayneChungScreen
 
-' https://freesound.org/people/Migfus20/sounds/560454/
-' Epic Trailer Background Music
-titleMusic& = _SndOpen("title.mp3")
+' Display epic opening screens
+titleMusic& = PlaySound&("title.mp3", 1, 1)
 GoSub TitleScreen
 GoSub Init
-
-_SndStop titleMusic&
-_SndClose titleMusic&
+StopSound titleMusic&
 
 GoSub InitLevel1
 choice$ = "MOVE AHEAD"
@@ -24,9 +39,23 @@ Do
     If gameOver% Then
         End
     End If
+    Color 15
     Print
-    Print "Choices: " + choices$
-    Print " [Use arrow keys to turn and move]"
+    sceneChoicesRow% = CsrLin
+    scenePrompt$ = "Scene Choices: "
+    Print scenePrompt$
+    Locate sceneChoicesRow%, Len(scenePrompt$) + 1
+    Color 3
+    Print sceneChoices$
+    Color 15
+    gameChoicesRow% = CsrLin
+    gamePrompt$ = "Game Choices: "
+    Print gamePrompt$
+    Locate gameChoicesRow%, Len(gamePrompt$) + 1
+    Color 3
+    Print gameChoices$
+    Color 15
+    Print "[Use arrow keys to turn and move]"
     Print
     choice$ = GetInput$("Enter Choice", 1)
 Loop While gameOver% = 0
@@ -42,9 +71,11 @@ directions(2) = "EAST"
 directions(3) = "SOUTH"
 directions(4) = "WEST"
 gameOver% = 0
-basicChoices$ = "LOOK,CREDITS," + exitGameAction$
+gameChoices$ = "CREDITS," + exitGameAction$
+basicChoices$ = "LOOK,LISTEN"
+sceneChoices$ = basicChoices$
 secretChoices$ = "MOVE AHEAD,MOVE BACKWARDS,TURN LEFT,TURN RIGHT,ALL THE THINGS"
-choices$ = basicChoices$
+sceneSound& = 0
 Dim world(5, 5) As String
 Dim mapInfo(5) As String
 Dim playerSymbol(4) As String
@@ -138,27 +169,29 @@ Do
 Loop While Not Contains%(availableCharacters$ + ",GREY," + exitGameAction$, character$, ",")
 Return
 
+' Display the splash screen
 WayneChungScreen:
+' Play Wayne Chung's theme song
+wayneChungMusic& = PlaySound&("wayne-chung.mp3", 1, 0)
+' Display Wayne Chung's picture
 Cls
 wayneChungImage& = _LoadImage("wayne-chung.jpg", 32) 'load the image file to be drawn
 Screen wayneChungImage&
-Color 3
+' Display overlay text
 Locate 7, 2
 Print "Wayne Chung Enterprises"
 Locate 9, 9
 Print "presents"
 Locate 46, 2
-Print "Press any key to continue"
-' Wang Chung "Everybody Have Fun Tonight" snippet
-wayneChungMusic& = _SndOpen("wayne-chung.mp3")
-_SndPlay wayneChungMusic&
-Sleep
-_SndStop wayneChungMusic&
-_SndClose wayneChungMusic&
+' Suspend program execution
+GoSub PressAnyKey
+' Stop playing Wayne Chung's theme music and remove his picture
+StopSound wayneChungMusic&
 Screen 12
 _FreeImage wayneChungImage& ' Free up memory used by the image
 Return
 
+' Display the title screen
 TitleScreen:
 Screen 12
 GoSub PrintHeader
@@ -182,19 +215,14 @@ Print "     ,-=='-`=-.               ,-=='-`=-."
 Print "   *******************************************"
 Print
 Print
-Color 15
-Print "Press any key to continue"
-_SndPlay titleMusic&
-_SndLoop titleMusic&
-Sleep
+GoSub PressAnyKey
 Return
 
 PrintHeader:
 Cls
 Locate 1, 1
-Color 3
-Print "Twin Quest version 0.1.0               Wayne Chung Enterprises"
 Color 15
+Print "Twin Quest version 0.1.0               Wayne Chung Enterprises"
 Print
 Color 8
 Print "_" + character$ + String$(62 - Len(character$), "_")
@@ -203,50 +231,55 @@ Return
 
 RefreshScreen:
 GoSub PrintHeader
-If choice$ = exitGameAction$ Then
-    GoSub ExitAction
-End If
-If choice$ = "CREDITS" Then
-    GoSub CreditsAction
-End If
-If choice$ = "LOOK" Then
-    GoSub LookAction
-End If
-If choice$ = "MOVE AHEAD" Then
-    GoSub MoveAheadAction
-End If
-If choice$ = "MOVE BACKWARDS" Then
-    GoSub MoveBackwardsAction
-End If
-If choice$ = "TURN LEFT" Then
-    GoSub TurnLeftAction
-End If
-If choice$ = "TURN RIGHT" Then
-    GoSub TurnRightAction
-End If
-If (choice$ = "PLAY GAME") And (Contains%(choices$, "PLAY GAME", ",")) Then
-    GoSub PlayGameAction
-End If
-If (choice$ = "SPEAK NAME") And (Contains%(choices$, "SPEAK NAME", ",")) Then
-    GoSub SpeakNameAction
-End If
-If (choice$ = "CHASE BUNNIES") And (Contains%(choices$, "CHASE BUNNIES", ",")) Then
-    GoSub ChaseBunniesAction
-End If
-If (choice$ = "TAME FLUFF") And (Contains%(choices$, "TAME FLUFF", ",")) Then
-    GoSub TameFluffAction
-End If
-If (choice$ = "ALL THE THINGS") Then
-    GoSub AllTheThingsAction
-End If
-If (choice$ = "TAKE GOLD") And (Contains%(choices$, "TAKE GOLD", ",")) Then
-    GoSub TakeGoldAction
+If (Not Contains%(sceneChoices$, choice$, ",")) And (Not Contains%(gameChoices$, choice$, ",")) And (Not Contains%(secretChoices$, choice$, ",")) Then
+    ' Handle invalid choice
+    GoSub DumbAction
 Else
-    ' TODO - Dumb place to put this but TAKE GOLD removes a choice
-    If (Not Contains%(choices$, choice$, ",")) And (Not Contains%(secretChoices$, choice$, ",")) Then
-        GoSub DumbAction
+    ' Handle valid choices
+    If choice$ = exitGameAction$ Then
+        GoSub ExitAction
+    End If
+    If choice$ = "CREDITS" Then
+        GoSub CreditsAction
+    End If
+    If choice$ = "LOOK" Then
+        GoSub LookAction
+    End If
+    If choice$ = "LISTEN" Then
+        GoSub ListenAction
+    End If
+    If choice$ = "MOVE AHEAD" Then
+        GoSub MoveAheadAction
+    End If
+    If choice$ = "MOVE BACKWARDS" Then
+        GoSub MoveBackwardsAction
+    End If
+    If choice$ = "TURN LEFT" Then
+        GoSub TurnLeftAction
+    End If
+    If choice$ = "TURN RIGHT" Then
+        GoSub TurnRightAction
+    End If
+    If (choice$ = "PLAY GAME") Then
+        GoSub PlayGameAction
+    End If
+    If (choice$ = "SPEAK NAME") Then
+        GoSub SpeakNameAction
+    End If
+    If (choice$ = "CHASE BUNNIES") Then
+        GoSub ChaseBunniesAction
+    End If
+    If (choice$ = "TAME FLUFF") Then
+        GoSub TameFluffAction
+    End If
+    If (choice$ = "TAKE GOLD") Then
+        GoSub TakeGoldAction
+    End If
+    If (choice$ = "ALL THE THINGS") Then
+        GoSub AllTheThingsAction
     End If
 End If
+
 Color 8
 Print "_______________________________________________________________"
 Color 7
@@ -256,8 +289,8 @@ Locate curRow%, 54
 Print "Score:" + Str$(score%)
 Print
 ' Display the map
-For i = 1 To 5 Step 1
-    mapInfo(i) = ""
+For I = 1 To 5 Step 1
+    mapInfo(I) = ""
 Next
 If (playerX% > 0) And (playerY% > 0) And (gameOver% = 0) Then
     mapInfo(1) = "Level: " + LTrim$(Str$(level%))
@@ -296,7 +329,7 @@ Print
 Return
 
 CreditsAction:
-Color 3
+Color 15
 Print
 Print "CREDITS"
 Print
@@ -305,6 +338,79 @@ Print "Executive Producer: Wayne Chung"
 Print "Power of Attorney: Wayne Chung"
 Print "Development: Mylee and Mr. Chris"
 Print "Creative Design: Zara and Greyson"
+Return
+
+ListenAction:
+Color 15
+scene$ = world(playerX%, playerY%)
+Print
+Print "You are in " + playerView$ + "."
+' Decribe what the player is hearing, and restart audio if not currently playing
+If sceneSound& = 0 Then
+    Color 15
+    Print "You hear nothing."
+Else
+    If _SndPlaying(sceneSound&) = 0 Then
+        ReplaySound sceneSound&, 1, 0
+    End If
+    If scene$ = "WILDERNESS" Then
+        Color 2
+        Print "You hear birds singing and perhaps some insects."
+        Print "There is also a slight breeze.  These are the typical"
+        Print "sounds of nature."
+    End If
+    If scene$ = "MAGIC RING OF TOADSTOOLS" Then
+        Color 6
+        Print "You hear... magic, perhaps?  You attempt to focus"
+        Print "on the sound but it disappears from your mind."
+    End If
+    If scene$ = "GIANNI'S DEN" Then
+        Color 8
+        Print "You hear the crackle of a campfire in a vacuous"
+        Print "space.  The sounds of the outside world are muted."
+        Print "This is a peaceful place."
+    End If
+    If scene$ = "WOODS" Then
+        Color 7
+        Print "You hear the typical sounds of the woods at night."
+        Print "There are birds.  Definitely crows.  Maybe a"
+        Print "woodpecker.  And... the hooting of an owl?"
+    End If
+    If scene$ = "MOUNT FLUFF" Then
+        Color 15
+        Print "Oh my!  What magnificent guitar strumming!  The"
+        Print "styling is firm and decisive and yet also..."
+        Print "romantic."
+    End If
+    If scene$ = "CASTLE" Then
+        Color 14
+        Print "You hear royal music... A harp!  A guitar!  And also"
+        Print "the deep sound of a tuba.  How splendid!  The music"
+        Print "carries loudly from the castle courtyard.  However,"
+        Print "you hear nothing from within the castle."
+    End If
+    If scene$ = "DRAGON'S DEN" Then
+        Color 4
+        If dragonDead% = 0 Then
+            Print "You hear the fearsome roar of a dragon!"
+            Print "There is no time to stop and listen to it!"
+        Else
+            Print "You hear... nothing.  The cave is empty"
+            Print "except for the sound of silence."
+        End If
+    End If
+    If scene$ = "GREYSON'S GAME ROOM" Then
+        Color 1
+        Print "You hear the typical sounds of an arcade."
+        Print "Sounds like someone just got a power up?"
+    End If
+    If scene$ = "ZARA'S STORE" Then
+        Color 5
+        Print "You hear the hustling and bustling sounds of"
+        Print "a successful store.  Sounds like someone just"
+        Print "made a sale?"
+    End If
+End If
 Color 15
 Return
 
@@ -315,6 +421,7 @@ Print "You are in " + playerView$ + "."
 If playerView$ = "WILDERNESS" Then
     Color 2
     Print "You see nothing but tall grass and cute bunnies."
+    Print "The sun is shining brightly."
 End If
 If playerView$ = "WOODS" Then
     Color 7
@@ -437,6 +544,7 @@ End If
 If playerView$ = "CASTLE" Then
     Color 14
     Print "What a magnificent castle!  But no one is home."
+    Print "Perhaps the royal court fled because of BIG CHUNG?"
 End If
 If playerView$ = "ZARA'S STORE" Then
     Color 5
@@ -540,7 +648,7 @@ If (aheadX% = doorX%) And (aheadY% = doorY%) Then
         Print "Fame and fortune are yours."
         Print "YOU HAVE WON THE GAME!!!"
         If score% = 300 Then
-            Color 3
+            Color 15
             Print "MAXIMUM SCORE!!!"
         End If
     Else
@@ -566,86 +674,59 @@ Else
         If lastScene$ <> scene$ Then
             ' Stop playing the current scene's sound, if any
             If sceneSound& <> 0 Then
-                _SndStop sceneSound&
-                _SndClose sceneSound&
+                StopSound sceneSound&
             End If
 
-            loopSound% = 0
+            ' Start playing the new scene's sound, if any
             If scene$ = "WILDERNESS" Then
-                ' https://freesound.org/people/titi2/sounds/571247/
-                ' birds_210513_0088.mp3
-                sceneSound& = _SndOpen("wilderness.mp3")
-                loopSound% = 1
+                sceneSound& = PlaySound&("wilderness.mp3", 1, 1)
             End If
             If scene$ = "MAGIC RING OF TOADSTOOLS" Then
-                ' https://freesound.org/people/Bastianhallo/sounds/434050/
-                ' Magic.mp3
-                sceneSound& = _SndOpen("magic.mp3")
+                sceneSound& = PlaySound&("magic.mp3", 1, 0)
             End If
             If scene$ = "GIANNI'S DEN" Then
-                ' https://freesound.org/people/florianreichelt/sounds/563764/
-                ' bonfire flames sizzling
-                sceneSound& = _SndOpen("gianni.mp3")
-                loopSound% = 1
+                sceneSound& = PlaySound&("gianni.mp3", 1, 1)
             End If
             If scene$ = "WOODS" Then
-                ' https://freesound.org/people/Luftrum/sounds/48411/
-                ' forestsurroundings.mp3
-                sceneSound& = _SndOpen("woods.mp3")
-                loopSound% = 1
+                sceneSound& = PlaySound&("woods.mp3", 1, 1)
             End If
             If scene$ = "MOUNT FLUFF" Then
-                ' https://freesound.org/people/debudding/sounds/44366/
-                ' Spanish Lick I, Acoustic- AB split stereo pair (Oktava).wav
-                sceneSound& = _SndOpen("fluff.wav")
+                sceneSound& = PlaySound&("fluff.wav", 1, 0)
             End If
             If scene$ = "CASTLE" Then
-                ' https://freesound.org/people/kbrecordzz/sounds/595865/
-                ' Royal vibes (harp guitar and tuba)
-                sceneSound& = _SndOpen("castle.mp3")
+                sceneSound& = PlaySound&("castle.mp3", 1, 0)
             End If
             If scene$ = "DRAGON'S DEN" Then
-                ' https://freesound.org/people/bevibeldesign/sounds/366095/
-                ' The Roar of a 5-Headed Dragon
-                sceneSound& = _SndOpen("dragon.mp3")
+                If dragonDead% = 0 Then
+                    sceneSound& = PlaySound&("dragon.mp3", 1, 0)
+                Else
+                    sceneSound& = 0
+                End If
             End If
             If scene$ = "GREYSON'S GAME ROOM" Then
-                ' https://freesound.org/people/Cloud-10/sounds/647977/
-                ' 8-Bit Coin Or Power Up FX For Retro Video Games
-                sceneSound& = _SndOpen("grey.mp3")
+                sceneSound& = PlaySound&("grey.mp3", 1, 0)
             End If
             If scene$ = "ZARA'S STORE" Then
-                ' https://freesound.org/people/kiddpark/sounds/201159/
-                ' Cash Register
-                sceneSound& = _SndOpen("zara.mp3")
-            End If
-
-            ' Play the new scene's sound in an endless loop if the file opened successfully
-            If sceneSound& <> 0 Then
-                _SndPlay sceneSound&
-                If loopSound% Then
-                    _SndLoop sceneSound&
-                End If
+                sceneSound& = PlaySound&("zara.mp3", 1, 0)
             End If
         End If
 
         ' Add special choices specific to the new scene
+        sceneChoices$ = basicChoices$
         If (scene$ = "CASTLE") And (Not Contains%(inventory$, "GOLD", ",")) Then
-            choices$ = basicChoices$ + ",TAKE GOLD"
+            sceneChoices$ = sceneChoices$ + ",TAKE GOLD"
         Else
             If scene$ = "MOUNT FLUFF" Then
-                choices$ = basicChoices$ + ",PLAY GAME"
+                sceneChoices$ = sceneChoices$ + ",PLAY GAME"
                 If Contains%(inventory$, "RING OF TAMING", ",") Then
-                    choices$ = choices$ + ",TAME FLUFF"
+                    sceneChoices$ = sceneChoices$ + ",TAME FLUFF"
                 End If
             Else
                 If scene$ = "MAGIC RING OF TOADSTOOLS" Then
-                    choices$ = basicChoices$ + ",SPEAK NAME"
+                    sceneChoices$ = sceneChoices$ + ",SPEAK NAME"
                 Else
                     If scene$ = "WILDERNESS" Then
-                        choices$ = basicChoices$ + ",CHASE BUNNIES"
-                    Else
-                        choices$ = basicChoices$
+                        sceneChoices$ = sceneChoices$ + ",CHASE BUNNIES"
                     End If
                 End If
             End If
@@ -679,7 +760,7 @@ GoSub LookAction
 Return
 
 TakeGoldAction:
-choices$ = basicChoices$
+sceneChoices$ = basicChoices$
 If Not Contains%(inventory$, "GOLD", ",") Then
     score% = score% + 100
     Print
@@ -754,9 +835,7 @@ If (nameGuess$ = "SHMEBULOCK") Then
     Print "Shmebulock?  Shmebulock, Shmebulock.  Shme... bulock!"
     Print
     Print
-    Color 15
-    Print "Press any key to continue"
-    Sleep
+    GoSub PressAnyKey
     If Contains%(inventory$, "RING OF TAMING", ",") Then
         Print
         Print "Inventory +RING OF TAMING"
@@ -822,8 +901,7 @@ Print "/                      \_/_/ / \          |"
 Print "|  magnifico               \/   \         |"
 Print
 Print
-Print "Press any key to continue"
-Sleep
+GoSub PressAnyKey
 Return
 
 ChaseBunniesAction:
@@ -908,10 +986,48 @@ If level% = 1 Then
 End If
 Return
 
+' Prompt the user to press any key in order to continue
+PressAnyKey:
+' Display the prompt text
+Color 15
+curRow% = CsrLin
+prompt$ = "Press any key to continue"
+Print prompt$
+' Suspend program execution until a key is pressed
+Sleep
+_KeyClear
+' Clear the prompt text with spaces
+Locate curRow%, 1
+Print String$(Len(prompt$), " ")
+' Reposition the cursor
+Locate curRow%, 1
+Return
+
+' Does a string contain a given token? (1/0)
+'
+' Parameters:
+' myString - String to search
+' token - Token to find
+' delimiter - String delimiting the tokens, if any
+'
+' Returns:
+' Token was found? (1/0)
 Function Contains% (myString As String, token As String, delimiter As String)
     Contains% = InStr(1, (delimiter + myString + delimiter), (delimiter + token + delimiter)) > 0
 End Function
 
+' Get input from the user
+'
+' Parameters:
+' prompt - Text to display
+' enableArrowKeys - Enable use of the keyboard arrow keys? (1/0)
+'                   Up - "MOVE AHEAD"
+'                   Down - "MOVE BACKWARDS"
+'                   Left - "TURN LEFT"
+'                   Right - "TURN RIGHT"
+'
+' Returns:
+' User input
 Function GetInput$ (prompt As String, enableArrowKeys As Integer)
     inp$ = ""
     cursor$ = Chr$(178)
@@ -1004,6 +1120,63 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer)
             End If
         End If
     Wend
+    ' Clear the cursor
+    Locate currentRow%, currentCol%
+    Print " "
+    ' Trim whitespace from the beginning and end of the input string
     GetInput$ = RTrim$(LTrim$(inp$))
+    ' Reset the foreground text color
     Color 15
 End Function
+
+' Play a sound file
+'
+' Parameters:
+' file - File location (WAV, OGG, or MP3 file types)
+' volume - 0 to 1 value for volume (0=no sound, 1=max)
+' loopSound - Play the sound in a continuous loop? (1/0)
+'
+' Returns:
+' soundHandle&
+Function PlaySound& (file As String, volume As Single, loopSound As Integer)
+    soundHandle& = _SndOpen(file)
+    If soundHandle& = 0 Then
+        Beep
+    Else
+        _SndVol soundHandle&, volume
+        _SndPlay soundHandle&
+        If loopSound Then
+            _SndLoop soundHandle&
+        End If
+    End If
+    PlaySound& = soundHandle&
+End Function
+
+' Replay an already open sound file
+'
+' Parameters:
+' soundHandle - LONG-type sound handle returned by PlaySound&
+' volume - 0 to 1 value for volume (0=no sound, 1=max)
+' loopSound - Play the sound in a continuous loop? (1/0)
+Sub ReplaySound (soundHandle As Long, volume As Single, loopSound As Integer)
+    If soundHandle& = 0 Then
+        Beep
+    Else
+        _SndVol soundHandle&, volume
+        _SndPlay soundHandle&
+        If loopSound Then
+            _SndLoop soundHandle&
+        End If
+    End If
+End Sub
+
+' Stop playing a sound file
+'
+' Parameters:
+' soundHandle - LONG-type sound handle returned by PlaySound&
+Sub StopSound (soundHandle As Long)
+    If soundHandle <> 0 Then
+        _SndStop soundHandle
+        _SndClose soundHandle
+    End If
+End Sub

@@ -6,8 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added new scene choice-- "LISTEN"
 - Added opening music and sounds for each scene
-- Added new general choice, "MOVE BACKWARDS"
+- Added new scene choice-- "MOVE BACKWARDS"
 - Added support for arrow keys for turning and moving ahead when nothing else has been entered
 - Added secret choice for completing all the quests for the current level
 

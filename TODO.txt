@@ -1,4 +1,7 @@
 Clean up code and gameplay:
+- Center the application window when it first launches
+- Add mouse support for actions
+- Fix "There is nothing ahead" MOVE AHEAD action clearing sound
 - Comment each code block and subroutine and function
 - Death sound when dying
 - Victory sound when game is won
@@ -7,12 +10,9 @@ Clean up code and gameplay:
 - Level up sound when points are earned... probably use subroutine for this
 - Zara's store should use ambiant store sound
 - Any text that might go off-screen should be cleaned up
-- Create "Press any key to continue" function that resets the current cursor position to where it displayed the text
-- Change "EXIT" action to "END GAME"
 - Clean up the "world" data structure to include the level as the first node so that all levels can be loaded into memory at once
 - Review arrays and other data structures to see if strings can be used as subscripts
 - Add more ASCII art... getting the gold, fighting the dragon, taming Gianni, and winning or losing the game
-- Add intro screen... Wayne Chung Enterprises presents... with Wayne Chung's photo
 - Add HIGH SCORES screen that displays when player wins the game.  It uses a simple text file (will need to be ignored by gitignore) with 10 lines, FIFO (if they are all filled up, no more free spots) and ranked by the score... player can add 10-character name and date is automatically added.  Viewing HIGH SCORES will be a secret command.  (Maybe later exposed if a menu is added to UI.)
 - Taming Gianni drops a long-range weapon that differs based on the player... for GREYSON, bow and arrows.  For Zara, the ability to summon cats and launch them.
 - Attempting to fight the dragon with the long-range weapon results in DEATH because the dragon is in a cave.  Mention with UNO REVERSE about how effective it is at short-range deflection.
