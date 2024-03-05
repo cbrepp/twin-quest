@@ -183,8 +183,8 @@ Print "Wayne Chung Enterprises"
 Locate 9, 9
 Print "presents"
 Locate 46, 2
-' Suspend program execution
-GoSub PressAnyKey
+' Suspend program execution for 5 seconds or until the user presses the any key
+Sleep 5
 ' Stop playing Wayne Chung's theme music and remove his picture
 StopSound wayneChungMusic&
 Screen 12
@@ -992,14 +992,14 @@ If level% = 1 Then
 End If
 Return
 
-' Prompt the user to press any key in order to continue
+' Prompt the user to press the any key in order to continue
 PressAnyKey:
 ' Display the prompt text
 Color 15
 curRow% = CsrLin
 prompt$ = "Press any key to continue"
 Print prompt$
-' Suspend program execution until a key is pressed
+' Suspend program execution until the any key is pressed
 Sleep
 _KeyClear
 ' Clear the prompt text with spaces
