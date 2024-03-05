@@ -394,9 +394,6 @@ Else
         If dragonDead% = 0 Then
             Print "You hear the fearsome roar of a dragon!"
             Print "There is no time to stop and listen to it!"
-        Else
-            Print "You hear... nothing.  The cave is empty"
-            Print "except for the sound of silence."
         End If
     End If
     If scene$ = "GREYSON'S GAME ROOM" Then
