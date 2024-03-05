@@ -1,5 +1,6 @@
-Clean up code and gameplay:
-- Center the application window when it first launches
+General Improvements:
+- Tokenize words to display to the scene viewer (and add a <BREAK> tag for line breaks) and let a subroutine print text
+- Fix ASCII art and long dialog scenarios trying to display the map at the bottom and getting it dorked
 - Add mouse support for actions
 - Fix "There is nothing ahead" MOVE AHEAD action clearing sound
 - Comment each code block and subroutine and function
@@ -19,6 +20,7 @@ Clean up code and gameplay:
 - Attempting to fight the dragon with the long-range weapon results in DEATH because the dragon is in a cave.  Mention with UNO REVERSE about how effective it is at short-range deflection.
 - Map colors the cell for a scene with the scene's color... ie, WILDERNESS is green
 - When player is in elevator, their symbol is a diamond colored with their color
+- Figure out how to center the application window on the main monitor... currently, "-_SCREENMOVE _MIDDLE" moves the window between both monitors
 
 New Intro... The Elevator:
 - New function/subroutine for STORY MODE.  Pass an array of strings (if possible) and a special indicator for when "Press any key to continue" breaks should occur.  Function will automatically determine when the final row is used (or will be used) and does a clear screen (and redisplay of title) before displaying a block of text that will overrun the screen.

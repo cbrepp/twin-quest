@@ -20,7 +20,7 @@ DECLARE SUB ReplaySound (soundHandle AS LONG, volume AS SINGLE, loopSound As INT
 DECLARE SUB StopSound (soundHandle AS LONG)
 
 ' Configure application window
-_Title "Twin Quest"
+_Title "Twin Quest" ' Set the application window's title
 
 ' Display splash screen
 GoSub WayneChungScreen
@@ -177,6 +177,7 @@ wayneChungMusic& = PlaySound&("wayne-chung.mp3", 1, 0)
 Cls
 wayneChungImage& = _LoadImage("wayne-chung.jpg", 32) 'load the image file to be drawn
 Screen wayneChungImage&
+_ScreenMove ((_DesktopWidth \ 2) - (_Width \ 2)) - 3, ((_DesktopHeight \ 2) - (_Height \ 2)) - 29 - 400 ' Center the application window
 ' Display overlay text
 Locate 7, 2
 Print "Wayne Chung Enterprises"
