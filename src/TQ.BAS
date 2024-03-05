@@ -12,12 +12,13 @@
 ' woods.mp3 - forestsurroundings.mp3 (https://freesound.org/people/Luftrum/sounds/48411/)
 ' zara.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
 
-' Declare game functions and subroutines
+' Declare game functions, subroutines, and shared variables
 DECLARE FUNCTION Contains% (myString AS STRING, token AS STRING, delimiter AS STRING)
-DECLARE FUNCTION GetInput$ (prompt AS STRING, enableArrowKeys AS INTEGER)
+DECLARE FUNCTION GetInput$ (prompt AS STRING, enableArrowKeys AS INTEGER, enableMouse As INTEGER)
 DECLARE FUNCTION PlaySound& (file AS STRING, volume AS SINGLE, loopSound As INTEGER)
 DECLARE SUB ReplaySound (soundHandle AS LONG, volume AS SINGLE, loopSound As INTEGER)
 DECLARE SUB StopSound (soundHandle AS LONG)
+Dim Shared gameChoices$, gameChoicesCol%, gameChoicesRow%, sceneChoices$, sceneChoicesCol%, sceneChoicesRow%
 
 ' Configure application window
 _Title "Twin Quest" ' Set the application window's title
@@ -44,20 +45,22 @@ Do
     sceneChoicesRow% = CsrLin
     scenePrompt$ = "Scene Choices: "
     Print scenePrompt$
-    Locate sceneChoicesRow%, Len(scenePrompt$) + 1
+    sceneChoicesCol% = Len(scenePrompt$) + 1
+    Locate sceneChoicesRow%, sceneChoicesCol%
     Color 3
     Print sceneChoices$
     Color 15
     gameChoicesRow% = CsrLin
     gamePrompt$ = "Game Choices: "
     Print gamePrompt$
-    Locate gameChoicesRow%, Len(gamePrompt$) + 1
+    gameChoicesCol% = Len(gamePrompt$) + 1
+    Locate gameChoicesRow%, gameChoicesCol%
     Color 3
     Print gameChoices$
     Color 15
     Print "[Use arrow keys to turn and move]"
     Print
-    choice$ = GetInput$("Enter Choice", 1)
+    choice$ = GetInput$("Enter Choice", 1, 1)
 Loop While gameOver% = 0
 
 End
@@ -165,7 +168,7 @@ Do
     Print "Select Player:"
     Print " " + availableCharacters$
     Print
-    character$ = GetInput$("Enter Choice", 0)
+    character$ = GetInput$("Enter Choice", 0, 0)
 Loop While Not Contains%(availableCharacters$ + ",GREY," + exitGameAction$, character$, ",")
 Return
 
@@ -177,7 +180,7 @@ wayneChungMusic& = PlaySound&("wayne-chung.mp3", 1, 0)
 Cls
 wayneChungImage& = _LoadImage("wayne-chung.jpg", 32) 'load the image file to be drawn
 Screen wayneChungImage&
-_ScreenMove ((_DesktopWidth \ 2) - (_Width \ 2)) - 3, ((_DesktopHeight \ 2) - (_Height \ 2)) - 29 - 400 ' Center the application window
+_ScreenMove ((_DesktopWidth \ 2) - (_Width \ 2)) - 3, ((_DesktopHeight \ 2) - (_Height \ 2)) - 29 - 400 ' Center the application window (400 offsets two stacked monitors)
 ' Display overlay text
 Locate 7, 2
 Print "Wayne Chung Enterprises"
@@ -792,7 +795,7 @@ Print "Fluffy Cat: Answer me this, and a magical name I will give to you."
 Print
 Print "What is blue... and is also the sky?"
 Print
-riddle$ = GetInput$("You", 0)
+riddle$ = GetInput$("You", 0, 0)
 If (riddle$ = "THE SKY") Or (riddle$ = "THE BLUE SKY") Or (riddle$ = "BLUE SKY") Then
     riddle$ = "SKY"
 End If
@@ -817,7 +820,7 @@ SpeakNameAction:
 GoSub PrintHeader
 Color 6
 Print
-nameGuess$ = GetInput$("You", 0)
+nameGuess$ = GetInput$("You", 0, 0)
 Print
 If (nameGuess$ = "SHMEBULOCK") Then
     Print "           ,"
@@ -1025,6 +1028,9 @@ End Function
 
 ' Get input from the user
 '
+' TODO - Shared variables gameChoices$, gameChoicesCol%, gameChoicesRow%, sceneChoices$, sceneChoicesCol%, sceneChoicesRow%
+'        are needed to resolve which choice is selected when the mouse is used
+'
 ' Parameters:
 ' prompt - Text to display
 ' enableArrowKeys - Enable use of the keyboard arrow keys? (1/0)
@@ -1035,7 +1041,7 @@ End Function
 '
 ' Returns:
 ' User input
-Function GetInput$ (prompt As String, enableArrowKeys As Integer)
+Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As Integer)
     inp$ = ""
     cursor$ = Chr$(178)
     Color 15
@@ -1048,85 +1054,138 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer)
     c$ = ""
     While c$ <> Chr$(13)
         c$ = ""
-        While c$ = ""
+        While (c$ = "") And (Not _MouseInput)
             c$ = InKey$
         Wend
-        If (Asc(c$) >= 32) And (Asc(c$) <= 126) Then
-            ' Alphanumeric characters
-            If (inp$ = "") And ((c$ = " ") Or (c$ = Chr$(13))) Then
-                ' Ignore the space key or enter key if nothing else has been entered
-            Else
-                If Len(inp$) < 40 Then
-                    inp$ = (inp$ + UCase$(c$))
-                    Locate currentRow%, currentCol%
-                    Color 15
-                    Print UCase$(c$)
-                    Locate currentRow%, currentCol% + 1
-                    Color 3
-                    Print cursor$
-                    currentCol% = currentCol% + 1
+        ' If InKey$ is still empty, that means _MouseInput is set
+        If c$ = "" Then
+            ' The first mouse button was clicked
+            If (enableMouse) And (_MouseButton(1) = -1) Then
+                ' Calculate the row and column of the current mouse position
+                mouseRow% = _Ceil(_MouseY / _FontHeight)
+                mouseCol% = _Ceil(_MouseX / _FontWidth)
+                ' The possible choices are limited to which row was clicked
+                possibleChoices$ = ""
+                If (mouseRow% = gameChoicesRow%) Then
+                    possibleChoices$ = gameChoices$
+                    possibleChoicesCol% = gameChoicesCol%
                 Else
-                    ' Ignore any input when the string gets too long
+                    If (mouseRow% = sceneChoicesRow%) Then
+                        possibleChoices$ = sceneChoices$
+                        possibleChoicesCol% = sceneChoicesCol%
+                    End If
+                End If
+                ' Evaluate whethere there are possible choices on the clicked row and the mouse cursor's column position is in the range of the possible choices
+                If (possibleChoices$ <> "") And (mouseCol% >= possibleChoicesCol%) And (mouseCol% <= (possibleChoicesCol% + Len(possibleChoices$) - 1)) Then
+                    choicePosition% = mouseCol% - possibleChoicesCol% + 1 ' Get the exact character position of the clicked choices string... 1 to the length of the choices
+                    If Mid$(possibleChoices$, choicePosition%, 1) <> "," Then
+                        ' Calculate rightmost character position of the clicked choice by looking for the next comma
+                        wordRightPos% = InStr(choicePosition%, possibleChoices$, ",")
+                        If wordRightPos% = 0 Then
+                            ' There was no comma to the right of the current character so this must be the final choice
+                            wordRightPos% = Len(possibleChoices$)
+                        Else
+                            ' The rightmost character is 1 less than the position of the comma
+                            wordRightPos% = wordRightPos% - 1
+                        End If
+                        ' Calculate leftmost character position of the clicked choice by looking for the previous comma
+                        wordLeftPos% = _InStrRev(choicePosition%, possibleChoices$, ",")
+                        If wordLeftPos% = 0 Then
+                            ' There was no comma to the left of the current character so this must be the first choice
+                            wordLeftPos% = 1
+                        Else
+                            ' The leftmost character is 1 greater than the position of the comma
+                            wordLeftPos% = wordLeftPos% + 1
+                        End If
+                        ' Extract the clicked choice using the leftmost and rightmost character positions
+                        inp$ = Mid$(possibleChoices$, wordLeftPos%, wordRightPos% - wordLeftPos% + 1)
+                        c$ = Chr$(13)
+                        Locate currentRow%, currentCol%
+                        Color 15
+                        Print inp$
+                    End If
                 End If
             End If
         Else
-            ' Backspace character
-            If c$ = Chr$(8) Then
-                If Len(inp$) > 0 Then
-                    inp$ = Left$(inp$, Len(inp$) - 1)
-                    Locate currentRow%, currentCol% - 1
-                    Color 3
-                    Print cursor$ + " "
-                    currentCol% = currentCol% - 1
+            If (Asc(c$) >= 32) And (Asc(c$) <= 126) Then
+                ' Alphanumeric characters
+                If (inp$ = "") And ((c$ = " ") Or (c$ = Chr$(13))) Then
+                    ' Ignore the space key or enter key if nothing else has been entered
                 Else
-                    ' Ignore any backspace when there is nothing left to delete
+                    If Len(inp$) < 40 Then
+                        inp$ = (inp$ + UCase$(c$))
+                        Locate currentRow%, currentCol%
+                        Color 15
+                        Print UCase$(c$)
+                        Locate currentRow%, currentCol% + 1
+                        Color 3
+                        Print cursor$
+                        currentCol% = currentCol% + 1
+                    Else
+                        ' Ignore any input when the string gets too long
+                    End If
                 End If
             Else
-                If enableArrowKeys = 1 Then
-                    ' Up arrow
-                    If c$ = Chr$(0) + "H" Then
-                        If RTrim$(LTrim$(inp$)) = "" Then
-                            inp$ = "MOVE AHEAD"
-                            c$ = Chr$(13)
-                            Locate currentRow%, currentCol%
-                            Color 15
-                            Print inp$
-                        End If
+                ' Backspace character
+                If c$ = Chr$(8) Then
+                    If Len(inp$) > 0 Then
+                        inp$ = Left$(inp$, Len(inp$) - 1)
+                        Locate currentRow%, currentCol% - 1
+                        Color 3
+                        Print cursor$ + " "
+                        currentCol% = currentCol% - 1
+                    Else
+                        ' Ignore any backspace when there is nothing left to delete
                     End If
-                    ' Down arrow
-                    If c$ = Chr$(0) + "P" Then
-                        If RTrim$(LTrim$(inp$)) = "" Then
-                            inp$ = "MOVE BACKWARDS"
-                            c$ = Chr$(13)
-                            Locate currentRow%, currentCol%
-                            Color 15
-                            Print inp$
+                Else
+                    If enableArrowKeys = 1 Then
+                        ' Up arrow
+                        If c$ = Chr$(0) + "H" Then
+                            If RTrim$(LTrim$(inp$)) = "" Then
+                                inp$ = "MOVE AHEAD"
+                                c$ = Chr$(13)
+                                Locate currentRow%, currentCol%
+                                Color 15
+                                Print inp$
+                            End If
                         End If
-                    End If
-                    ' Left arrow
-                    If c$ = Chr$(0) + "K" Then
-                        If RTrim$(LTrim$(inp$)) = "" Then
-                            inp$ = "TURN LEFT"
-                            c$ = Chr$(13)
-                            Locate currentRow%, currentCol%
-                            Color 15
-                            Print inp$
+                        ' Down arrow
+                        If c$ = Chr$(0) + "P" Then
+                            If RTrim$(LTrim$(inp$)) = "" Then
+                                inp$ = "MOVE BACKWARDS"
+                                c$ = Chr$(13)
+                                Locate currentRow%, currentCol%
+                                Color 15
+                                Print inp$
+                            End If
                         End If
-                    End If
-                    ' Right arrow
-                    If c$ = Chr$(0) + "M" Then
-                        If RTrim$(LTrim$(inp$)) = "" Then
-                            inp$ = "TURN RIGHT"
-                            c$ = Chr$(13)
-                            Locate currentRow%, currentCol%
-                            Color 15
-                            Print inp$
+                        ' Left arrow
+                        If c$ = Chr$(0) + "K" Then
+                            If RTrim$(LTrim$(inp$)) = "" Then
+                                inp$ = "TURN LEFT"
+                                c$ = Chr$(13)
+                                Locate currentRow%, currentCol%
+                                Color 15
+                                Print inp$
+                            End If
+                        End If
+                        ' Right arrow
+                        If c$ = Chr$(0) + "M" Then
+                            If RTrim$(LTrim$(inp$)) = "" Then
+                                inp$ = "TURN RIGHT"
+                                c$ = Chr$(13)
+                                Locate currentRow%, currentCol%
+                                Color 15
+                                Print inp$
+                            End If
                         End If
                     End If
                 End If
             End If
         End If
     Wend
+    ' Clear the current input
+    _KeyClear
     ' Clear the cursor
     Locate currentRow%, currentCol%
     Print " "
@@ -1147,6 +1206,7 @@ End Function
 ' soundHandle&
 Function PlaySound& (file As String, volume As Single, loopSound As Integer)
     soundHandle& = _SndOpen(file)
+    ' TODO - ReplaceSound() should be called, but you can't call a sub/function from another sub/function
     If soundHandle& = 0 Then
         Beep
     Else

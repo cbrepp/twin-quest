@@ -1,26 +1,38 @@
-General Improvements:
-- Tokenize words to display to the scene viewer (and add a <BREAK> tag for line breaks) and let a subroutine print text
-- Fix ASCII art and long dialog scenarios trying to display the map at the bottom and getting it dorked
-- Add mouse support for actions
-- Fix "There is nothing ahead" MOVE AHEAD action clearing sound
-- Comment each code block and subroutine and function
-- Death sound when dying
-- Victory sound when game is won
-- Sound for slaying the dragon
-- Game over sound when game is lost or user exits
-- Use cash register sound when aquiring items in inventory... probably use subroutine for this
-- Level up sound when points are earned... probably use subroutine for this
-- Zara's store should use ambiant store sound
-- Any text that might go off-screen should be cleaned up
-- Clean up the "world" data structure to include the level as the first node so that all levels can be loaded into memory at once
-- Review arrays and other data structures to see if strings can be used as subscripts
-- Add more ASCII art... getting the gold, fighting the dragon, taming Gianni, and winning or losing the game
-- Add HIGH SCORES screen that displays when player wins the game.  It uses a simple text file (will need to be ignored by gitignore) with 10 lines, FIFO (if they are all filled up, no more free spots) and ranked by the score... player can add 10-character name and date is automatically added.  Viewing HIGH SCORES will be a secret command.  (Maybe later exposed if a menu is added to UI.)
-- Taming Gianni drops a long-range weapon that differs based on the player... for GREYSON, bow and arrows.  For Zara, the ability to summon cats and launch them.
-- Attempting to fight the dragon with the long-range weapon results in DEATH because the dragon is in a cave.  Mention with UNO REVERSE about how effective it is at short-range deflection.
-- Map colors the cell for a scene with the scene's color... ie, WILDERNESS is green
-- When player is in elevator, their symbol is a diamond colored with their color
-- Figure out how to center the application window on the main monitor... currently, "-_SCREENMOVE _MIDDLE" moves the window between both monitors
+General:
+- Bugs:
+    - Fix "There is nothing ahead" MOVE AHEAD action clearing sound
+    - Fix ASCII art and long dialog scenarios trying to display the map at the bottom and getting it dorked
+    - Any text that might go off-screen should be cleaned up
+- Code Cleanup:
+    - Fix all outstanding TODOs
+    - Figure out a better way to center the application window on the main monitor... currently, "-_SCREENMOVE _MIDDLE" moves the window between both monitors requiring a fudge factor
+    - Comment each code block, subroutine, and function
+    - Add functions/subroutines for duplicative code
+    - Review arrays and other data structures to see if strings can be used as subscripts
+    - Add arrow and backspace support for entering text... plus, HOME, END, and anything else
+- Text Output:
+    - Tokenize words to display to the scene viewer (and add a <BREAK> tag for line breaks) and let a subroutine print text
+    - Provide a function for STORY MODE by adding a tag for PressAnyKey
+- World data structure:
+    - Clean up the "world" data structure to include the level as the first node so that all levels can be loaded into memory at once
+    - Ponder whether all of the data can be grouped together
+- Visuals:
+    - Add more ASCII art... getting the gold, fighting the dragon, taming Gianni, and winning or losing the game
+    - Replace the main game screen with an image-based screen that renders a game mat with sections for the title, a square for displaying an image for each scene, a rectangle for describing each scene and displaying output for the last action, choice selection, a main menu, etc.
+- Sounds:
+    - Add death sound when dying
+    - Add victory sound when game is won
+    - Add sound for slaying the dragon
+    - Add game over sound when game is lost or user exits
+    - Use cash register sound when aquiring items in inventory... probably use subroutine for this
+    - Use level up sound when points are earned... probably use subroutine for this
+    - Zara's store should use ambiant store sound
+- Cool New Stuff:
+    - Add HIGH SCORES screen that displays when player wins the game.  It uses a simple text file (will need to be ignored by gitignore) with 10 lines, FIFO (if they are all filled up, no more free spots) and ranked by the score... player can add 10-character name and date is automatically added.  Viewing HIGH SCORES will be a secret command.  (Maybe later exposed if a menu is added to UI.)
+    - Taming Gianni drops a long-range weapon that differs based on the player... for GREYSON, bow and arrows.  For Zara, the ability to summon cats and launch them.
+    - Attempting to fight the dragon with the long-range weapon results in DEATH because the dragon is in a cave.  Mention with UNO REVERSE about how effective it is at short-range deflection.
+    - Map colors the cell for a scene with the scene's color... ie, WILDERNESS is green
+    - When player is in elevator, their symbol is a diamond colored with their color
 
 New Intro... The Elevator:
 - New function/subroutine for STORY MODE.  Pass an array of strings (if possible) and a special indicator for when "Press any key to continue" breaks should occur.  Function will automatically determine when the final row is used (or will be used) and does a clear screen (and redisplay of title) before displaying a block of text that will overrun the screen.

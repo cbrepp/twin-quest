@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Added mouse support for selecting a choice
 - Added Wayne Chung splash screen
 - Renamed EXIT action to EXIT GAME
 - Added opening music and sounds for each scene
