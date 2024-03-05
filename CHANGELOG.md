@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Added high scores screen
 - Added new scene choice-- "LISTEN"
 - Added new scene choice-- "MOVE BACKWARDS"
 - Added secret choice for completing all the quests for the current level

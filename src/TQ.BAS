@@ -14,7 +14,7 @@
 
 ' Declare game functions, subroutines, and shared variables
 DECLARE FUNCTION Contains% (myString AS STRING, token AS STRING, delimiter AS STRING)
-DECLARE FUNCTION GetInput$ (prompt AS STRING, enableArrowKeys AS INTEGER, enableMouse As INTEGER)
+DECLARE FUNCTION GetInput$ (prompt AS STRING, enableArrowKeys AS INTEGER, enableMouse As INTEGER, maxLength As INTEGER)
 DECLARE FUNCTION PlaySound& (file AS STRING, volume AS SINGLE, loopSound As INTEGER)
 DECLARE SUB ReplaySound (soundHandle AS LONG, volume AS SINGLE, loopSound As INTEGER)
 DECLARE SUB StopSound (soundHandle AS LONG)
@@ -27,18 +27,21 @@ _Title "Twin Quest" ' Set the application window's title
 GoSub WayneChungScreen
 
 ' Display epic opening screens
+gameOver% = 0
 titleMusic& = PlaySound&("title.mp3", 1, 1)
 GoSub TitleScreen
+GoSub HighScoresScreen
 GoSub Init
 StopSound titleMusic&
 
 GoSub InitLevel1
 choice$ = "MOVE AHEAD"
 
+' Main game loop
 Do
     GoSub RefreshScreen
     If gameOver% Then
-        End
+        _Continue
     End If
     Color 15
     Print
@@ -60,10 +63,59 @@ Do
     Color 15
     Print "[Use arrow keys to turn and move]"
     Print
-    choice$ = GetInput$("Enter Choice", 1, 1)
+    choice$ = GetInput$("Enter Choice", 1, 1, 40)
 Loop While gameOver% = 0
 
+' Check if the player has earned a spot on the HIGH SCORES list
+If score% > 0 Then
+    GoSub ChallengeHighScores
+End If
+
 End
+
+ChallengeHighScores:
+Dim highScores(10) As String
+For i% = 1 To 10
+    highScores(i%) = ""
+Next i%
+rank% = 0
+If _FileExists("high-scores.txt") Then
+    Open "high-scores.txt" For Input As #1
+    i% = 1
+    Do Until EOF(1)
+        Input #1, fileLine$
+        fileLineScore% = Val(Mid$(fileLine$, 1, 3))
+        If (rank% = 0) And (score% > fileLineScore%) Then
+            rank% = i%
+            i% = i% + 1 ' Move Over, Beethoven
+        End If
+        If i% <= 10 Then
+            highScores(i%) = fileLine$
+        End If
+        i% = i% + 1
+    Loop
+    Close #1
+    If i% <= 10 Then
+        rank% = i%
+    End If
+Else
+    rank% = 1
+End If
+If rank% > 0 Then
+    Print
+    Print "You have a new high score... rank " + LTrim$(Str$(rank%)) + "!"
+    highScoreInitials$ = GetInput$("Enter your initials", 0, 0, 3)
+    highScores(rank%) = LTrim$(Str$(score%)) + "   " + highScoreInitials$ + "   " + Date$
+    Open "high-scores.txt" For Output As #1
+    For i% = 1 To 10
+        If (highScores(i%) <> "") Then
+            Print #1, highScores(i%)
+        End If
+    Next i%
+    Close #1
+    GoSub HighScoresScreen
+End If
+Return
 
 Init:
 score% = 0
@@ -73,8 +125,7 @@ directions(1) = "NORTH"
 directions(2) = "EAST"
 directions(3) = "SOUTH"
 directions(4) = "WEST"
-gameOver% = 0
-gameChoices$ = "CREDITS," + exitGameAction$
+gameChoices$ = "CREDITS,HIGH SCORES," + exitGameAction$
 basicChoices$ = "LOOK,LISTEN"
 sceneChoices$ = basicChoices$
 secretChoices$ = "MOVE AHEAD,MOVE BACKWARDS,TURN LEFT,TURN RIGHT,ALL THE THINGS"
@@ -160,16 +211,21 @@ world(5, 5) = "WILDERNESS"
 Return
 
 SelectCharacter:
-availableCharacters$ = "GREYSON,ZARA"
+sceneChoices$ = "GREYSON,ZARA"
 Do
     character$ = ""
     GoSub PrintHeader
     Print
-    Print "Select Player:"
-    Print " " + availableCharacters$
+    sceneChoicesRow% = CsrLin
+    prompt$ = "Character Choices: "
+    Print prompt$
+    Color 3
+    sceneChoicesCol% = Len(prompt$) + 1
+    Locate sceneChoicesRow%, sceneChoicesCol%
+    Print sceneChoices$
     Print
-    character$ = GetInput$("Enter Choice", 0, 0)
-Loop While Not Contains%(availableCharacters$ + ",GREY," + exitGameAction$, character$, ",")
+    character$ = GetInput$("Enter Choice", 0, 1, 7)
+Loop While Not Contains%(sceneChoices$ + ",GREY," + exitGameAction$, character$, ",")
 Return
 
 ' Display the splash screen
@@ -222,6 +278,17 @@ Print
 GoSub PressAnyKey
 Return
 
+HighScoresScreen:
+Screen 12
+GoSub PrintHeader
+Color 15
+GoSub HighScoresAction
+Print
+If gameOver% = 0 Then
+    GoSub PressAnyKey
+End If
+Return
+
 PrintHeader:
 Cls
 Locate 1, 1
@@ -246,6 +313,9 @@ Else
     If choice$ = "CREDITS" Then
         GoSub CreditsAction
     End If
+    If choice$ = "HIGH SCORES" Then
+        GoSub HighScoresAction
+    End If '
     If choice$ = "LOOK" Then
         GoSub LookAction
     End If
@@ -306,8 +376,8 @@ Locate curRow%, 54
 Print "Score:" + Str$(score%)
 Print
 ' Display the map
-For I = 1 To 5 Step 1
-    mapInfo(I) = ""
+For i = 1 To 5 Step 1
+    mapInfo(i) = ""
 Next
 If (playerX% > 0) And (playerY% > 0) And (gameOver% = 0) Then
     mapInfo(1) = "Level: " + LTrim$(Str$(level%))
@@ -342,6 +412,24 @@ If Contains%(inventory$, "GOLD", ",") Then
 End If
 Print "Your quest has ended... no fame.  And certainly no fortune."
 Print "REMEMBER: Quitters never win."
+Print
+Return
+
+HighScoresAction:
+Color 15
+Print
+Print "HIGH SCORES"
+Print
+If _FileExists("high-scores.txt") Then
+    Open "high-scores.txt" For Input As #1
+    Do Until EOF(1)
+        Input #1, fileLine$
+        Print fileLine$
+    Loop
+    Close #1
+Else
+    Print "N/A"
+End If
 Print
 Return
 
@@ -668,7 +756,6 @@ If (aheadX% = doorX%) And (aheadY% = doorY%) Then
         Print "Fame and fortune are yours."
         Print "YOU HAVE WON THE GAME!!!"
         If score% = 300 Then
-            Color 15
             Print "MAXIMUM SCORE!!!"
         End If
     Else
@@ -808,7 +895,7 @@ Print "Fluffy Cat: Answer me this, and a magical name I will give to you."
 Print
 Print "What is blue... and is also the sky?"
 Print
-riddle$ = GetInput$("You", 0, 0)
+riddle$ = GetInput$("You", 0, 0, 40)
 If (riddle$ = "THE SKY") Or (riddle$ = "THE BLUE SKY") Or (riddle$ = "BLUE SKY") Then
     riddle$ = "SKY"
 End If
@@ -834,7 +921,7 @@ SpeakNameAction:
 GoSub PrintHeader
 Color 6
 Print
-nameGuess$ = GetInput$("You", 0, 0)
+nameGuess$ = GetInput$("You", 0, 0, 10)
 Print
 If (nameGuess$ = "SHMEBULOCK") Then
     Print "           ,"
@@ -1048,10 +1135,12 @@ End Function
 '                   Down - "MOVE BACKWARDS"
 '                   Left - "TURN LEFT"
 '                   Right - "TURN RIGHT"
+' enableMouse - Enable use of the mouse? (1/0)
+' maxLength - Maximum number of characters to input
 '
 ' Returns:
 ' User input
-Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As Integer)
+Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As Integer, maxLength As Integer)
     inp$ = ""
     highlightedChoice$ = ""
     highlightedChoiceRow% = 0
@@ -1166,7 +1255,7 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
                 If (inp$ = "") And ((c$ = " ") Or (c$ = Chr$(13))) Then
                     ' Ignore the space key or enter key if nothing else has been entered
                 Else
-                    If Len(inp$) < 40 Then
+                    If Len(inp$) < maxLength Then
                         inp$ = (inp$ + UCase$(c$))
                         Locate currentRow%, currentCol%
                         Color 15

@@ -26,7 +26,6 @@ General:
     - Use level up sound when points are earned... probably use subroutine for this
     - Zara's store should use ambiant store sound
 - Cool New Stuff:
-    - Add HIGH SCORES screen that displays when player wins the game.  It uses a simple text file (will need to be ignored by gitignore) with 10 lines, FIFO (if they are all filled up, no more free spots) and ranked by the score... player can add 10-character name and date is automatically added.  Viewing HIGH SCORES will be a secret command.  (Maybe later exposed if a menu is added to UI.)
     - Taming Gianni drops a long-range weapon that differs based on the player... for GREYSON, bow and arrows.  For Zara, the ability to summon cats and launch them.
     - Attempting to fight the dragon with the long-range weapon results in DEATH because the dragon is in a cave.  Mention with UNO REVERSE about how effective it is at short-range deflection.
     - Map colors the cell for a scene with the scene's color... ie, WILDERNESS is green
