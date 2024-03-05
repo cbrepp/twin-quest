@@ -3,6 +3,7 @@ General:
     - Fix "There is nothing ahead" MOVE AHEAD action clearing sound
     - Fix ASCII art and long dialog scenarios trying to display the map at the bottom and getting it dorked
     - Any text that might go off-screen should be cleaned up
+    - When turning and the mouse is hovering over a possible choice, the highlighting for that choice goes away
 - Code Cleanup:
     - Fix all outstanding TODOs
     - Figure out a better way to center the application window on the main monitor... currently, "-_SCREENMOVE _MIDDLE" moves the window between both monitors requiring a fudge factor

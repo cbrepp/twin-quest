@@ -1043,6 +1043,15 @@ End Function
 ' User input
 Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As Integer)
     inp$ = ""
+    highlightedChoice$ = ""
+    highlightedChoiceRow% = 0
+    highlightedChoiceCol% = 0
+    If enableMouse Then
+        ' TODO - This is an ugly work-around to not being able to section out the mouse calculations into a subroutine
+        fakeInput% = 1
+    Else
+        fakeInput% = 0
+    End If
     cursor$ = Chr$(178)
     Color 15
     Print prompt + ": "
@@ -1054,17 +1063,20 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
     c$ = ""
     While c$ <> Chr$(13)
         c$ = ""
-        While (c$ = "") And (Not _MouseInput)
+        While (c$ = "") And (Not _MouseInput) And (Not fakeInput%)
             c$ = InKey$
         Wend
         ' If InKey$ is still empty, that means _MouseInput is set
         If c$ = "" Then
-            ' The first mouse button was clicked
-            If (enableMouse) And (_MouseButton(1) = -1) Then
+            ' Handle the mouse event
+            If enableMouse Then
+                If fakeInput% = 1 Then
+                    fakeInput% = 0
+                End If
                 ' Calculate the row and column of the current mouse position
                 mouseRow% = _Ceil(_MouseY / _FontHeight)
                 mouseCol% = _Ceil(_MouseX / _FontWidth)
-                ' The possible choices are limited to which row was clicked
+                ' The possible choices are limited to the current row
                 possibleChoices$ = ""
                 If (mouseRow% = gameChoicesRow%) Then
                     possibleChoices$ = gameChoices$
@@ -1075,35 +1087,67 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
                         possibleChoicesCol% = sceneChoicesCol%
                     End If
                 End If
-                ' Evaluate whethere there are possible choices on the clicked row and the mouse cursor's column position is in the range of the possible choices
+                ' Evaluate whethere there are possible choices on the current row and the mouse cursor's column position is in the range of the possible choices
+                choice$ = ""
                 If (possibleChoices$ <> "") And (mouseCol% >= possibleChoicesCol%) And (mouseCol% <= (possibleChoicesCol% + Len(possibleChoices$) - 1)) Then
-                    choicePosition% = mouseCol% - possibleChoicesCol% + 1 ' Get the exact character position of the clicked choices string... 1 to the length of the choices
+                    choicePosition% = mouseCol% - possibleChoicesCol% + 1 ' Get the exact character position of the current choices string... 1 to the length of the choices
                     If Mid$(possibleChoices$, choicePosition%, 1) <> "," Then
-                        ' Calculate rightmost character position of the clicked choice by looking for the next comma
-                        wordRightPos% = InStr(choicePosition%, possibleChoices$, ",")
-                        If wordRightPos% = 0 Then
+                        ' Calculate rightmost character position of the current choice by looking for the next comma
+                        choiceRightPos% = InStr(choicePosition%, possibleChoices$, ",")
+                        If choiceRightPos% = 0 Then
                             ' There was no comma to the right of the current character so this must be the final choice
-                            wordRightPos% = Len(possibleChoices$)
+                            choiceRightPos% = Len(possibleChoices$)
                         Else
                             ' The rightmost character is 1 less than the position of the comma
-                            wordRightPos% = wordRightPos% - 1
+                            choiceRightPos% = choiceRightPos% - 1
                         End If
-                        ' Calculate leftmost character position of the clicked choice by looking for the previous comma
-                        wordLeftPos% = _InStrRev(choicePosition%, possibleChoices$, ",")
-                        If wordLeftPos% = 0 Then
+                        ' Calculate leftmost character position of the current choice by looking for the previous comma
+                        choiceLeftPos% = _InStrRev(choicePosition%, possibleChoices$, ",")
+                        If choiceLeftPos% = 0 Then
                             ' There was no comma to the left of the current character so this must be the first choice
-                            wordLeftPos% = 1
+                            choiceLeftPos% = 1
                         Else
                             ' The leftmost character is 1 greater than the position of the comma
-                            wordLeftPos% = wordLeftPos% + 1
+                            choiceLeftPos% = choiceLeftPos% + 1
                         End If
-                        ' Extract the clicked choice using the leftmost and rightmost character positions
-                        inp$ = Mid$(possibleChoices$, wordLeftPos%, wordRightPos% - wordLeftPos% + 1)
-                        c$ = Chr$(13)
-                        Locate currentRow%, currentCol%
-                        Color 15
-                        Print inp$
+                        ' Extract the current choice using the leftmost and rightmost character positions
+                        choice$ = Mid$(possibleChoices$, choiceLeftPos%, choiceRightPos% - choiceLeftPos% + 1)
+                        If _MouseButton(1) = -1 Then
+                            ' Handle a click using the left mouse button
+                            inp$ = choice$
+                            c$ = Chr$(13)
+                            Locate currentRow%, currentCol%
+                            Color 15
+                            Print inp$
+                        Else
+                            ' User only hovered over a new choice
+                            If highlightedChoice$ <> choice$ Then
+                                If highlightedChoice$ <> "" Then
+                                    ' Remove the highlight from the last highlighted choice
+                                    Locate highlightedChoiceRow%, highlightedChoiceCol%
+                                    Color 3
+                                    Print highlightedChoice$
+                                End If
+                                ' Highlight the new choice
+                                highlightedChoiceRow% = mouseRow%
+                                highlightedChoiceCol% = possibleChoicesCol% + choiceLeftPos% - 1
+                                Locate highlightedChoiceRow%, highlightedChoiceCol%
+                                Color 15
+                                Print choice$
+                                highlightedChoice$ = choice$
+                            End If
+                        End If
                     End If
+                End If
+                ' Handle no current choice and yet there was a highlighted choice the last time there was a mouse event
+                If (choice$ = "") And (highlightedChoice$ <> "") Then
+                    ' Remove the highlight from the last highlighted choice
+                    Locate highlightedChoiceRow%, highlightedChoiceCol%
+                    Color 3
+                    Print highlightedChoice$
+                    highlightedChoice$ = ""
+                    highlightedChoiceRow% = 0
+                    highlightedChoiceCol% = 0
                 End If
             End If
         Else
