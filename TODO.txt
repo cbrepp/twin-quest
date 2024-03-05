@@ -5,6 +5,7 @@ Clean up code and gameplay:
 - Comment each code block and subroutine and function
 - Death sound when dying
 - Victory sound when game is won
+- Sound for slaying the dragon
 - Game over sound when game is lost or user exits
 - Use cash register sound when aquiring items in inventory... probably use subroutine for this
 - Level up sound when points are earned... probably use subroutine for this

@@ -501,6 +501,10 @@ If playerView$ = "DRAGON'S DEN" Then
         Print "You explore the cave and find yourself face to face with a"
         Print "ferocious dragon!"
     Else
+        If sceneSound& <> 0 Then
+            StopSound sceneSound&
+            sceneSound& = 0
+        End If
         Print "The dragon once lived here until you, an amazing hero, slew it!"
         Print "Paintings depicting your heroic act now cover the wall, a tribute"
         Print "from the townspeople you saved!"
@@ -520,6 +524,8 @@ If playerView$ = "DRAGON'S DEN" Then
             Print "With nothing heavy to carry you are able to run away"
             Print "before the dragon can end your quest."
         Else
+            StopSound sceneSound&
+            sceneSound& = 0
             If (Contains%(inventory$, "SWORD", ",")) And (dragonDead% = 0) Then
                 Print "With quick reflexes you use your mighty sword to slay the dragon."
                 Print "The townspeople are saved.  And you are today a hero!!!"
@@ -700,7 +706,10 @@ Else
                 If dragonDead% = 0 Then
                     sceneSound& = PlaySound&("dragon.mp3", 1, 0)
                 Else
-                    sceneSound& = 0
+                    If sceneSound& <> 0 Then
+                        StopSound sceneSound&
+                        sceneSound& = 0
+                    End If
                 End If
             End If
             If scene$ = "GREYSON'S GAME ROOM" Then
