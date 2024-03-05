@@ -1,7 +1,5 @@
 General:
 - Bugs:
-    - Fix ASCII art and long dialog scenarios trying to display the map at the bottom and getting it dorked
-    - Any text that might go off-screen should be cleaned up
     - When turning and the mouse is hovering over a possible choice, the highlighting for that choice goes away
 - Code Cleanup:
     - Fix all outstanding TODOs

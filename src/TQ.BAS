@@ -266,15 +266,28 @@ Else
     End If
     If (choice$ = "PLAY GAME") Then
         GoSub PlayGameAction
+        ' Refresh the scene's description
+        GoSub PressAnyKey
+        choice$ = "LOOK"
+        GoSub PrintHeader
+        GoSub LookAction
     End If
     If (choice$ = "SPEAK NAME") Then
         GoSub SpeakNameAction
+        GoSub PressAnyKey
+        choice$ = "LOOK"
+        GoSub PrintHeader
+        GoSub LookAction
     End If
     If (choice$ = "CHASE BUNNIES") Then
         GoSub ChaseBunniesAction
     End If
     If (choice$ = "TAME FLUFF") Then
         GoSub TameFluffAction
+        GoSub PressAnyKey
+        choice$ = "LOOK"
+        GoSub PrintHeader
+        GoSub LookAction
     End If
     If (choice$ = "TAKE GOLD") Then
         GoSub TakeGoldAction
@@ -814,6 +827,7 @@ Else
         Print "Better luck next time."
     End If
 End If
+Print
 Return
 
 SpeakNameAction:
@@ -844,14 +858,10 @@ If (nameGuess$ = "SHMEBULOCK") Then
     Print "Magic Gnome: Shmebulock!  Shmebulock... Shmebulock."
     Print "Shmebulock?  Shmebulock, Shmebulock.  Shme... bulock!"
     Print
-    Print
-    GoSub PressAnyKey
-    If Contains%(inventory$, "RING OF TAMING", ",") Then
-        Print
+    If Not Contains%(inventory$, "RING OF TAMING", ",") Then
         Print "Inventory +RING OF TAMING"
         Print "(Does not work on large creatures.)"
     Else
-        Print
         Print "You look down at your ring and it glows with power."
     End If
     If inventory$ = "NOTHING" Then
@@ -878,6 +888,7 @@ Else
         End If
     End If
 End If
+Print
 Return
 
 TameFluffAction:
@@ -911,7 +922,6 @@ Print "/                      \_/_/ / \          |"
 Print "|  magnifico               \/   \         |"
 Print
 Print
-GoSub PressAnyKey
 Return
 
 ChaseBunniesAction:
