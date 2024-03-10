@@ -1,4 +1,5 @@
 ' Resources:
+' book.png - Empty book by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
 ' castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
 ' dragon.mp3 - The Roar of a 5-Headed Dragon (https://freesound.org/people/bevibeldesign/sounds/366095/)
 ' fluff.wav - Spanish Lick I, Acoustic- AB split stereo pair (Oktava).wav (https://freesound.org/people/debudding/sounds/44366/)
@@ -21,7 +22,7 @@ DECLARE SUB StopSound (soundHandle AS LONG)
 Dim Shared gameChoices$, gameChoicesCol%, gameChoicesRow%, sceneChoices$, sceneChoicesCol%, sceneChoicesRow%
 
 ' Configure application window
-_Title "Twin Quest" ' Set the application window's title
+_Title "Twin Quest version 0.1.0 - Wayne Chung Enterprises" ' Set the application window's title
 
 ' Display splash screen
 GoSub WayneChungScreen
@@ -43,24 +44,24 @@ Do
     If gameOver% Then
         _Continue
     End If
-    Color 15
+    Color _RGB(0, 0, 0)
     Print
     sceneChoicesRow% = CsrLin
     scenePrompt$ = "Scene Choices: "
     Print scenePrompt$
     sceneChoicesCol% = Len(scenePrompt$) + 1
     Locate sceneChoicesRow%, sceneChoicesCol%
-    Color 3
+    Color _RGB(0, 139, 139)
     Print sceneChoices$
-    Color 15
+    Color _RGB(0, 0, 0)
     gameChoicesRow% = CsrLin
     gamePrompt$ = "Game Choices: "
     Print gamePrompt$
     gameChoicesCol% = Len(gamePrompt$) + 1
     Locate gameChoicesRow%, gameChoicesCol%
-    Color 3
+    Color _RGB(0, 139, 139)
     Print gameChoices$
-    Color 15
+    Color _RGB(0, 0, 0)
     Print "[Use arrow keys to turn and move]"
     Print
     choice$ = GetInput$("Enter Choice", 1, 1, 40)
@@ -219,7 +220,7 @@ Do
     sceneChoicesRow% = CsrLin
     prompt$ = "Character Choices: "
     Print prompt$
-    Color 3
+    Color _RGB(0, 139, 139)
     sceneChoicesCol% = Len(prompt$) + 1
     Locate sceneChoicesRow%, sceneChoicesCol%
     Print sceneChoices$
@@ -245,43 +246,54 @@ Print "presents"
 Locate 46, 2
 ' Suspend program execution for 5 seconds or until the user presses the any key
 Sleep 5
-' Stop playing Wayne Chung's theme music and remove his picture
+' Stop playing Wayne Chung's theme music and remove his picture (New screen must be set without Chung's picture before it is free'ed)
 StopSound wayneChungMusic&
-Screen 12
+
+Screen _NewImage(1280, 793, 32)
+Cls , _RGB(0, 0, 0)
+book& = _LoadImage("book.png", 32) 'load the image file to be drawn
+_PutImage , book&
+'
+'Cls
+'book& = _LoadImage("book.png", 32) 'load the image file to be drawn
+'Screen book&
+
 _FreeImage wayneChungImage& ' Free up memory used by the image
 Return
 
 ' Display the title screen
 TitleScreen:
-Screen 12
 GoSub PrintHeader
-Color 4
-Print
-Print "                              ___, ____--'"
-Print "                         _,-.'_,-'      ("
-Print "                      ,-' _.-''....____("
-Print "            ,))_     /  ,'\ `'-.     (          /\"
-Print "    __ ,+..a`  \(_   ) /   \    `'-..(         /  \"
-Print "    )`-;...,_   \(_ ) /     \  ('''    ;'^^`\ <./\.>"
-Print "        ,_   )   |( )/   ,./^``_..._  < /^^\ \_.))"
-Print "       `=;; (    (/_')-- -'^^`      ^^-.`_.-` >-'"
-Print "       `=\\ (                             _,./"
-Print "         ,\`(                         )^^^"
-Print "           ``;         __-'^^\       /"
-Print "             / _>---^^^   `\..`-.    ``'."
-Print "            / /               / /``'`; /"
-Print "           / /          ,-=='-`=-'  / /"
-Print "     ,-=='-`=-.               ,-=='-`=-."
-Print "   *******************************************"
+Color _RGB(139, 0, 0) ' dark red
+_PrintMode _KeepBackground
+leftPage% = 15
+rightPage% = 83
+Locate 3, leftPage%: Print "                           ___, ____--'"
+Locate 4, leftPage%: Print "                      _,-.'_,-'      ("
+Locate 5, leftPage%: Print "                   ,-' _.-''....____("
+Locate 6, leftPage%: Print "         ,))_     /  ,'\ `'-.     (          /\"
+Locate 7, leftPage%: Print " __ ,+..a`  \(_   ) /   \    `'-..(         /  \"
+Locate 8, leftPage%: Print " )`-;...,_   \(_ ) /     \  ('''    ;'^^`\ <./\.>"
+Locate 9, leftPage%: Print "     ,_   )   |( )/   ,./^``_..._  < /^^\ \_.))"
+Locate 10, leftPage%: Print "    `=;; (    (/_')-- -'^^`      ^^-.`_.-` >-'"
+Locate 11, leftPage%: Print "    `=\\ (                             _,./"
+Locate 12, leftPage%: Print "      ,\`(                         )^^^"
+Locate 13, leftPage%: Print "        ``;         __-'^^\       /"
+Locate 14, leftPage%: Print "          / _>---^^^   `\..`-.    ``'."
+Locate 15, leftPage%: Print "         / /               / /``'`; /"
+Locate 16, leftPage%: Print "        / /          ,-=='-`=-'  / /"
+Locate 17, leftPage%: Print "  ,-=='-`=-.               ,-=='-`=-."
+Color _RGB(0, 0, 0)
+Locate 18, leftPage%: Print "*******************************************"
+Locate 19, leftPage%: Print "            T W I N   Q U E S T"
 Print
 Print
 GoSub PressAnyKey
 Return
 
 HighScoresScreen:
-Screen 12
 GoSub PrintHeader
-Color 15
+Color _RGB(0, 0, 0)
 GoSub HighScoresAction
 Print
 If gameOver% = 0 Then
@@ -290,14 +302,8 @@ End If
 Return
 
 PrintHeader:
-Cls
-Locate 1, 1
-Color 15
-Print "Twin Quest version 0.0.2               Wayne Chung Enterprises"
-Print
-Color 8
-Print "_" + character$ + String$(62 - Len(character$), "_")
-Color 15
+Cls , _RGB(0, 0, 0)
+_PutImage , book&
 Return
 
 RefreshScreen:
@@ -367,9 +373,9 @@ Else
     End If
 End If
 
-Color 8
+Color _RGB(169, 169, 169)
 Print "_______________________________________________________________"
-Color 7
+Color _RGB(192, 192, 192)
 curRow% = CsrLin
 Print "Inventory: " + inventory$
 Locate curRow%, 54
@@ -399,7 +405,7 @@ If gameOver% = 0 Then
     Locate curRow% + playerY%, 1 + playerX%
     Print symbol$
 End If
-Color 15
+Color _RGB(0, 0, 0)
 Locate nextRow%, 1
 Return
 
@@ -416,7 +422,7 @@ Print
 Return
 
 HighScoresAction:
-Color 15
+Color _RGB(0, 0, 0)
 Print
 Print "HIGH SCORES"
 Print
@@ -434,7 +440,7 @@ Print
 Return
 
 CreditsAction:
-Color 15
+Color _RGB(0, 0, 0)
 Print
 Print "CREDITS"
 Print
@@ -446,74 +452,74 @@ Print "Creative Design: Zara and Greyson"
 Return
 
 ListenAction:
-Color 15
+Color _RGB(0, 0, 0)
 scene$ = world(playerX%, playerY%)
 Print
 Print "You are in " + playerView$ + "."
 ' Decribe what the player is hearing, and restart audio if not currently playing
 If sceneSound& = 0 Then
-    Color 15
+    Color _RGB(0, 0, 0)
     Print "You hear nothing."
 Else
     If _SndPlaying(sceneSound&) = 0 Then
         ReplaySound sceneSound&, 1, 0
     End If
     If scene$ = "WILDERNESS" Then
-        Color 2
+        Color _RGB(0, 255, 0)
         Print "You hear birds singing and perhaps some insects."
         Print "There is also a slight breeze.  These are the typical"
         Print "sounds of nature."
     End If
     If scene$ = "MAGIC RING OF TOADSTOOLS" Then
-        Color 6
+        Color _RGB(184, 115, 51)
         Print "You hear... magic, perhaps?  You attempt to focus"
         Print "on the sound but it disappears from your mind."
     End If
     If scene$ = "GIANNI'S DEN" Then
-        Color 8
+        Color _RGB(169, 169, 169)
         Print "You hear the crackle of a campfire in a vacuous"
         Print "space.  The sounds of the outside world are muted."
         Print "This is a peaceful place."
     End If
     If scene$ = "WOODS" Then
-        Color 7
+        Color _RGB(92, 64, 51)
         Print "You hear the typical sounds of the woods at night."
         Print "There are birds.  Definitely crows.  Maybe a"
         Print "woodpecker.  And... the hooting of an owl?"
     End If
     If scene$ = "MOUNT FLUFF" Then
-        Color 15
+        Color _RGB(0, 0, 0)
         Print "Oh my!  What magnificent guitar strumming!  The"
         Print "styling is firm and decisive and yet also..."
         Print "romantic."
     End If
     If scene$ = "CASTLE" Then
-        Color 14
+        Color _RGB(255, 255, 0)
         Print "You hear royal music... A harp!  A guitar!  And also"
         Print "the deep sound of a tuba.  How splendid!  The music"
         Print "carries loudly from the castle courtyard.  However,"
         Print "you hear nothing from within the castle."
     End If
     If scene$ = "DRAGON'S DEN" Then
-        Color 4
+        Color _RGB(255, 0, 0)
         If dragonDead% = 0 Then
             Print "You hear the fearsome roar of a dragon!"
             Print "There is no time to stop and listen to it!"
         End If
     End If
     If scene$ = "GREYSON'S GAME ROOM" Then
-        Color 1
+        Color _RGB(0, 0, 255)
         Print "You hear the typical sounds of an arcade."
         Print "Sounds like someone just got a power up?"
     End If
     If scene$ = "ZARA'S STORE" Then
-        Color 5
+        Color _RGB(255, 0, 255)
         Print "You hear the hustling and bustling sounds of"
         Print "a successful store.  Sounds like someone just"
         Print "made a sale?"
     End If
 End If
-Color 15
+Color _RGB(0, 0, 0)
 Return
 
 LookAction:
@@ -521,12 +527,12 @@ playerView$ = world(playerX%, playerY%)
 Print
 Print "You are in " + playerView$ + "."
 If playerView$ = "WILDERNESS" Then
-    Color 2
+    Color _RGB(0, 255, 0)
     Print "You see nothing but tall grass and cute bunnies."
     Print "The sun is shining brightly."
 End If
 If playerView$ = "WOODS" Then
-    Color 7
+    Color _RGB(192, 192, 192)
     Randomize Timer
     nightOwlChance% = Int(Rnd * 3) + 1
     If nightOwlChance% = 3 Then
@@ -534,7 +540,7 @@ If playerView$ = "WOODS" Then
         Print "By the time you look up it's too late.  Night Owl has claimed"
         Print "you as his prey!  What an unfortunate way to end your journey."
         Print
-        Color 15
+        Color _RGB(0, 0, 0)
         Print "You have died."
         If score% > 0 Then
             Print "Score -" + LTrim$(Str$(score%))
@@ -555,7 +561,7 @@ If playerView$ = "WOODS" Then
     End If
 End If
 If playerView$ = "MAGIC RING OF TOADSTOOLS" Then
-    Color 6
+    Color _RGB(184, 115, 51)
     Print "A magical place of faeries and giant mushrooms!"
     Print "A simple wooden sign sits in the center of this place.  On"
     Print "this sign reads a simple message..."
@@ -564,7 +570,7 @@ If playerView$ = "MAGIC RING OF TOADSTOOLS" Then
     Print "be gifted with a magical item.'"
 End If
 If playerView$ = "MOUNT FLUFF" Then
-    Color 15
+    Color _RGB(0, 0, 0)
     Print "You come upon the base of a mountain and see a gallant white"
     Print "tom cat wearing boots and playing a spanish guitar.  His"
     Print "melody hypnotizes you.  And my... he is so fluffy!"
@@ -573,7 +579,7 @@ If playerView$ = "MOUNT FLUFF" Then
     Print "his riddle, he might just give you a prize."
 End If
 If playerView$ = "GIANNI'S DEN" Then
-    Color 8
+    Color _RGB(169, 169, 169)
     Print "You find yourself in a dark cave.  A fire burns deep inside."
     Print "You explore the cave and find yourself face to face with an"
     Print "adorable black cat curled up on a Pittsburgh Steelers blanket."
@@ -584,7 +590,7 @@ If playerView$ = "GIANNI'S DEN" Then
             catTamed% = 1
             Print "You use your ring of taming on him and he jumps into"
             Print "your waiting arms.  You pet him for hours and hours."
-            Color 15
+            Color _RGB(0, 0, 0)
             Print "Score +100"
             score% = score% + 100
         Else
@@ -597,7 +603,7 @@ If playerView$ = "GIANNI'S DEN" Then
     End If
 End If
 If playerView$ = "DRAGON'S DEN" Then
-    Color 4
+    Color _RGB(255, 0, 0)
     If dragonDead% = 0 Then
         Print "You find yourself in a dark cave.  A fire burns deep inside."
         Print "You explore the cave and find yourself face to face with a"
@@ -616,7 +622,7 @@ If playerView$ = "DRAGON'S DEN" Then
         Print "its burning fire.  With no defense, you are burned to death."
         Print "Alas, this is the end of your quest."
         Print
-        Color 15
+        Color _RGB(0, 0, 0)
         Print "You have died."
         Print "Score -" + LTrim$(Str$(score%))
         score% = 0
@@ -632,7 +638,7 @@ If playerView$ = "DRAGON'S DEN" Then
                 Print "With quick reflexes you use your mighty sword to slay the dragon."
                 Print "The townspeople are saved.  And you are today a hero!!!"
                 score% = score% + 100
-                Color 15
+                Color _RGB(0, 0, 0)
                 Print "Score +100"
                 dragonDead% = 1
             Else
@@ -641,7 +647,7 @@ If playerView$ = "DRAGON'S DEN" Then
                     Print "flames back at it.  With each fiery burst, the dragon destroys itself."
                     Print "The townspeople are saved.  And you are today a hero!!!"
                     score% = score% + 100
-                    Color 15
+                    Color _RGB(0, 0, 0)
                     Print "Score +100"
                     dragonDead% = 1
                 End If
@@ -650,18 +656,18 @@ If playerView$ = "DRAGON'S DEN" Then
     End If
 End If
 If playerView$ = "CASTLE" Then
-    Color 14
+    Color _RGB(255, 255, 0)
     Print "What a magnificent castle!  But no one is home."
     Print "Perhaps the royal court fled because of BIG CHUNG?"
 End If
 If playerView$ = "ZARA'S STORE" Then
-    Color 5
+    Color _RGB(255, 0, 255)
     Print "There are a lot of fun things to buy. Of particular note you"
     Print "see a mighty silver sword, fit for slaying a dragon."
     If (Contains%(inventory$, "GOLD", ",")) And (Not Contains%(inventory$, "SWORD", ",")) Then
         Print "You deposit some gold coins into the vending machine..."
         inventory$ = inventory$ + ",SWORD"
-        Color 15
+        Color _RGB(0, 0, 0)
         Print "Inventory +SWORD"
     Else
         If Contains%(inventory$, "SWORD", ",") Then
@@ -673,14 +679,14 @@ If playerView$ = "ZARA'S STORE" Then
     End If
 End If
 If playerView$ = "GREYSON'S GAME ROOM" Then
-    Color 1
+    Color _RGB(0, 0, 255)
     Print "Oh my!  Every game known to mankind can be found for sale in"
     Print "this room.  A particular game catches your eye... UNO."
     If (Contains%(inventory$, "GOLD", ",")) And (Not Contains%(inventory$, "UNO REVERSE", ",")) Then
         Print "You leave some gold coins on the table in exchange for the UNO deck."
         Print "You look at the cards and discover the legendary... UNO REVERSE!!!"
         inventory$ = inventory$ + ",UNO REVERSE"
-        Color 15
+        Color _RGB(0, 0, 0)
         Print "Inventory +UNO REVERSE"
     Else
         If Contains%(inventory$, "UNO REVERSE", ",") Then
@@ -693,7 +699,7 @@ If playerView$ = "GREYSON'S GAME ROOM" Then
 End If
 Print
 If (playerView$ = "CASTLE") And (Not Contains%(inventory$, "GOLD", ",")) Then
-    Color 14
+    Color _RGB(255, 255, 0)
     Print "Beautiful gold coins are scattered around.  Will you take them?"
     Print
 End If
@@ -712,20 +718,20 @@ If directions(playerDirection%) = "WEST" Then
     aheadX% = aheadX% - 1
 End If
 If (aheadX% = doorX%) And (aheadY% = doorY%) Then
-    Color 6
+    Color _RGB(184, 115, 51)
     Print "Ahead you see a magic door.  Perhaps an exit to this world?"
 Else
     If gameOver% = 0 Then
         If (aheadX% = 0) Or (aheadX% = (levelSize% + 1)) Or (aheadY% = 0) Or (aheadY% = (levelSize% + 1)) Then
-            Color 15
+            Color _RGB(0, 0, 0)
             Print "There is nothing ahead.  You are facing the edge of the world."
         Else
-            Color 15
+            Color _RGB(0, 0, 0)
             Print "Ahead you see " + world(aheadX%, aheadY%) + "."
         End If
     End If
 End If
-Color 15
+Color _RGB(0, 0, 0)
 Return
 
 MoveAheadAction:
@@ -875,7 +881,7 @@ If Not Contains%(inventory$, "GOLD", ",") Then
     score% = score% + 100
     Print
     Print "All the gold now belongs to you!"
-    Color 15
+    Color _RGB(0, 0, 0)
     Print "Score +100"
     Print "Inventory +GOLD"
     Print
@@ -889,7 +895,7 @@ Return
 
 PlayGameAction:
 GoSub PrintHeader
-Color 15
+Color _RGB(0, 0, 0)
 Print
 Print "Fluffy Cat: Answer me this, and a magical name I will give to you."
 Print
@@ -919,7 +925,7 @@ Return
 
 SpeakNameAction:
 GoSub PrintHeader
-Color 6
+Color _RGB(184, 115, 51)
 Print
 nameGuess$ = GetInput$("You", 0, 0, 10)
 Print
@@ -980,7 +986,7 @@ Return
 
 TameFluffAction:
 GoSub PrintHeader
-Color 15
+Color _RGB(0, 0, 0)
 Print
 Print "                ____"
 Print "                \ _ `\ "
@@ -1013,7 +1019,7 @@ Return
 
 ChaseBunniesAction:
 Print
-Color 2
+Color _RGB(0, 255, 0)
 Print "Seems like an unimportant thing to do but nonetheless"
 Print "you try to chase some of the bunnies.  And... you can't"
 Print "catch a single one.  They are too fast!  Oh well, time"
@@ -1096,18 +1102,19 @@ Return
 ' Prompt the user to press the any key in order to continue
 PressAnyKey:
 ' Display the prompt text
-Color 15
+Color _RGB(0, 139, 139)
 curRow% = CsrLin
-prompt$ = "Press any key to continue"
+prompt$ = "Press any key to turn the page"
+Locate curRow%, leftPage%
 Print prompt$
 ' Suspend program execution until the any key is pressed
 Sleep
 _KeyClear
 ' Clear the prompt text with spaces
-Locate curRow%, 1
+Locate curRow%, leftPage%
 Print String$(Len(prompt$), " ")
 ' Reposition the cursor
-Locate curRow%, 1
+Locate curRow%, leftPage%
 Return
 
 ' Does a string contain a given token? (1/0)
@@ -1152,12 +1159,12 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
         fakeInput% = 0
     End If
     cursor$ = Chr$(178)
-    Color 15
+    Color _RGB(0, 0, 0)
     Print prompt + ": "
     currentRow% = CsrLin - 1
     currentCol% = Len(prompt + ": ") + 1
     Locate currentRow%, currentCol%
-    Color 3
+    Color _RGB(0, 139, 139)
     Print cursor$
     c$ = ""
     While c$ <> Chr$(13)
@@ -1216,7 +1223,7 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
                             inp$ = choice$
                             c$ = Chr$(13)
                             Locate currentRow%, currentCol%
-                            Color 15
+                            Color _RGB(0, 0, 0)
                             Print inp$
                         Else
                             ' User only hovered over a new choice
@@ -1224,14 +1231,14 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
                                 If highlightedChoice$ <> "" Then
                                     ' Remove the highlight from the last highlighted choice
                                     Locate highlightedChoiceRow%, highlightedChoiceCol%
-                                    Color 3
+                                    Color _RGB(0, 139, 139)
                                     Print highlightedChoice$
                                 End If
                                 ' Highlight the new choice
                                 highlightedChoiceRow% = mouseRow%
                                 highlightedChoiceCol% = possibleChoicesCol% + choiceLeftPos% - 1
                                 Locate highlightedChoiceRow%, highlightedChoiceCol%
-                                Color 15
+                                Color _RGB(0, 0, 0)
                                 Print choice$
                                 highlightedChoice$ = choice$
                             End If
@@ -1242,7 +1249,7 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
                 If (choice$ = "") And (highlightedChoice$ <> "") Then
                     ' Remove the highlight from the last highlighted choice
                     Locate highlightedChoiceRow%, highlightedChoiceCol%
-                    Color 3
+                    Color _RGB(0, 139, 139)
                     Print highlightedChoice$
                     highlightedChoice$ = ""
                     highlightedChoiceRow% = 0
@@ -1258,10 +1265,10 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
                     If Len(inp$) < maxLength Then
                         inp$ = (inp$ + UCase$(c$))
                         Locate currentRow%, currentCol%
-                        Color 15
+                        Color _RGB(0, 0, 0)
                         Print UCase$(c$)
                         Locate currentRow%, currentCol% + 1
-                        Color 3
+                        Color _RGB(0, 139, 139)
                         Print cursor$
                         currentCol% = currentCol% + 1
                     Else
@@ -1274,7 +1281,7 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
                     If Len(inp$) > 0 Then
                         inp$ = Left$(inp$, Len(inp$) - 1)
                         Locate currentRow%, currentCol% - 1
-                        Color 3
+                        Color _RGB(0, 139, 139)
                         Print cursor$ + " "
                         currentCol% = currentCol% - 1
                     Else
@@ -1288,7 +1295,7 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
                                 inp$ = "MOVE AHEAD"
                                 c$ = Chr$(13)
                                 Locate currentRow%, currentCol%
-                                Color 15
+                                Color _RGB(0, 0, 0)
                                 Print inp$
                             End If
                         End If
@@ -1298,7 +1305,7 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
                                 inp$ = "MOVE BACKWARDS"
                                 c$ = Chr$(13)
                                 Locate currentRow%, currentCol%
-                                Color 15
+                                Color _RGB(0, 0, 0)
                                 Print inp$
                             End If
                         End If
@@ -1308,7 +1315,7 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
                                 inp$ = "TURN LEFT"
                                 c$ = Chr$(13)
                                 Locate currentRow%, currentCol%
-                                Color 15
+                                Color _RGB(0, 0, 0)
                                 Print inp$
                             End If
                         End If
@@ -1318,7 +1325,7 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
                                 inp$ = "TURN RIGHT"
                                 c$ = Chr$(13)
                                 Locate currentRow%, currentCol%
-                                Color 15
+                                Color _RGB(0, 0, 0)
                                 Print inp$
                             End If
                         End If
@@ -1335,7 +1342,7 @@ Function GetInput$ (prompt As String, enableArrowKeys As Integer, enableMouse As
     ' Trim whitespace from the beginning and end of the input string
     GetInput$ = RTrim$(LTrim$(inp$))
     ' Reset the foreground text color
-    Color 15
+    Color _RGB(0, 0, 0)
 End Function
 
 ' Play a sound file
