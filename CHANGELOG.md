@@ -2,17 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [0.0.2 ] - 2024-03-10
 
-### Added
+### Changed
 
 - Added high scores screen
 - Added new scene choice-- "LISTEN"
 - Added new scene choice-- "MOVE BACKWARDS"
 - Added secret choice for completing all the quests for the current level
-
-### Changed
-
 - Added mouse support for selecting a choice
 - Added Wayne Chung splash screen
 - Renamed EXIT action to EXIT GAME

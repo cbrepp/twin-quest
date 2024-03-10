@@ -293,7 +293,7 @@ PrintHeader:
 Cls
 Locate 1, 1
 Color 15
-Print "Twin Quest version 0.1.0               Wayne Chung Enterprises"
+Print "Twin Quest version 0.0.2               Wayne Chung Enterprises"
 Print
 Color 8
 Print "_" + character$ + String$(62 - Len(character$), "_")
