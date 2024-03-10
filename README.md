@@ -14,9 +14,11 @@ Or will you find... doom and despair?
 
 ## Gameplay
   
+![splash screen](/assets/images/splash.png)
 ![title screen](/assets/images/title-screen.png)
+![high scores](/assets/images/high-scores.png)
 ![character selection](/assets/images/character-select.png)
-![first cell](/assets/images/first-cell.png)
+![first scene](/assets/images/first-scene.png)
   
 Goals:
 1. Find the gold.
