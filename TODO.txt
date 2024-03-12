@@ -5,7 +5,7 @@ Priorities:
     - IN PROGRESS!  Need to unhork everything by adding a "PRINT" function that LOCATEs the column starting at 15 for left page and 83 for right page.  Function should word wrap automatically and just accept a paragraph of text to display... PrintText "left", "My very long string of text to display"
     - Then, add headers for the current "CHAPTER" right-aligned (which is increment each time you enter a new level) on the right page and current points on the left.
     - Then, the right page should only be about what you're currently seeing and reading for each scene.  And, the left page is everything else-- player controls, game information, etc.
-    - Display CREDITS on right page when title page is showing... press any key should be at the bottom of the right page
+    - Display CREDITS on underneath the title page content... on the right page should be high scores and press any key should be at the bottom of the right page
 - New intro... The Elevator
 
 General:
