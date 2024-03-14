@@ -2,38 +2,54 @@
 ' book.png - Empty book by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
 ' castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
 ' dragon.mp3 - The Roar of a 5-Headed Dragon (https://freesound.org/people/bevibeldesign/sounds/366095/)
+' epic.mp3 - Epic Trailer Background Music (https://freesound.org/people/Migfus20/sounds/560454/)
 ' fluff.wav - Spanish Lick I, Acoustic- AB split stereo pair (Oktava).wav (https://freesound.org/people/debudding/sounds/44366/)
 ' gianni.mp3 - bonfire flames sizzling (https://freesound.org/people/florianreichelt/sounds/563764/)
 ' grey.mp3 - 8-Bit Coin Or Power Up FX For Retro Video Games (https://freesound.org/people/Cloud-10/sounds/647977/)
 ' magic.mp3 - Magic.mp3 (https://freesound.org/people/Bastianhallo/sounds/434050/)
-' title.mp3 - Epic Trailer Background Music (https://freesound.org/people/Migfus20/sounds/560454/)
+' turn-page.mp3 - page turn (https://freesound.org/people/partheeban/sounds/457767/)
 ' wayne-chung.jpg - Image of Wayne Chung wondering what's going on
 ' wayne-chung.mp3 - Wang Chung "Everybody Have Fun Tonight" snippet
 ' wilderness.mp3 - birds_210513_0088.mp3 (https://freesound.org/people/titi2/sounds/571247/)
 ' woods.mp3 - forestsurroundings.mp3 (https://freesound.org/people/Luftrum/sounds/48411/)
 ' zara.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
 
-' Declare game functions, subroutines, and shared variables
-DECLARE FUNCTION Contains% (myString AS STRING, token AS STRING, delimiter AS STRING)
-DECLARE FUNCTION GetInput$ (prompt AS STRING, enableArrowKeys AS INTEGER, enableMouse As INTEGER, maxLength As INTEGER)
-DECLARE FUNCTION PlaySound& (file AS STRING, volume AS SINGLE, loopSound As INTEGER)
-DECLARE SUB ReplaySound (soundHandle AS LONG, volume AS SINGLE, loopSound As INTEGER)
-DECLARE SUB StopSound (soundHandle AS LONG)
-Dim Shared gameChoices$, gameChoicesCol%, gameChoicesRow%, sceneChoices$, sceneChoicesCol%, sceneChoicesRow%
+' Declare shared variables
+' TODO - Get rid of ALL shared variables
+Dim Shared game, gameChoices$, gameChoicesCol%, gameChoicesRow%, sceneChoices$, sceneChoicesCol%, sceneChoicesRow%
+
+Type Book
+    chapter As String
+    image As Long
+    isOver As Integer
+    isRightHanded As Integer
+    pageTurnSound As Long
+    title As String
+    version As String
+End Type
+
+' Initialize the game
+Dim game As Book
+game.title = "Twin Quest"
+game.version = "0.1.0"
+game.chapter = ""
+game.isOver = 0
+game.isRightHanded = 1
 
 ' Configure application window
-_Title "Twin Quest 0.1.0" ' Set the application window's title
+_Title game.title$ + " " + game.version ' Set the application window's title
 
-' Display splash screen
+' Display "splash screen"
+' TODO - Make this a proper subroutine
 GoSub WayneChungScreen
 
-' Display epic opening screens
-gameOver% = 0
-titleMusic& = PlaySound&("title.mp3", 1, 1)
-GoSub TitleScreen
-GoSub HighScoresScreen
+' Display pre-chapter pages with epic music
+game.pageTurnSound = PlaySound&("turn-page.mp3", 1, 0)
+epicMusic& = PlaySound&("epic.mp3", 1, 1)
+Call DisplayTitlePage(game)
+Call DisplayHighScoresPage(game)
 GoSub Init
-StopSound titleMusic&
+StopSound epicMusic&
 
 GoSub InitLevel1
 choice$ = "MOVE AHEAD"
@@ -41,31 +57,31 @@ choice$ = "MOVE AHEAD"
 ' Main game loop
 Do
     GoSub RefreshScreen
-    If gameOver% Then
+    If game.isOver Then
         _Continue
     End If
     Color _RGB(0, 0, 0)
     Print
     sceneChoicesRow% = CsrLin
     scenePrompt$ = "Scene Choices: "
-    Call PrintText("left", CsrLin, scenePrompt$)
+    Call PrintText(game, "story", CsrLin, scenePrompt$)
     sceneChoicesCol% = Len(scenePrompt$) + 1
     Locate sceneChoicesRow%, sceneChoicesCol%
     Color _RGB(0, 139, 139)
-    Call PrintText("left", CsrLin, sceneChoices$)
+    Call PrintText(game, "story", CsrLin, sceneChoices$)
     Color _RGB(0, 0, 0)
     gameChoicesRow% = CsrLin
     gamePrompt$ = "Game Choices: "
-    Call PrintText("left", CsrLin, gamePrompt$)
+    Call PrintText(game, "story", CsrLin, gamePrompt$)
     gameChoicesCol% = Len(gamePrompt$) + 1
     Locate gameChoicesRow%, gameChoicesCol%
     Color _RGB(0, 139, 139)
-    Call PrintText("left", CsrLin, gameChoices$)
+    Call PrintText(game, "story", CsrLin, gameChoices$)
     Color _RGB(0, 0, 0)
-    Call PrintText("left", CsrLin, "[Use arrow keys to turn and move]")
+    Call PrintText(game, "story", CsrLin, "[Use arrow keys to turn and move]")
     Print
     choice$ = GetInput$("Enter Choice", 1, 1, 40)
-Loop While gameOver% = 0
+Loop While game.isOver = 0
 
 ' Check if the player has earned a spot on the HIGH SCORES list
 If score% > 0 Then
@@ -104,7 +120,7 @@ Else
 End If
 If rank% > 0 Then
     Print
-    Call PrintText("left", CsrLin, "You have a new high score... rank " + LTrim$(Str$(rank%)) + "!")
+    Call PrintText(game, "story", CsrLin, "You have a new high score... rank " + LTrim$(Str$(rank%)) + "!")
     highScoreInitials$ = GetInput$("Enter your initials", 0, 0, 3)
     highScores(rank%) = LTrim$(Str$(score%)) + "   " + highScoreInitials$ + "   " + Date$
     Open "high-scores.txt" For Output As #1
@@ -114,7 +130,7 @@ If rank% > 0 Then
         End If
     Next i%
     Close #1
-    GoSub HighScoresScreen
+    Call DisplayHighScoresPage(game)
 End If
 Return
 
@@ -216,15 +232,15 @@ SelectCharacter:
 sceneChoices$ = "GREYSON,ZARA"
 Do
     character$ = ""
-    GoSub PrintHeader
+    Call TurnPage(game)
     Print
     sceneChoicesRow% = CsrLin
     prompt$ = "Character Choices: "
-    Call PrintText("left", CsrLin, prompt$)
+    Call PrintText(game, "story", CsrLin, prompt$)
     Color _RGB(0, 139, 139)
     sceneChoicesCol% = Len(prompt$) + 1
     Locate sceneChoicesRow%, sceneChoicesCol%
-    Call PrintText("left", CsrLin, sceneChoices$)
+    Call PrintText(game, "story", CsrLin, sceneChoices$)
     Print
     character$ = GetInput$("Enter Choice", 0, 1, 7)
 Loop While Not Contains%(sceneChoices$ + ",GREY," + exitGameAction$, character$, ",")
@@ -254,8 +270,8 @@ StopSound wayneChungMusic&
 
 Screen _NewImage(1280, 793, 32)
 Cls , _RGB(0, 0, 0)
-book& = _LoadImage("book.png", 32) 'load the image file to be drawn
-_PutImage , book&
+game.image = _LoadImage("book.png", 32) 'load the image file to be drawn
+_PutImage , game.image
 '
 'Cls
 'book& = _LoadImage("book.png", 32) 'load the image file to be drawn
@@ -264,51 +280,8 @@ _PutImage , book&
 _FreeImage wayneChungImage& ' Free up memory used by the image
 Return
 
-' Display the title screen
-TitleScreen:
-GoSub PrintHeader
-Color _RGB(139, 0, 0) ' dark red
-Call PrintText("left", 3, "                                   ___, ____--'")
-Call PrintText("left", 4, "                              _,-.'_,-'      (")
-Call PrintText("left", 5, "                           ,-' _.-''....____(")
-Call PrintText("left", 6, "                 ,))_     /  ,'\ `'-.     (          /\")
-Call PrintText("left", 7, "         __ ,+..a`  \(_   ) /   \    `'-..(         /  \")
-Call PrintText("left", 8, "         )`-;...,_   \(_ ) /     \  ('''    ;'^^`\ <./\.>")
-Call PrintText("left", 9, "             ,_   )   |( )/   ,./^``_..._  < /^^\ \_.))")
-Call PrintText("left", 10, "            `=;; (    (/_')-- -'^^`      ^^-.`_.-` >-'")
-Call PrintText("left", 11, "            `=\\ (                             _,./")
-Call PrintText("left", 12, "              ,\`(                         )^^^")
-Call PrintText("left", 13, "                ``;         __-'^^\       /")
-Call PrintText("left", 14, "                  / _>---^^^   `\..`-.    ``'.")
-Call PrintText("left", 15, "                 / /               / /``'`; /")
-Call PrintText("left", 16, "                / /          ,-=='-`=-'  / /")
-Call PrintText("left", 17, "          ,-=='-`=-.               ,-=='-`=-.")
-Color _RGB(0, 0, 0)
-Call PrintText("left", 18, "        *******************************************")
-Call PrintText("left", 19, "                    T W I N   Q U E S T")
-Print
-Print
-GoSub PressAnyKey
-Return
-
-HighScoresScreen:
-GoSub PrintHeader
-Color _RGB(0, 0, 0)
-GoSub HighScoresAction
-Print
-If gameOver% = 0 Then
-    GoSub PressAnyKey
-End If
-Return
-
-PrintHeader:
-Cls , _RGB(0, 0, 0)
-_PutImage , book&
-_PrintMode _KeepBackground
-Return
-
 RefreshScreen:
-GoSub PrintHeader
+Call TurnPage(game)
 If (Not Contains%(sceneChoices$, choice$, ",")) And (Not Contains%(gameChoices$, choice$, ",")) And (Not Contains%(secretChoices$, choice$, ",")) Then
     ' Handle invalid choice
     GoSub DumbAction
@@ -321,7 +294,7 @@ Else
         GoSub CreditsAction
     End If
     If choice$ = "HIGH SCORES" Then
-        GoSub HighScoresAction
+        Call DisplayHighScoresPage(game)
     End If '
     If choice$ = "LOOK" Then
         GoSub LookAction
@@ -344,16 +317,16 @@ Else
     If (choice$ = "PLAY GAME") Then
         GoSub PlayGameAction
         ' Refresh the scene's description
-        GoSub PressAnyKey
+        Call PressAnyKey(game)
         choice$ = "LOOK"
-        GoSub PrintHeader
+        Call TurnPage(game)
         GoSub LookAction
     End If
     If (choice$ = "SPEAK NAME") Then
         GoSub SpeakNameAction
-        GoSub PressAnyKey
+        Call PressAnyKey(game)
         choice$ = "LOOK"
-        GoSub PrintHeader
+        Call TurnPage(game)
         GoSub LookAction
     End If
     If (choice$ = "CHASE BUNNIES") Then
@@ -361,9 +334,9 @@ Else
     End If
     If (choice$ = "TAME FLUFF") Then
         GoSub TameFluffAction
-        GoSub PressAnyKey
+        Call PressAnyKey(game)
         choice$ = "LOOK"
-        GoSub PrintHeader
+        Call TurnPage(game)
         GoSub LookAction
     End If
     If (choice$ = "TAKE GOLD") Then
@@ -375,149 +348,131 @@ Else
 End If
 
 Color _RGB(169, 169, 169)
-Call PrintText("left", CsrLin, "_______________________________________________________________")
+Call PrintText(game, "story", CsrLin, "_______________________________________________________________")
 Color _RGB(192, 192, 192)
 curRow% = CsrLin
-Call PrintText("left", CsrLin, "Inventory: " + inventory$)
+Call PrintText(game, "story", CsrLin, "Inventory: " + inventory$)
 Locate curRow%, 54
-Call PrintText("left", CsrLin, "Score:" + Str$(score%))
+Call PrintText(game, "story", CsrLin, "Score:" + Str$(score%))
 Print
 ' Display the map
 For i = 1 To 5 Step 1
     mapInfo(i) = ""
 Next
-If (playerX% > 0) And (playerY% > 0) And (gameOver% = 0) Then
+If (playerX% > 0) And (playerY% > 0) And (game.isOver = 0) Then
     mapInfo(1) = "Level: " + LTrim$(Str$(level%))
     mapInfo(2) = "Location: " + LTrim$(Str$(playerX%)) + "," + LTrim$(Str$(playerY%))
     mapInfo(3) = "Facing: " + directions(playerDirection%)
 End If
-Call PrintText("left", CsrLin, String$((levelSize% - 1) / 2, " ") + "Map")
+Call PrintText(game, "story", CsrLin, String$((levelSize% - 1) / 2, " ") + "Map")
 curRow% = CsrLin
-Call PrintText("left", CsrLin, String$(levelSize% + 2, "-")) ' Top border
+Call PrintText(game, "story", CsrLin, String$(levelSize% + 2, "-")) ' Top border
 For y = 1 To levelSize% Step 1
-    Call PrintText("left", CsrLin, "|" + String$(levelSize%, " ") + "|" + "   " + mapInfo(y))
+    Call PrintText(game, "story", CsrLin, "|" + String$(levelSize%, " ") + "|" + "   " + mapInfo(y))
 Next
-Call PrintText("left", CsrLin, String$(levelSize% + 2, "-")) ' Bottom border
+Call PrintText(game, "story", CsrLin, String$(levelSize% + 2, "-")) ' Bottom border
 nextRow% = CsrLin
 Locate curRow% + doorY%, 1 + doorX%
-Call PrintText("left", CsrLin, "*")
-If gameOver% = 0 Then
+Call PrintText(game, "story", CsrLin, "*")
+If game.isOver = 0 Then
     symbol$ = playerSymbol(playerDirection%)
     Locate curRow% + playerY%, 1 + playerX%
-    Call PrintText("left", CsrLin, symbol$)
+    Call PrintText(game, "story", CsrLin, symbol$)
 End If
 Color _RGB(0, 0, 0)
 Locate nextRow%, 1
 Return
 
 ExitAction:
-gameOver% = 1
+game.isOver = 1
 Print
 If Contains%(inventory$, "GOLD", ",") Then
-    Call PrintText("left", CsrLin, "But you were doing so well!  The magic door is out there.")
-    Call PrintText("left", CsrLin, "You found the gold but didn't bring it home.")
+    Call PrintText(game, "story", CsrLin, "But you were doing so well!  The magic door is out there.")
+    Call PrintText(game, "story", CsrLin, "You found the gold but didn't bring it home.")
 End If
-Call PrintText("left", CsrLin, "Your quest has ended... no fame.  And certainly no fortune.")
-Call PrintText("left", CsrLin, "REMEMBER: Quitters never win.")
-Print
-Return
-
-HighScoresAction:
-Color _RGB(0, 0, 0)
-Print
-Call PrintText("left", CsrLin, "HIGH SCORES")
-Print
-If _FileExists("high-scores.txt") Then
-    Open "high-scores.txt" For Input As #1
-    Do Until EOF(1)
-        Input #1, fileLine$
-        Call PrintText("left", CsrLin, fileLine$)
-    Loop
-    Close #1
-Else
-    Call PrintText("left", CsrLin, "N/A")
-End If
+Call PrintText(game, "story", CsrLin, "Your quest has ended... no fame.  And certainly no fortune.")
+Call PrintText(game, "story", CsrLin, "REMEMBER: Quitters never win.")
 Print
 Return
 
 CreditsAction:
 Color _RGB(0, 0, 0)
 Print
-Call PrintText("left", CsrLin, "CREDITS")
+Call PrintText(game, "story", CsrLin, "CREDITS")
 Print
-Call PrintText("left", CsrLin, "Business Manager: Wayne Chung")
-Call PrintText("left", CsrLin, "Executive Producer: Wayne Chung")
-Call PrintText("left", CsrLin, "Power of Attorney: Wayne Chung")
-Call PrintText("left", CsrLin, "Development: Mylee and Mr. Chris")
-Call PrintText("left", CsrLin, "Creative Design: Zara and Greyson")
+Call PrintText(game, "story", CsrLin, "Business Manager: Wayne Chung")
+Call PrintText(game, "story", CsrLin, "Executive Producer: Wayne Chung")
+Call PrintText(game, "story", CsrLin, "Power of Attorney: Wayne Chung")
+Call PrintText(game, "story", CsrLin, "Development: Mylee and Mr. Chris")
+Call PrintText(game, "story", CsrLin, "Creative Design: Zara and Greyson")
 Return
 
 ListenAction:
 Color _RGB(0, 0, 0)
 scene$ = world(playerX%, playerY%)
 Print
-Call PrintText("left", CsrLin, "You are in " + playerView$ + ".")
+Call PrintText(game, "story", CsrLin, "You are in " + playerView$ + ".")
 ' Decribe what the player is hearing, and restart audio if not currently playing
 If sceneSound& = 0 Then
     Color _RGB(0, 0, 0)
-    Call PrintText("left", CsrLin, "You hear nothing.")
+    Call PrintText(game, "story", CsrLin, "You hear nothing.")
 Else
     If _SndPlaying(sceneSound&) = 0 Then
         ReplaySound sceneSound&, 1, 0
     End If
     If scene$ = "WILDERNESS" Then
         Color _RGB(0, 255, 0)
-        Call PrintText("left", CsrLin, "You hear birds singing and perhaps some insects.")
-        Call PrintText("left", CsrLin, "There is also a slight breeze.  These are the typical")
-        Call PrintText("left", CsrLin, "sounds of nature.")
+        Call PrintText(game, "story", CsrLin, "You hear birds singing and perhaps some insects.")
+        Call PrintText(game, "story", CsrLin, "There is also a slight breeze.  These are the typical")
+        Call PrintText(game, "story", CsrLin, "sounds of nature.")
     End If
     If scene$ = "MAGIC RING OF TOADSTOOLS" Then
         Color _RGB(184, 115, 51)
-        Call PrintText("left", CsrLin, "You hear... magic, perhaps?  You attempt to focus")
-        Call PrintText("left", CsrLin, "on the sound but it disappears from your mind.")
+        Call PrintText(game, "story", CsrLin, "You hear... magic, perhaps?  You attempt to focus")
+        Call PrintText(game, "story", CsrLin, "on the sound but it disappears from your mind.")
     End If
     If scene$ = "GIANNI'S DEN" Then
         Color _RGB(169, 169, 169)
-        Call PrintText("left", CsrLin, "You hear the crackle of a campfire in a vacuous")
-        Call PrintText("left", CsrLin, "space.  The sounds of the outside world are muted.")
-        Call PrintText("left", CsrLin, "This is a peaceful place.")
+        Call PrintText(game, "story", CsrLin, "You hear the crackle of a campfire in a vacuous")
+        Call PrintText(game, "story", CsrLin, "space.  The sounds of the outside world are muted.")
+        Call PrintText(game, "story", CsrLin, "This is a peaceful place.")
     End If
     If scene$ = "WOODS" Then
         Color _RGB(92, 64, 51)
-        Call PrintText("left", CsrLin, "You hear the typical sounds of the woods at night.")
-        Call PrintText("left", CsrLin, "There are birds.  Definitely crows.  Maybe a")
-        Call PrintText("left", CsrLin, "woodpecker.  And... the hooting of an owl?")
+        Call PrintText(game, "story", CsrLin, "You hear the typical sounds of the woods at night.")
+        Call PrintText(game, "story", CsrLin, "There are birds.  Definitely crows.  Maybe a")
+        Call PrintText(game, "story", CsrLin, "woodpecker.  And... the hooting of an owl?")
     End If
     If scene$ = "MOUNT FLUFF" Then
         Color _RGB(0, 0, 0)
-        Call PrintText("left", CsrLin, "Oh my!  What magnificent guitar strumming!  The")
-        Call PrintText("left", CsrLin, "styling is firm and decisive and yet also...")
-        Call PrintText("left", CsrLin, "romantic.")
+        Call PrintText(game, "story", CsrLin, "Oh my!  What magnificent guitar strumming!  The")
+        Call PrintText(game, "story", CsrLin, "styling is firm and decisive and yet also...")
+        Call PrintText(game, "story", CsrLin, "romantic.")
     End If
     If scene$ = "CASTLE" Then
         Color _RGB(255, 255, 0)
-        Call PrintText("left", CsrLin, "You hear royal music... A harp!  A guitar!  And also")
-        Call PrintText("left", CsrLin, "the deep sound of a tuba.  How splendid!  The music")
-        Call PrintText("left", CsrLin, "carries loudly from the castle courtyard.  However,")
-        Call PrintText("left", CsrLin, "you hear nothing from within the castle.")
+        Call PrintText(game, "story", CsrLin, "You hear royal music... A harp!  A guitar!  And also")
+        Call PrintText(game, "story", CsrLin, "the deep sound of a tuba.  How splendid!  The music")
+        Call PrintText(game, "story", CsrLin, "carries loudly from the castle courtyard.  However,")
+        Call PrintText(game, "story", CsrLin, "you hear nothing from within the castle.")
     End If
     If scene$ = "DRAGON'S DEN" Then
         Color _RGB(255, 0, 0)
         If dragonDead% = 0 Then
-            Call PrintText("left", CsrLin, "You hear the fearsome roar of a dragon!")
-            Call PrintText("left", CsrLin, "There is no time to stop and listen to it!")
+            Call PrintText(game, "story", CsrLin, "You hear the fearsome roar of a dragon!")
+            Call PrintText(game, "story", CsrLin, "There is no time to stop and listen to it!")
         End If
     End If
     If scene$ = "GREYSON'S GAME ROOM" Then
         Color _RGB(0, 0, 255)
-        Call PrintText("left", CsrLin, "You hear the typical sounds of an arcade.")
-        Call PrintText("left", CsrLin, "Sounds like someone just got a power up?")
+        Call PrintText(game, "story", CsrLin, "You hear the typical sounds of an arcade.")
+        Call PrintText(game, "story", CsrLin, "Sounds like someone just got a power up?")
     End If
     If scene$ = "ZARA'S STORE" Then
         Color _RGB(255, 0, 255)
-        Call PrintText("left", CsrLin, "You hear the hustling and bustling sounds of")
-        Call PrintText("left", CsrLin, "a successful store.  Sounds like someone just")
-        Call PrintText("left", CsrLin, "made a sale?")
+        Call PrintText(game, "story", CsrLin, "You hear the hustling and bustling sounds of")
+        Call PrintText(game, "story", CsrLin, "a successful store.  Sounds like someone just")
+        Call PrintText(game, "story", CsrLin, "made a sale?")
     End If
 End If
 Color _RGB(0, 0, 0)
@@ -526,130 +481,130 @@ Return
 LookAction:
 playerView$ = world(playerX%, playerY%)
 Print
-Call PrintText("left", CsrLin, "You are in " + playerView$ + ".")
+Call PrintText(game, "story", CsrLin, "You are in " + playerView$ + ".")
 If playerView$ = "WILDERNESS" Then
     Color _RGB(0, 255, 0)
-    Call PrintText("left", CsrLin, "You see nothing but tall grass and cute bunnies.")
-    Call PrintText("left", CsrLin, "The sun is shining brightly.")
+    Call PrintText(game, "story", CsrLin, "You see nothing but tall grass and cute bunnies.")
+    Call PrintText(game, "story", CsrLin, "The sun is shining brightly.")
 End If
 If playerView$ = "WOODS" Then
     Color _RGB(192, 192, 192)
     Randomize Timer
     nightOwlChance% = Int(Rnd * 3) + 1
     If nightOwlChance% = 3 Then
-        Call PrintText("left", CsrLin, "The sky is dark and you hear the sound of flapping wings.")
-        Call PrintText("left", CsrLin, "By the time you look up it's too late.  Night Owl has claimed")
-        Call PrintText("left", CsrLin, "you as his prey!  What an unfortunate way to end your journey.")
+        Call PrintText(game, "story", CsrLin, "The sky is dark and you hear the sound of flapping wings.")
+        Call PrintText(game, "story", CsrLin, "By the time you look up it's too late.  Night Owl has claimed")
+        Call PrintText(game, "story", CsrLin, "you as his prey!  What an unfortunate way to end your journey.")
         Print
         Color _RGB(0, 0, 0)
-        Call PrintText("left", CsrLin, "You have died.")
+        Call PrintText(game, "story", CsrLin, "You have died.")
         If score% > 0 Then
-            Call PrintText("left", CsrLin, "Score -" + LTrim$(Str$(score%)))
+            Call PrintText(game, "story", CsrLin, "Score -" + LTrim$(Str$(score%)))
             score% = 0
         End If
-        gameOver% = 1
+        game.isOver = 1
     Else
         If nightOwlChance% = 2 Then
-            Call PrintText("left", CsrLin, "The sky is dark and you hear the sound of flapping wings.")
-            Call PrintText("left", CsrLin, "By the time you look up there's already a scream close by")
-            Call PrintText("left", CsrLin, "as Night Owl has claimed a poor creature as his prey.  You")
-            Call PrintText("left", CsrLin, "have escaped death.  But... for how long?")
+            Call PrintText(game, "story", CsrLin, "The sky is dark and you hear the sound of flapping wings.")
+            Call PrintText(game, "story", CsrLin, "By the time you look up there's already a scream close by")
+            Call PrintText(game, "story", CsrLin, "as Night Owl has claimed a poor creature as his prey.  You")
+            Call PrintText(game, "story", CsrLin, "have escaped death.  But... for how long?")
         Else
-            Call PrintText("left", CsrLin, "The sky is dark and Night Owl is hiding somewhere.  You must")
-            Call PrintText("left", CsrLin, "take care to tread lightly lest a noise alert Night Owl to")
-            Call PrintText("left", CsrLin, "your whereabouts.  Be very, very quiet.")
+            Call PrintText(game, "story", CsrLin, "The sky is dark and Night Owl is hiding somewhere.  You must")
+            Call PrintText(game, "story", CsrLin, "take care to tread lightly lest a noise alert Night Owl to")
+            Call PrintText(game, "story", CsrLin, "your whereabouts.  Be very, very quiet.")
         End If
     End If
 End If
 If playerView$ = "MAGIC RING OF TOADSTOOLS" Then
     Color _RGB(184, 115, 51)
-    Call PrintText("left", CsrLin, "A magical place of faeries and giant mushrooms!")
-    Call PrintText("left", CsrLin, "A simple wooden sign sits in the center of this place.  On")
-    Call PrintText("left", CsrLin, "this sign reads a simple message...")
+    Call PrintText(game, "story", CsrLin, "A magical place of faeries and giant mushrooms!")
+    Call PrintText(game, "story", CsrLin, "A simple wooden sign sits in the center of this place.  On")
+    Call PrintText(game, "story", CsrLin, "this sign reads a simple message...")
     Print
-    Call PrintText("left", CsrLin, "'Speak the name of the spirit that dwells in this place and")
-    Call PrintText("left", CsrLin, "be gifted with a magical item.'")
+    Call PrintText(game, "story", CsrLin, "'Speak the name of the spirit that dwells in this place and")
+    Call PrintText(game, "story", CsrLin, "be gifted with a magical item.'")
 End If
 If playerView$ = "MOUNT FLUFF" Then
     Color _RGB(0, 0, 0)
-    Call PrintText("left", CsrLin, "You come upon the base of a mountain and see a gallant white")
-    Call PrintText("left", CsrLin, "tom cat wearing boots and playing a spanish guitar.  His")
-    Call PrintText("left", CsrLin, "melody hypnotizes you.  And my... he is so fluffy!")
-    Call PrintText("left", CsrLin, "You are astonished to learn that this cat can speak.  He")
-    Call PrintText("left", CsrLin, "enjoys challenging others to a guessing game.  If you solve")
-    Call PrintText("left", CsrLin, "his riddle, he might just give you a prize.")
+    Call PrintText(game, "story", CsrLin, "You come upon the base of a mountain and see a gallant white")
+    Call PrintText(game, "story", CsrLin, "tom cat wearing boots and playing a spanish guitar.  His")
+    Call PrintText(game, "story", CsrLin, "melody hypnotizes you.  And my... he is so fluffy!")
+    Call PrintText(game, "story", CsrLin, "You are astonished to learn that this cat can speak.  He")
+    Call PrintText(game, "story", CsrLin, "enjoys challenging others to a guessing game.  If you solve")
+    Call PrintText(game, "story", CsrLin, "his riddle, he might just give you a prize.")
 End If
 If playerView$ = "GIANNI'S DEN" Then
     Color _RGB(169, 169, 169)
-    Call PrintText("left", CsrLin, "You find yourself in a dark cave.  A fire burns deep inside.")
-    Call PrintText("left", CsrLin, "You explore the cave and find yourself face to face with an")
-    Call PrintText("left", CsrLin, "adorable black cat curled up on a Pittsburgh Steelers blanket.")
-    Call PrintText("left", CsrLin, "He's so cuuuuuuute!")
+    Call PrintText(game, "story", CsrLin, "You find yourself in a dark cave.  A fire burns deep inside.")
+    Call PrintText(game, "story", CsrLin, "You explore the cave and find yourself face to face with an")
+    Call PrintText(game, "story", CsrLin, "adorable black cat curled up on a Pittsburgh Steelers blanket.")
+    Call PrintText(game, "story", CsrLin, "He's so cuuuuuuute!")
     Print
     If Contains%(inventory$, "RING OF TAMING", ",") Then
         If catTamed% = 0 Then
             catTamed% = 1
-            Call PrintText("left", CsrLin, "You use your ring of taming on him and he jumps into")
-            Call PrintText("left", CsrLin, "your waiting arms.  You pet him for hours and hours.")
+            Call PrintText(game, "story", CsrLin, "You use your ring of taming on him and he jumps into")
+            Call PrintText(game, "story", CsrLin, "your waiting arms.  You pet him for hours and hours.")
             Color _RGB(0, 0, 0)
-            Call PrintText("left", CsrLin, "Score +100")
+            Call PrintText(game, "story", CsrLin, "Score +100")
             score% = score% + 100
         Else
-            Call PrintText("left", CsrLin, "He meows with delight when he sees you and jumps into")
-            Call PrintText("left", CsrLin, "your waiting arms.  Oh what a wonderful cat he is!")
+            Call PrintText(game, "story", CsrLin, "He meows with delight when he sees you and jumps into")
+            Call PrintText(game, "story", CsrLin, "your waiting arms.  Oh what a wonderful cat he is!")
         End If
     Else
-        Call PrintText("left", CsrLin, "You attempt to pet him but he runs away.  If only you could")
-        Call PrintText("left", CsrLin, "tame him.  But such a feat would require strong magic...")
+        Call PrintText(game, "story", CsrLin, "You attempt to pet him but he runs away.  If only you could")
+        Call PrintText(game, "story", CsrLin, "tame him.  But such a feat would require strong magic...")
     End If
 End If
 If playerView$ = "DRAGON'S DEN" Then
     Color _RGB(255, 0, 0)
     If dragonDead% = 0 Then
-        Call PrintText("left", CsrLin, "You find yourself in a dark cave.  A fire burns deep inside.")
-        Call PrintText("left", CsrLin, "You explore the cave and find yourself face to face with a")
-        Call PrintText("left", CsrLin, "ferocious dragon!")
+        Call PrintText(game, "story", CsrLin, "You find yourself in a dark cave.  A fire burns deep inside.")
+        Call PrintText(game, "story", CsrLin, "You explore the cave and find yourself face to face with a")
+        Call PrintText(game, "story", CsrLin, "ferocious dragon!")
     Else
         If sceneSound& <> 0 Then
             StopSound sceneSound&
             sceneSound& = 0
         End If
-        Call PrintText("left", CsrLin, "The dragon once lived here until you, an amazing hero, slew it!")
-        Call PrintText("left", CsrLin, "Paintings depicting your heroic act now cover the wall, a tribute")
-        Call PrintText("left", CsrLin, "from the townspeople you saved!")
+        Call PrintText(game, "story", CsrLin, "The dragon once lived here until you, an amazing hero, slew it!")
+        Call PrintText(game, "story", CsrLin, "Paintings depicting your heroic act now cover the wall, a tribute")
+        Call PrintText(game, "story", CsrLin, "from the townspeople you saved!")
     End If
     If (Contains%(inventory$, "GOLD", ",")) And (Not Contains%(inventory$, "SWORD", ",")) And (Not Contains%(inventory$, "UNO REVERSE", ",")) Then
-        Call PrintText("left", CsrLin, "The greedy dragon sees your gold and blasts you with")
-        Call PrintText("left", CsrLin, "its burning fire.  With no defense, you are burned to death.")
-        Call PrintText("left", CsrLin, "Alas, this is the end of your quest.")
+        Call PrintText(game, "story", CsrLin, "The greedy dragon sees your gold and blasts you with")
+        Call PrintText(game, "story", CsrLin, "its burning fire.  With no defense, you are burned to death.")
+        Call PrintText(game, "story", CsrLin, "Alas, this is the end of your quest.")
         Print
         Color _RGB(0, 0, 0)
-        Call PrintText("left", CsrLin, "You have died.")
-        Call PrintText("left", CsrLin, "Score -" + LTrim$(Str$(score%)))
+        Call PrintText(game, "story", CsrLin, "You have died.")
+        Call PrintText(game, "story", CsrLin, "Score -" + LTrim$(Str$(score%)))
         score% = 0
-        gameOver% = 1
+        game.isOver = 1
     Else
         If Not Contains%(inventory$, "GOLD", ",") Then
-            Call PrintText("left", CsrLin, "With nothing heavy to carry you are able to run away")
-            Call PrintText("left", CsrLin, "before the dragon can end your quest.")
+            Call PrintText(game, "story", CsrLin, "With nothing heavy to carry you are able to run away")
+            Call PrintText(game, "story", CsrLin, "before the dragon can end your quest.")
         Else
             StopSound sceneSound&
             sceneSound& = 0
             If (Contains%(inventory$, "SWORD", ",")) And (dragonDead% = 0) Then
-                Call PrintText("left", CsrLin, "With quick reflexes you use your mighty sword to slay the dragon.")
-                Call PrintText("left", CsrLin, "The townspeople are saved.  And you are today a hero!!!")
+                Call PrintText(game, "story", CsrLin, "With quick reflexes you use your mighty sword to slay the dragon.")
+                Call PrintText(game, "story", CsrLin, "The townspeople are saved.  And you are today a hero!!!")
                 score% = score% + 100
                 Color _RGB(0, 0, 0)
-                Call PrintText("left", CsrLin, "Score +100")
+                Call PrintText(game, "story", CsrLin, "Score +100")
                 dragonDead% = 1
             Else
                 If (Contains%(inventory$, "UNO REVERSE", ",")) And (dragonDead% = 0) Then
-                    Call PrintText("left", CsrLin, "With quick reflexes you use your UNO REVERSE card to send the dragon's")
-                    Call PrintText("left", CsrLin, "flames back at it.  With each fiery burst, the dragon destroys itself.")
-                    Call PrintText("left", CsrLin, "The townspeople are saved.  And you are today a hero!!!")
+                    Call PrintText(game, "story", CsrLin, "With quick reflexes you use your UNO REVERSE card to send the dragon's")
+                    Call PrintText(game, "story", CsrLin, "flames back at it.  With each fiery burst, the dragon destroys itself.")
+                    Call PrintText(game, "story", CsrLin, "The townspeople are saved.  And you are today a hero!!!")
                     score% = score% + 100
                     Color _RGB(0, 0, 0)
-                    Call PrintText("left", CsrLin, "Score +100")
+                    Call PrintText(game, "story", CsrLin, "Score +100")
                     dragonDead% = 1
                 End If
             End If
@@ -658,50 +613,50 @@ If playerView$ = "DRAGON'S DEN" Then
 End If
 If playerView$ = "CASTLE" Then
     Color _RGB(255, 255, 0)
-    Call PrintText("left", CsrLin, "What a magnificent castle!  But no one is home.")
-    Call PrintText("left", CsrLin, "Perhaps the royal court fled because of BIG CHUNG?")
+    Call PrintText(game, "story", CsrLin, "What a magnificent castle!  But no one is home.")
+    Call PrintText(game, "story", CsrLin, "Perhaps the royal court fled because of BIG CHUNG?")
 End If
 If playerView$ = "ZARA'S STORE" Then
     Color _RGB(255, 0, 255)
-    Call PrintText("left", CsrLin, "There are a lot of fun things to buy. Of particular note you")
-    Call PrintText("left", CsrLin, "see a mighty silver sword, fit for slaying a dragon.")
+    Call PrintText(game, "story", CsrLin, "There are a lot of fun things to buy. Of particular note you")
+    Call PrintText(game, "story", CsrLin, "see a mighty silver sword, fit for slaying a dragon.")
     If (Contains%(inventory$, "GOLD", ",")) And (Not Contains%(inventory$, "SWORD", ",")) Then
-        Call PrintText("left", CsrLin, "You deposit some gold coins into the vending machine...")
+        Call PrintText(game, "story", CsrLin, "You deposit some gold coins into the vending machine...")
         inventory$ = inventory$ + ",SWORD"
         Color _RGB(0, 0, 0)
-        Call PrintText("left", CsrLin, "Inventory +SWORD")
+        Call PrintText(game, "story", CsrLin, "Inventory +SWORD")
     Else
         If Contains%(inventory$, "SWORD", ",") Then
-            Call PrintText("left", CsrLin, "That mighty sword is in your hand... perhaps you should")
-            Call PrintText("left", CsrLin, "use it for some heroic deed?")
+            Call PrintText(game, "story", CsrLin, "That mighty sword is in your hand... perhaps you should")
+            Call PrintText(game, "story", CsrLin, "use it for some heroic deed?")
         Else
-            Call PrintText("left", CsrLin, "Maybe some day you'll return when you have some money.")
+            Call PrintText(game, "story", CsrLin, "Maybe some day you'll return when you have some money.")
         End If
     End If
 End If
 If playerView$ = "GREYSON'S GAME ROOM" Then
     Color _RGB(0, 0, 255)
-    Call PrintText("left", CsrLin, "Oh my!  Every game known to mankind can be found for sale in")
-    Call PrintText("left", CsrLin, "this room.  A particular game catches your eye... UNO.")
+    Call PrintText(game, "story", CsrLin, "Oh my!  Every game known to mankind can be found for sale in")
+    Call PrintText(game, "story", CsrLin, "this room.  A particular game catches your eye... UNO.")
     If (Contains%(inventory$, "GOLD", ",")) And (Not Contains%(inventory$, "UNO REVERSE", ",")) Then
-        Call PrintText("left", CsrLin, "You leave some gold coins on the table in exchange for the UNO deck.")
-        Call PrintText("left", CsrLin, "You look at the cards and discover the legendary... UNO REVERSE!!!")
+        Call PrintText(game, "story", CsrLin, "You leave some gold coins on the table in exchange for the UNO deck.")
+        Call PrintText(game, "story", CsrLin, "You look at the cards and discover the legendary... UNO REVERSE!!!")
         inventory$ = inventory$ + ",UNO REVERSE"
         Color _RGB(0, 0, 0)
-        Call PrintText("left", CsrLin, "Inventory +UNO REVERSE")
+        Call PrintText(game, "story", CsrLin, "Inventory +UNO REVERSE")
     Else
         If Contains%(inventory$, "UNO REVERSE", ",") Then
-            Call PrintText("left", CsrLin, "That mighty deck is in your hand... perhaps you should")
-            Call PrintText("left", CsrLin, "use it for some heroic deed?")
+            Call PrintText(game, "story", CsrLin, "That mighty deck is in your hand... perhaps you should")
+            Call PrintText(game, "story", CsrLin, "use it for some heroic deed?")
         Else
-            Call PrintText("left", CsrLin, "Maybe some day you'll return when you have some money.")
+            Call PrintText(game, "story", CsrLin, "Maybe some day you'll return when you have some money.")
         End If
     End If
 End If
 Print
 If (playerView$ = "CASTLE") And (Not Contains%(inventory$, "GOLD", ",")) Then
     Color _RGB(255, 255, 0)
-    Call PrintText("left", CsrLin, "Beautiful gold coins are scattered around.  Will you take them?")
+    Call PrintText(game, "story", CsrLin, "Beautiful gold coins are scattered around.  Will you take them?")
     Print
 End If
 aheadX% = playerX%
@@ -720,15 +675,15 @@ If directions(playerDirection%) = "WEST" Then
 End If
 If (aheadX% = doorX%) And (aheadY% = doorY%) Then
     Color _RGB(184, 115, 51)
-    Call PrintText("left", CsrLin, "Ahead you see a magic door.  Perhaps an exit to this world?")
+    Call PrintText(game, "story", CsrLin, "Ahead you see a magic door.  Perhaps an exit to this world?")
 Else
-    If gameOver% = 0 Then
+    If game.isOver = 0 Then
         If (aheadX% = 0) Or (aheadX% = (levelSize% + 1)) Or (aheadY% = 0) Or (aheadY% = (levelSize% + 1)) Then
             Color _RGB(0, 0, 0)
-            Call PrintText("left", CsrLin, "There is nothing ahead.  You are facing the edge of the world.")
+            Call PrintText(game, "story", CsrLin, "There is nothing ahead.  You are facing the edge of the world.")
         Else
             Color _RGB(0, 0, 0)
-            Call PrintText("left", CsrLin, "Ahead you see " + world(aheadX%, aheadY%) + ".")
+            Call PrintText(game, "story", CsrLin, "Ahead you see " + world(aheadX%, aheadY%) + ".")
         End If
     End If
 End If
@@ -753,30 +708,30 @@ End If
 If (aheadX% = doorX%) And (aheadY% = doorY%) Then
     playerX% = aheadX%
     playerY% = aheadY%
-    gameOver% = 1
+    game.isOver = 1
     Print
-    Call PrintText("left", CsrLin, "You have exited the world.")
+    Call PrintText(game, "story", CsrLin, "You have exited the world.")
     Print
     If Contains%(inventory$, "GOLD", ",") Then
         Print
-        Call PrintText("left", CsrLin, "You have safely brought your riches back home.")
-        Call PrintText("left", CsrLin, "Fame and fortune are yours.")
-        Call PrintText("left", CsrLin, "YOU HAVE WON THE GAME!!!")
+        Call PrintText(game, "story", CsrLin, "You have safely brought your riches back home.")
+        Call PrintText(game, "story", CsrLin, "Fame and fortune are yours.")
+        Call PrintText(game, "story", CsrLin, "YOU HAVE WON THE GAME!!!")
         If score% = 300 Then
-            Call PrintText("left", CsrLin, "MAXIMUM SCORE!!!")
+            Call PrintText(game, "story", CsrLin, "MAXIMUM SCORE!!!")
         End If
     Else
         Print
-        Call PrintText("left", CsrLin, "You did not return home with the gold.")
-        Call PrintText("left", CsrLin, "This is a horrible fate.")
-        Call PrintText("left", CsrLin, "YOU HAVE LOST THE GAME.")
+        Call PrintText(game, "story", CsrLin, "You did not return home with the gold.")
+        Call PrintText(game, "story", CsrLin, "This is a horrible fate.")
+        Call PrintText(game, "story", CsrLin, "YOU HAVE LOST THE GAME.")
     End If
 Else
     If (aheadX% = 0) Or (aheadX% = (levelSize% + 1)) Or (aheadY% = 0) Or (aheadY% = (levelSize% + 1)) Then
         Print
-        Call PrintText("left", CsrLin, "There is nothing ahead.  You are facing the edge of the world.")
+        Call PrintText(game, "story", CsrLin, "There is nothing ahead.  You are facing the edge of the world.")
         Print
-        Call PrintText("left", CsrLin, "Jumping off the edge of the world is NOT allowed in this game.")
+        Call PrintText(game, "story", CsrLin, "Jumping off the edge of the world is NOT allowed in this game.")
     Else
         ' Advance the player to the next scene
         lastScene$ = world(playerX%, playerY%)
@@ -857,7 +812,7 @@ Return
 
 MoveBackwardsAction:
 Print
-Call PrintText("left", CsrLin, "Please don't try walking backwards.  You might trip.")
+Call PrintText(game, "story", CsrLin, "Please don't try walking backwards.  You might trip.")
 Return
 
 TurnLeftAction:
@@ -881,10 +836,10 @@ sceneChoices$ = basicChoices$
 If Not Contains%(inventory$, "GOLD", ",") Then
     score% = score% + 100
     Print
-    Call PrintText("left", CsrLin, "All the gold now belongs to you!")
+    Call PrintText(game, "story", CsrLin, "All the gold now belongs to you!")
     Color _RGB(0, 0, 0)
-    Call PrintText("left", CsrLin, "Score +100")
-    Call PrintText("left", CsrLin, "Inventory +GOLD")
+    Call PrintText(game, "story", CsrLin, "Score +100")
+    Call PrintText(game, "story", CsrLin, "Inventory +GOLD")
     Print
     If inventory$ = "NOTHING" Then
         inventory$ = "GOLD"
@@ -895,12 +850,12 @@ End If
 Return
 
 PlayGameAction:
-GoSub PrintHeader
+Call TurnPage(game)
 Color _RGB(0, 0, 0)
 Print
-Call PrintText("left", CsrLin, "Fluffy Cat: Answer me this, and a magical name I will give to you.")
+Call PrintText(game, "story", CsrLin, "Fluffy Cat: Answer me this, and a magical name I will give to you.")
 Print
-Call PrintText("left", CsrLin, "What is blue... and is also the sky?")
+Call PrintText(game, "story", CsrLin, "What is blue... and is also the sky?")
 Print
 riddle$ = GetInput$("You", 0, 0, 40)
 If (riddle$ = "THE SKY") Or (riddle$ = "THE BLUE SKY") Or (riddle$ = "BLUE SKY") Then
@@ -908,55 +863,55 @@ If (riddle$ = "THE SKY") Or (riddle$ = "THE BLUE SKY") Or (riddle$ = "BLUE SKY")
 End If
 Print
 If riddle$ = "SKY" Then
-    Call PrintText("left", CsrLin, "Fluffy Cat: Alas you have bested me!  And that was my")
-    Call PrintText("left", CsrLin, "finest riddle!  Very well then.  A deal is a deal. The")
-    Call PrintText("left", CsrLin, "magical name you seek is... SHMEBULOCK.")
+    Call PrintText(game, "story", CsrLin, "Fluffy Cat: Alas you have bested me!  And that was my")
+    Call PrintText(game, "story", CsrLin, "finest riddle!  Very well then.  A deal is a deal. The")
+    Call PrintText(game, "story", CsrLin, "magical name you seek is... SHMEBULOCK.")
 Else
     If riddle$ = exitGameAction$ Then
         GoSub ExitAction
     Else
-        Call PrintText("left", CsrLin, "Fluffy Cat: Aha!  It appears that I have bested you!  That")
-        Call PrintText("left", CsrLin, "answer is INCORRECT.  No one is as clever as I!")
+        Call PrintText(game, "story", CsrLin, "Fluffy Cat: Aha!  It appears that I have bested you!  That")
+        Call PrintText(game, "story", CsrLin, "answer is INCORRECT.  No one is as clever as I!")
         Print
-        Call PrintText("left", CsrLin, "Better luck next time.")
+        Call PrintText(game, "story", CsrLin, "Better luck next time.")
     End If
 End If
 Print
 Return
 
 SpeakNameAction:
-GoSub PrintHeader
+Call TurnPage(game)
 Color _RGB(184, 115, 51)
 Print
 nameGuess$ = GetInput$("You", 0, 0, 10)
 Print
 If (nameGuess$ = "SHMEBULOCK") Then
-    Call PrintText("left", CsrLin, "           ,")
-    Call PrintText("left", CsrLin, "          / \")
-    Call PrintText("left", CsrLin, "         /   \")
-    Call PrintText("left", CsrLin, "        /     \")
-    Call PrintText("left", CsrLin, "       /_______\")
-    Call PrintText("left", CsrLin, "       // . . \\")
-    Call PrintText("left", CsrLin, "      (/(__7__)\)")
-    Call PrintText("left", CsrLin, "      |'-' = `-'|")
-    Call PrintText("left", CsrLin, "      |         |")
-    Call PrintText("left", CsrLin, "      /\       /\")
-    Call PrintText("left", CsrLin, "     /  '.   .'  \")
-    Call PrintText("left", CsrLin, "    / /|  `v`  |\ \")
-    Call PrintText("left", CsrLin, "    \ \|===[]==|/ /")
-    Call PrintText("left", CsrLin, "     '-|_______|-'")
-    Call PrintText("left", CsrLin, "        |__|__|")
-    Call PrintText("left", CsrLin, "        |--|--|")
-    Call PrintText("left", CsrLin, "       (__)`(__)")
+    Call PrintText(game, "story", CsrLin, "           ,")
+    Call PrintText(game, "story", CsrLin, "          / \")
+    Call PrintText(game, "story", CsrLin, "         /   \")
+    Call PrintText(game, "story", CsrLin, "        /     \")
+    Call PrintText(game, "story", CsrLin, "       /_______\")
+    Call PrintText(game, "story", CsrLin, "       // . . \\")
+    Call PrintText(game, "story", CsrLin, "      (/(__7__)\)")
+    Call PrintText(game, "story", CsrLin, "      |'-' = `-'|")
+    Call PrintText(game, "story", CsrLin, "      |         |")
+    Call PrintText(game, "story", CsrLin, "      /\       /\")
+    Call PrintText(game, "story", CsrLin, "     /  '.   .'  \")
+    Call PrintText(game, "story", CsrLin, "    / /|  `v`  |\ \")
+    Call PrintText(game, "story", CsrLin, "    \ \|===[]==|/ /")
+    Call PrintText(game, "story", CsrLin, "     '-|_______|-'")
+    Call PrintText(game, "story", CsrLin, "        |__|__|")
+    Call PrintText(game, "story", CsrLin, "        |--|--|")
+    Call PrintText(game, "story", CsrLin, "       (__)`(__)")
     Print
-    Call PrintText("left", CsrLin, "Magic Gnome: Shmebulock!  Shmebulock... Shmebulock.")
-    Call PrintText("left", CsrLin, "Shmebulock?  Shmebulock, Shmebulock.  Shme... bulock!")
+    Call PrintText(game, "story", CsrLin, "Magic Gnome: Shmebulock!  Shmebulock... Shmebulock.")
+    Call PrintText(game, "story", CsrLin, "Shmebulock?  Shmebulock, Shmebulock.  Shme... bulock!")
     Print
     If Not Contains%(inventory$, "RING OF TAMING", ",") Then
-        Call PrintText("left", CsrLin, "Inventory +RING OF TAMING")
-        Call PrintText("left", CsrLin, "(Does not work on large creatures.)")
+        Call PrintText(game, "story", CsrLin, "Inventory +RING OF TAMING")
+        Call PrintText(game, "story", CsrLin, "(Does not work on large creatures.)")
     Else
-        Call PrintText("left", CsrLin, "You look down at your ring and it glows with power.")
+        Call PrintText(game, "story", CsrLin, "You look down at your ring and it glows with power.")
     End If
     If inventory$ = "NOTHING" Then
         inventory$ = "RING OF TAMING"
@@ -970,15 +925,15 @@ Else
         GoSub ExitAction
     Else
         If (nameGuess$ = "MAGNIFICO") Or (nameGuess$ = "DRACO") Then
-            Call PrintText("left", CsrLin, "You wait... and wait some more.  But... nothing happens!")
-            Call PrintText("left", CsrLin, "Perhaps you spoke the wrong name?")
+            Call PrintText(game, "story", CsrLin, "You wait... and wait some more.  But... nothing happens!")
+            Call PrintText(game, "story", CsrLin, "Perhaps you spoke the wrong name?")
             Print
-            Call PrintText("left", CsrLin, "Good guess though!")
+            Call PrintText(game, "story", CsrLin, "Good guess though!")
         Else
-            Call PrintText("left", CsrLin, "You wait... and wait some more.  But... nothing happens!")
-            Call PrintText("left", CsrLin, "Perhaps you spoke the wrong name?")
+            Call PrintText(game, "story", CsrLin, "You wait... and wait some more.  But... nothing happens!")
+            Call PrintText(game, "story", CsrLin, "Perhaps you spoke the wrong name?")
             Print
-            Call PrintText("left", CsrLin, "Better luck next time.")
+            Call PrintText(game, "story", CsrLin, "Better luck next time.")
         End If
     End If
 End If
@@ -986,34 +941,34 @@ Print
 Return
 
 TameFluffAction:
-GoSub PrintHeader
+Call TurnPage(game)
 Color _RGB(0, 0, 0)
 Print
-Call PrintText("left", CsrLin, "                ____")
-Call PrintText("left", CsrLin, "                \ _ `\ ")
-Call PrintText("left", CsrLin, "                 | \  `\._")
-Call PrintText("left", CsrLin, "                 |  |  _/ `-.._")
-Call PrintText("left", CsrLin, "                 |  /-'  // /.'`-. .--.__")
-Call PrintText("left", CsrLin, "                 /-'    || // //  |    __\")
-Call PrintText("left", CsrLin, "               ./   .` |\///_//   \  /'   |")
-Call PrintText("left", CsrLin, "             .'.-.__.` \ |/'-' .'  \|    /")
-Call PrintText("left", CsrLin, "            / ( ____`.\ |/ .' '.'   |\  /")
-Call PrintText("left", CsrLin, "           /  -//   \     /- _  '     `'|")
-Call PrintText("left", CsrLin, "           |  ||o    ;       __`--      |")
-Call PrintText("left", CsrLin, "           |   \\   /      //  `.  \    |")
-Call PrintText("left", CsrLin, "           \    `---'     |/o    \_ )   \")
-Call PrintText("left", CsrLin, "         _ _\_    /       |      /       |")
-Call PrintText("left", CsrLin, "       _-_`-__-_.-'|__    \`-..-'       /")
-Call PrintText("left", CsrLin, "      '  .--_--_-.. \_\/_              /")
-Call PrintText("left", CsrLin, "        ' /    \... / .. \_-___       / \")
-Call PrintText("left", CsrLin, "         /      `-._| ..-._--___     /   \")
-Call PrintText("left", CsrLin, "        /    .---.|  `-.__/`--.__---'     |")
-Call PrintText("left", CsrLin, "       /_.--/ . . \__/   _   `--._-.      |")
-Call PrintText("left", CsrLin, "    .-'    | || | |   .-' `-.     \ `\    |")
-Call PrintText("left", CsrLin, "  .'       `-\/\|-'  |  / /  \     `\ \   |")
-Call PrintText("left", CsrLin, " /                    \/ | .  |           |")
-Call PrintText("left", CsrLin, "/                      \_/_/ / \          |")
-Call PrintText("left", CsrLin, "|  magnifico               \/   \         |")
+Call PrintText(game, "story", CsrLin, "                ____")
+Call PrintText(game, "story", CsrLin, "                \ _ `\ ")
+Call PrintText(game, "story", CsrLin, "                 | \  `\._")
+Call PrintText(game, "story", CsrLin, "                 |  |  _/ `-.._")
+Call PrintText(game, "story", CsrLin, "                 |  /-'  // /.'`-. .--.__")
+Call PrintText(game, "story", CsrLin, "                 /-'    || // //  |    __\")
+Call PrintText(game, "story", CsrLin, "               ./   .` |\///_//   \  /'   |")
+Call PrintText(game, "story", CsrLin, "             .'.-.__.` \ |/'-' .'  \|    /")
+Call PrintText(game, "story", CsrLin, "            / ( ____`.\ |/ .' '.'   |\  /")
+Call PrintText(game, "story", CsrLin, "           /  -//   \     /- _  '     `'|")
+Call PrintText(game, "story", CsrLin, "           |  ||o    ;       __`--      |")
+Call PrintText(game, "story", CsrLin, "           |   \\   /      //  `.  \    |")
+Call PrintText(game, "story", CsrLin, "           \    `---'     |/o    \_ )   \")
+Call PrintText(game, "story", CsrLin, "         _ _\_    /       |      /       |")
+Call PrintText(game, "story", CsrLin, "       _-_`-__-_.-'|__    \`-..-'       /")
+Call PrintText(game, "story", CsrLin, "      '  .--_--_-.. \_\/_              /")
+Call PrintText(game, "story", CsrLin, "        ' /    \... / .. \_-___       / \")
+Call PrintText(game, "story", CsrLin, "         /      `-._| ..-._--___     /   \")
+Call PrintText(game, "story", CsrLin, "        /    .---.|  `-.__/`--.__---'     |")
+Call PrintText(game, "story", CsrLin, "       /_.--/ . . \__/   _   `--._-.      |")
+Call PrintText(game, "story", CsrLin, "    .-'    | || | |   .-' `-.     \ `\    |")
+Call PrintText(game, "story", CsrLin, "  .'       `-\/\|-'  |  / /  \     `\ \   |")
+Call PrintText(game, "story", CsrLin, " /                    \/ | .  |           |")
+Call PrintText(game, "story", CsrLin, "/                      \_/_/ / \          |")
+Call PrintText(game, "story", CsrLin, "|  magnifico               \/   \         |")
 Print
 Print
 Return
@@ -1021,15 +976,15 @@ Return
 ChaseBunniesAction:
 Print
 Color _RGB(0, 255, 0)
-Call PrintText("left", CsrLin, "Seems like an unimportant thing to do but nonetheless")
-Call PrintText("left", CsrLin, "you try to chase some of the bunnies.  And... you can't")
-Call PrintText("left", CsrLin, "catch a single one.  They are too fast!  Oh well, time")
-Call PrintText("left", CsrLin, "to continue on with your quest.")
+Call PrintText(game, "story", CsrLin, "Seems like an unimportant thing to do but nonetheless")
+Call PrintText(game, "story", CsrLin, "you try to chase some of the bunnies.  And... you can't")
+Call PrintText(game, "story", CsrLin, "catch a single one.  They are too fast!  Oh well, time")
+Call PrintText(game, "story", CsrLin, "to continue on with your quest.")
 Return
 
 DumbAction:
 Print
-Call PrintText("left", CsrLin, "That is NOT a choice.  Better luck next time.")
+Call PrintText(game, "story", CsrLin, "That is NOT a choice.  Better luck next time.")
 Print
 Return
 
@@ -1040,15 +995,15 @@ If level% = 1 Then
     If dragonDead% = 0 Then
         dragonDead% = 1
         score% = score% + 100
-        Call PrintText("left", CsrLin, "You slew the dragon!")
-        Call PrintText("left", CsrLin, "Score +100")
+        Call PrintText(game, "story", CsrLin, "You slew the dragon!")
+        Call PrintText(game, "story", CsrLin, "Score +100")
         thingDone% = 1
     End If
     If catTamed% = 0 Then
         catTamed% = 1
         score% = score% + 100
-        Call PrintText("left", CsrLin, "You tamed the elusive cat!")
-        Call PrintText("left", CsrLin, "Score +100")
+        Call PrintText(game, "story", CsrLin, "You tamed the elusive cat!")
+        Call PrintText(game, "story", CsrLin, "Score +100")
         thingDone% = 1
     End If
     If Not Contains%(inventory$, "RING OF TAMING", ",") Then
@@ -1057,9 +1012,9 @@ If level% = 1 Then
         Else
             inventory$ = inventory$ + ",RING OF TAMING"
         End If
-        Call PrintText("left", CsrLin, "You obtained the Ring of Taming!")
-        Call PrintText("left", CsrLin, "Inventory +RING OF TAMING")
-        Call PrintText("left", CsrLin, "(Does not work on large creatures.)")
+        Call PrintText(game, "story", CsrLin, "You obtained the Ring of Taming!")
+        Call PrintText(game, "story", CsrLin, "Inventory +RING OF TAMING")
+        Call PrintText(game, "story", CsrLin, "(Does not work on large creatures.)")
         thingDone% = 1
     End If
     If Not Contains%(inventory$, "GOLD", ",") Then
@@ -1069,9 +1024,9 @@ If level% = 1 Then
             inventory$ = inventory$ + ",GOLD"
         End If
         score% = score% + 100
-        Call PrintText("left", CsrLin, "You obtained the Gold!")
-        Call PrintText("left", CsrLin, "Score +100")
-        Call PrintText("left", CsrLin, "Inventory +GOLD")
+        Call PrintText(game, "story", CsrLin, "You obtained the Gold!")
+        Call PrintText(game, "story", CsrLin, "Score +100")
+        Call PrintText(game, "story", CsrLin, "Inventory +GOLD")
         thingDone% = 1
     End If
     If (character$ = "GREYSON") And (Not Contains%(inventory$, "UNO REVERSE", ",")) Then
@@ -1080,8 +1035,8 @@ If level% = 1 Then
         Else
             inventory$ = inventory$ + ",UNO REVERSE"
         End If
-        Call PrintText("left", CsrLin, "You obtained the legendary UNO Reverse card!")
-        Call PrintText("left", CsrLin, "Inventory +UNO REVERSE")
+        Call PrintText(game, "story", CsrLin, "You obtained the legendary UNO Reverse card!")
+        Call PrintText(game, "story", CsrLin, "Inventory +UNO REVERSE")
         thingDone% = 1
     End If
     If (character$ = "ZARA") And (Not Contains%(inventory$, "SWORD", ",")) Then
@@ -1090,30 +1045,14 @@ If level% = 1 Then
         Else
             inventory$ = inventory$ + ",SWORD"
         End If
-        Call PrintText("left", CsrLin, "You obtained the legendary SWORD!")
-        Call PrintText("left", CsrLin, "Inventory +SWORD")
+        Call PrintText(game, "story", CsrLin, "You obtained the legendary SWORD!")
+        Call PrintText(game, "story", CsrLin, "Inventory +SWORD")
         thingDone% = 1
     End If
     If thingDone% = 0 Then
-        Call PrintText("left", CsrLin, "You have done all the things for level " + LTrim$(Str$(level%)) + ".")
+        Call PrintText(game, "story", CsrLin, "You have done all the things for level " + LTrim$(Str$(level%)) + ".")
     End If
 End If
-Return
-
-' Prompt the user to press the any key in order to continue
-PressAnyKey:
-' Display the prompt text
-Color _RGB(0, 139, 139)
-curRow% = CsrLin
-prompt$ = "Press any key to turn the page"
-Call PrintText("left", curRow%, prompt$)
-' Suspend program execution until the any key is pressed
-Sleep
-_KeyClear
-' Clear the prompt text with spaces
-Call PrintText("left", curRow%, String$(Len(prompt$), " "))
-' Reposition the cursor
-Locate curRow%, 1
 Return
 
 ' Does a string contain a given token? (1/0)
@@ -1128,6 +1067,71 @@ Return
 Function Contains% (myString As String, token As String, delimiter As String)
     Contains% = InStr(1, (delimiter + myString + delimiter), (delimiter + token + delimiter)) > 0
 End Function
+
+' Display the high scores pages
+' Parameters:
+' game - Book instance
+Sub DisplayHighScoresPage (game As Book)
+    If game.chapter = "" Then
+        game.chapter = "HIGH SCORES"
+    End If
+
+    Call TurnPage(game)
+    Color _RGB(0, 0, 0) ' black
+
+    If _FileExists("high-scores.txt") Then
+        Open "high-scores.txt" For Input As #1
+        Do Until EOF(1)
+            Input #1, fileLine$
+            Call PrintText(game, "story", CsrLin, fileLine$)
+        Loop
+        Close #1
+    Else
+        Call PrintText(game, "story", CsrLin, "N/A")
+    End If
+
+    Print
+    Print
+
+    If game.isOver = 0 Then
+        Call PressAnyKey(game)
+    End If
+
+    If game.chapter = "HIGH SCORES" Then
+        game.chapter = ""
+    End If
+End Sub
+
+' Display the title page
+'
+' Parameters:
+' game - Book instance
+Sub DisplayTitlePage (game As Book)
+    Call TurnPage(game)
+    Color _RGB(139, 0, 0) ' dark red
+    ' TODO - Since TurnPage() moves the cursor to row 5, can the row parameters all just be CsrLin?
+    Call PrintText(game, "story", 5, "                                   ___, ____--'")
+    Call PrintText(game, "story", 6, "                              _,-.'_,-'      (")
+    Call PrintText(game, "story", 7, "                           ,-' _.-''....____(")
+    Call PrintText(game, "story", 8, "                 ,))_     /  ,'\ `'-.     (          /\")
+    Call PrintText(game, "story", 9, "         __ ,+..a`  \(_   ) /   \    `'-..(         /  \")
+    Call PrintText(game, "story", 10, "         )`-;...,_   \(_ ) /     \  ('''    ;'^^`\ <./\.>")
+    Call PrintText(game, "story", 11, "             ,_   )   |( )/   ,./^``_..._  < /^^\ \_.))")
+    Call PrintText(game, "story", 12, "            `=;; (    (/_')-- -'^^`      ^^-.`_.-` >-'")
+    Call PrintText(game, "story", 13, "            `=\\ (                             _,./")
+    Call PrintText(game, "story", 14, "              ,\`(                         )^^^")
+    Call PrintText(game, "story", 15, "                ``;         __-'^^\       /")
+    Call PrintText(game, "story", 16, "                  / _>---^^^   `\..`-.    ``'.")
+    Call PrintText(game, "story", 17, "                 / /               / /``'`; /")
+    Call PrintText(game, "story", 18, "                / /          ,-=='-`=-'  / /")
+    Call PrintText(game, "story", 19, "          ,-=='-`=-.               ,-=='-`=-.")
+    Color _RGB(0, 0, 0) ' black
+    Call PrintText(game, "story", 20, "        *******************************************")
+    Call PrintText(game, "story", 21, "                    T W I N   Q U E S T")
+    Print
+    Print
+    Call PressAnyKey(game)
+End Sub
 
 ' Get input from the user
 '
@@ -1368,20 +1372,40 @@ Function PlaySound& (file As String, volume As Single, loopSound As Integer)
     PlaySound& = soundHandle&
 End Function
 
+' Prompt the user to press the any key in order to turn the page
+'
+' Parameters:
+' game - Book instance
+Sub PressAnyKey (game As Book)
+    ' Display the prompt text
+    Color _RGB(0, 139, 139) ' Dark cyan
+    curRow% = CsrLin
+    prompt$ = "Press any key to turn the page"
+    Call PrintText(game, "story", curRow%, prompt$)
+    ' Suspend program execution until the any key is pressed
+    Sleep
+    _KeyClear
+    ' Clear the prompt text with spaces
+    Call PrintText(game, "story", curRow%, String$(Len(prompt$), " "))
+    ' Reposition the cursor
+    Locate curRow%, 1
+End Sub
+
 ' Print text on the book
 '
 ' Parameters:
-' page - (LEFT/RIGHT) Which page of the book to use
+' game - Book instance
+' page - (STORY/CONTROL) Which page of the book to use
 ' row - Text row
 ' text - Text to print
-Sub PrintText (page As String, row As Integer, text As String)
+Sub PrintText (game As Book, page As String, row As Integer, text As String)
     ' Determine the starting position for the text based on the designated page
     page = UCase$(page)
-    If page = "LEFT" Then
+    If ((page = "STORY") And (game.isRightHanded = 1)) Or ((page = "CONTROL") And (game.isRightHanded = 0)) Then
         ' book.png offers a left-hand page where text should start at position 15
         column% = 15
     Else
-        If page = "RIGHT" Then
+        If ((page = "STORY") And (game.isRightHanded = 0)) Or ((page = "CONTROL") And (game.isRightHanded = 1)) Then
             ' book.png offers a right-hand page where text should start at position 83
             column% = 83
         Else
@@ -1454,3 +1478,28 @@ Sub StopSound (soundHandle As Long)
         _SndClose soundHandle
     End If
 End Sub
+
+' Wipe the current screen and redisplay the book image
+'
+' Parameters:
+' game - Book instance
+Sub TurnPage (game As Book)
+    ' Play a sound for turning the page
+    Call ReplaySound(game.pageTurnSound, 1, 0)
+
+    Cls , _RGB(0, 0, 0) ' Clear screen with black as the background color
+    _PutImage , game.image ' Display the main book image
+    _PrintMode _KeepBackground ' Preserve the image background when printing text
+    Color _RGB(0, 0, 0) ' black
+
+    ' Print the page headers (the book image allows for text starting on row 3)
+    If game.chapter <> "" Then
+        ' TODO - Need to right-align the text on the right-hand page
+        Call PrintText(game, "control", 3, UCase$(game.title))
+        Call PrintText(game, "story", 3, UCase$(game.chapter))
+    End If
+
+    ' All non-header text should begin on row 5 to accommodate the book image
+    Locate 5, 1
+End Sub
+

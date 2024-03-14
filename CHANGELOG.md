@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- Added sound for turning the page
+- Added general page headers for the book title and current chapter
+- Added book image as a general game mat
+
 ## [0.0.2] - 2024-03-09
 
 ### Changed
