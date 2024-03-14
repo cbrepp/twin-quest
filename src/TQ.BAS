@@ -20,9 +20,11 @@ Dim Shared game, gameChoices$, gameChoicesCol%, gameChoicesRow%, sceneChoices$, 
 
 Type Book
     chapter As String
+    firstRow As Integer
     image As Long
     isOver As Integer
     isRightHanded As Integer
+    lastRow As Integer
     pageTurnSound As Long
     title As String
     version As String
@@ -35,6 +37,9 @@ game.version = "0.1.0"
 game.chapter = ""
 game.isOver = 0
 game.isRightHanded = 1
+game.image = _LoadImage("book.png", 32)
+game.firstRow = 3 ' book.png allows for row 3 as the first row for text
+game.lastRow = 46 ' book.png allows for row 46 as the first row for text
 
 ' Configure application window
 _Title game.title$ + " " + game.version ' Set the application window's title
@@ -270,7 +275,6 @@ StopSound wayneChungMusic&
 
 Screen _NewImage(1280, 793, 32)
 Cls , _RGB(0, 0, 0)
-game.image = _LoadImage("book.png", 32) 'load the image file to be drawn
 _PutImage , game.image
 '
 'Cls
@@ -1380,13 +1384,14 @@ Sub PressAnyKey (game As Book)
     ' Display the prompt text
     Color _RGB(0, 139, 139) ' Dark cyan
     curRow% = CsrLin
+    ' TODO - Right align this text
     prompt$ = "Press any key to turn the page"
-    Call PrintText(game, "story", curRow%, prompt$)
+    Call PrintText(game, "story", game.lastRow, prompt$)
     ' Suspend program execution until the any key is pressed
     Sleep
     _KeyClear
     ' Clear the prompt text with spaces
-    Call PrintText(game, "story", curRow%, String$(Len(prompt$), " "))
+    Call PrintText(game, "story", game.lastRow, String$(Len(prompt$), " "))
     ' Reposition the cursor
     Locate curRow%, 1
 End Sub
@@ -1495,11 +1500,11 @@ Sub TurnPage (game As Book)
     ' Print the page headers (the book image allows for text starting on row 3)
     If game.chapter <> "" Then
         ' TODO - Need to right-align the text on the right-hand page
-        Call PrintText(game, "control", 3, UCase$(game.title))
-        Call PrintText(game, "story", 3, UCase$(game.chapter))
+        Call PrintText(game, "control", game.firstRow, UCase$(game.title))
+        Call PrintText(game, "story", game.firstRow, UCase$(game.chapter))
     End If
 
     ' All non-header text should begin on row 5 to accommodate the book image
-    Locate 5, 1
+    Locate game.firstRow + 2, 1
 End Sub
 
