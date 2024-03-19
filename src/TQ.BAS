@@ -2,20 +2,25 @@
 ' book.png - Empty book by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
 ' castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
 ' dragon.mp3 - The Roar of a 5-Headed Dragon (https://freesound.org/people/bevibeldesign/sounds/366095/)
+' elevator.wav - music elevator ext (https://freesound.org/people/Jay_You/sounds/467240/)
+' elevator-open.mp3 - Elevator ding door open close, noisy, 10.mp3 (https://freesound.org/people/TRP/sounds/576359/)
 ' epic.mp3 - Epic Trailer Background Music (https://freesound.org/people/Migfus20/sounds/560454/)
 ' fluff.wav - Spanish Lick I, Acoustic- AB split stereo pair (Oktava).wav (https://freesound.org/people/debudding/sounds/44366/)
 ' gianni.mp3 - bonfire flames sizzling (https://freesound.org/people/florianreichelt/sounds/563764/)
 ' grey.mp3 - 8-Bit Coin Or Power Up FX For Retro Video Games (https://freesound.org/people/Cloud-10/sounds/647977/)
+' inventory.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
 ' magic.mp3 - Magic.mp3 (https://freesound.org/people/Bastianhallo/sounds/434050/)
+' points.mp3 - 320655__rhodesmas__level-up-01.mp3 (https://freesound.org/people/shinephoenixstormcrow/sounds/337049/)
 ' select-player.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
 ' select-player-grey.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
 ' select-player-zara.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
+' suspense.mp3 - Drone Background Music (https://freesound.org/people/Migfus20/sounds/561085/)
 ' turn-page.mp3 - page turn (https://freesound.org/people/partheeban/sounds/457767/)
 ' wayne-chung.jpg - Image of Wayne Chung wondering what's going on
 ' wayne-chung.mp3 - Wang Chung "Everybody Have Fun Tonight" snippet
 ' wilderness.mp3 - birds_210513_0088.mp3 (https://freesound.org/people/titi2/sounds/571247/)
 ' woods.mp3 - forestsurroundings.mp3 (https://freesound.org/people/Luftrum/sounds/48411/)
-' zara.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
+' zara.mp3 - 050816 a crowded grocery store Sapporo.mp3 (https://freesound.org/people/pflanigan/sounds/390254/)
 
 Type TextCursor
     lastColumn As Integer
@@ -33,10 +38,12 @@ Type Book
     cursor As TextCursor
     doorX As Integer
     doorY As Integer
+    experiencePoints As Integer
     firstRow As Integer
     hitPoints As Integer
     image As Long
     inventory As String
+    inventorySound As Long
     isCatTamed As Integer
     isDragonDead As Integer
     isOver As Integer
@@ -52,6 +59,7 @@ Type Book
     playerDirection As Integer
     playerX As Integer
     playerY As Integer
+    pointsSound As Long
     rightPageStartingColumn As Integer
     score As Integer
     secretChoices As String
@@ -93,6 +101,7 @@ game.isCatTamed = 0
 game.storySound = 0
 game.hitPoints = 100
 game.magicPoints = 0
+game.experiencePoints = 0
 
 ' Configure application window
 _Title game.title$ + " " + game.version ' Set the application window's title
@@ -100,9 +109,13 @@ _Title game.title$ + " " + game.version ' Set the application window's title
 ' Display "splash screen"
 Call DisplaySplashScreen(game)
 
+' Initialize common sounds
+game.inventorySound = _SndOpen("inventory.mp3")
+game.pointsSound = _SndOpen("points.mp3")
+
 ' Display pre-chapter pages with epic music
 game.pageTurnSound = PlaySound&("turn-page.mp3", 1, 0)
-game.storySound = PlaySound&("epic.mp3", 1, 1)
+game.storySound = PlaySound&("suspense.mp3", 1, 1)
 Call DisplayTitlePage(game)
 game.chapter = "CREDITS"
 Call DisplayCreditsPage(game)
@@ -110,7 +123,6 @@ game.chapter = "HIGH SCORES"
 Call DisplayHighScoresPage(game)
 game.chapter = "SELECT MAIN CHARACTER"
 Call DisplaySelectPlayerPage(game)
-StopSound game.storySound
 
 ' Start the actual story
 game.chapter = "INTRODUCTION"
@@ -272,7 +284,7 @@ world(5, 5) = "WILDERNESS"
 Return
 
 Sub ChaseBunniesAction (game As Book)
-    Color _RGB(0, 255, 0)
+    Color _RGB(0, 100, 0) ' dark green
     Call PrintPageText(game, "story", CsrLin, "Seems like an unimportant thing to do but nonetheless")
     Call PrintPageText(game, "story", CsrLin, "you try to chase some of the bunnies.  And... you can't")
     Call PrintPageText(game, "story", CsrLin, "catch a single one.  They are too fast!  Oh well, time")
@@ -297,57 +309,41 @@ Sub AllTheThingsAction (game As Book)
     If game.level = 1 Then
         If game.isDragonDead = 0 Then
             game.isDragonDead = 1
-            game.score = game.score + 100
+            Call IncreaseScore(game, 100)
             Call PrintPageText(game, "story", CsrLin, "You slew the dragon!")
             Call PrintPageText(game, "story", CsrLin, "Score +100")
             thingDone% = 1
         End If
         If game.isCatTamed = 0 Then
             game.isCatTamed = 1
-            game.score = game.score + 100
+            Call IncreaseScore(game, 100)
             Call PrintPageText(game, "story", CsrLin, "You tamed the elusive cat!")
             Call PrintPageText(game, "story", CsrLin, "Score +100")
             thingDone% = 1
         End If
         If Not Contains%(game.inventory, "RING OF TAMING", ",") Then
-            If game.inventory = "NOTHING" Then
-                game.inventory = "RING OF TAMING"
-            Else
-                game.inventory = game.inventory + ",RING OF TAMING"
-            End If
+            Call IncreaseInventory(game, "RING OF TAMING")
             Call PrintPageText(game, "story", CsrLin, "You obtained the Ring of Taming!")
             Call PrintPageText(game, "story", CsrLin, "Inventory +RING OF TAMING")
             Call PrintPageText(game, "story", CsrLin, "(Does not work on large creatures.)")
             thingDone% = 1
         End If
         If Not Contains%(game.inventory, "GOLD", ",") Then
-            If game.inventory = "NOTHING" Then
-                game.inventory = "GOLD"
-            Else
-                game.inventory = game.inventory + ",GOLD"
-            End If
-            game.score = game.score + 100
+            Call IncreaseInventory(game, "GOLD")
+            Call IncreaseScore(game, 100)
             Call PrintPageText(game, "story", CsrLin, "You obtained the Gold!")
             Call PrintPageText(game, "story", CsrLin, "Score +100")
             Call PrintPageText(game, "story", CsrLin, "Inventory +GOLD")
             thingDone% = 1
         End If
         If (game.player = "GREYSON") And (Not Contains%(game.inventory, "UNO REVERSE", ",")) Then
-            If game.inventory = "NOTHING" Then
-                game.inventory = "UNO REVERSE"
-            Else
-                game.inventory = game.inventory + ",UNO REVERSE"
-            End If
+            Call IncreaseInventory(game, "UNO REVERSE")
             Call PrintPageText(game, "story", CsrLin, "You obtained the legendary UNO Reverse card!")
             Call PrintPageText(game, "story", CsrLin, "Inventory +UNO REVERSE")
             thingDone% = 1
         End If
         If (game.player = "ZARA") And (Not Contains%(game.inventory, "SWORD", ",")) Then
-            If game.inventory = "NOTHING" Then
-                game.inventory = "SWORD"
-            Else
-                game.inventory = game.inventory + ",SWORD"
-            End If
+            Call IncreaseInventory(game, "SWORD")
             Call PrintPageText(game, "story", CsrLin, "You obtained the legendary SWORD!")
             Call PrintPageText(game, "story", CsrLin, "Inventory +SWORD")
             thingDone% = 1
@@ -436,18 +432,29 @@ End Sub
 ' Parameters:
 ' game - Book instance
 Sub DisplayIntroduction (game As Book)
-    ' TODO - Track the progress of the introduction
-    Call PrintPageText(game, "story", game.firstRow + 2, game.twin + ": " + Chr$(34) + "Help!  Help!" + Chr$(34))
+    ' TODO - Track the progress of the introduction... if a game choice is selected the introduction needs to restart at the right place.
+    ' Also, would be nice to add back and forward arrows in the bottom corners of the story page.
+    Call PrintPageText(game, "story", game.firstRow + 2, game.twin + ": " + Chr$(34) + "Ahh!  " + game.player + " save me!!!" + Chr$(34))
     Call PressAnyKey(game, "story")
-    Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + game.twin + " where are you???" + Chr$(34))
+    Call PrintPageText(game, "story", CsrLin + 1, game.player + ": I don't know if I can, but I will try!!!  Where are you " + game.twin + "?" + Chr$(34))
     Call PressAnyKey(game, "story")
-    Call PrintPageText(game, "story", CsrLin + 1, game.twin + ": " + Chr$(34) + game.player + " he got me!!!  He's taking me away!!!" + Chr$(34))
+    Call PrintPageText(game, "story", CsrLin + 1, game.twin + ": " + Chr$(34) + game.player + " I'm in the back bedroom!  He got me!  A big black cat got me!" + Chr$(34))
     Call PressAnyKey(game, "story")
-    Call PrintPageText(game, "story", CsrLin + 1, "You run towards the sound of your twin's voice.  ")
+    Call PrintPageText(game, "story", CsrLin + 1, "You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your twin's voice just in time to see the door to the leprechaun closet in the back bedroom slam shut.  You run to the closet door, open it and what you see next amazes you... the door and what you see next takes your breath away...")
+    Call PrintPageText(game, "story", CsrLin + 1, "Sticking your head into what was supposed to be a small closet you look around at what appears to be the surface of a cloud high above Pendleton, Indiana.  You cautiously tap the cloud with your hand and find that it's firm enough to walk on.  You carefully put one foot into the closet, lower your head, and step through the doorway so you can get a better look.")
+    Call PrintPageText(game, "story", CsrLin + 1, "")
+    Call StopSound(game.storySound)
+    elevator& = PlaySound&("elevator-open.mp3", 1, 0)
+    Call PressAnyKey(game, "story")
+    game.storySound = PlaySound&("elevator.wav", 1, 1)
+
+    Call StopSound(elevator&)
+
     ' TODO - Continue writing story
     ' Switch at some point to the player entering a mysterious elevator and play elevator music
     ' Add a picture of Mylee and introduce her as the elevator operator
-    ' Have Mylee introduce the story, then the game mechanics.  Treat this is a tutorial.
+    ' Have Mylee introduce the story, then the game mechanics.  Treat this is a tutorial.  Mylee introduces the GAME BOOK which enables the Game Choies on the control page..  this is a precursor to getting the SPELL BOOK.
+    ' Mylee tells the player that if they want to go to any other levels they'll need to give her some gold.  (But if the dragon is alive the dragon will kill the player.)  And if the player doesn't tame Gianni the player won't get the long distance weapon and Night Owl will kill them.
     ' When done, player should automatically advance into the first cell
     Call PressAnyKey(game, "story")
     game.chapter = "CHAPTER 1"
@@ -787,6 +794,29 @@ Function GetInput$ (game As Book, prompt As String, enableArrowKeys As Integer, 
     Color _RGB(0, 0, 0)
 End Function
 
+' Parameters:
+' game - Book instance
+' item - Item to add to the inventory
+Sub IncreaseInventory (game As Book, item As String)
+    If Not Contains%(game.inventory, item, ",") Then
+        If game.inventory = "NOTHING" Then
+            game.inventory = item
+        Else
+            game.inventory = game.inventory + "," + item
+        End If
+        Call ReplaySound(game.inventorySound, 1, 0)
+    End If
+End Sub
+
+' Parameters:
+' game - Book instance
+' points - Number of points by which to increase the score
+Sub IncreaseScore (game As Book, points As Integer)
+    game.score = game.score + points
+    game.experiencePoints = game.experiencePoints + points
+    Call ReplaySound(game.pointsSound, 1, 0)
+End Sub
+
 Sub ListenAction (game As Book, world() As String)
     scene$ = world(game.playerX, game.playerY)
     Call PrintPageText(game, "story", CsrLin, "You are in " + playerView$ + ".")
@@ -798,7 +828,7 @@ Sub ListenAction (game As Book, world() As String)
             ReplaySound game.storySound, 1, 0
         End If
         If scene$ = "WILDERNESS" Then
-            Color _RGB(0, 255, 0)
+            Color _RGB(0, 100, 0) ' dark green
             Call PrintPageText(game, "story", CsrLin, "You hear birds singing and perhaps some insects.")
             Call PrintPageText(game, "story", CsrLin, "There is also a slight breeze.  These are the typical")
             Call PrintPageText(game, "story", CsrLin, "sounds of nature.")
@@ -859,7 +889,7 @@ Sub LookAction (game As Book, world() As String, directions() As String)
     playerView$ = world(game.playerX, game.playerY)
     Call PrintPageText(game, "story", CsrLin, "You are in " + playerView$ + ".")
     If playerView$ = "WILDERNESS" Then
-        Color _RGB(0, 255, 0)
+        Color _RGB(0, 100, 0) ' dark green
         Call PrintPageText(game, "story", CsrLin, "You see nothing but tall grass and cute bunnies.")
         Call PrintPageText(game, "story", CsrLin, "The sun is shining brightly.")
     End If
@@ -924,7 +954,7 @@ Sub LookAction (game As Book, world() As String, directions() As String)
                 Call PrintPageText(game, "story", CsrLin, "your waiting arms.  You pet him for hours and hours.")
                 Color _RGB(0, 0, 0)
                 Call PrintPageText(game, "story", CsrLin, "Score +100")
-                game.score = game.score + 100
+                Call IncreaseScore(game, 100)
             Else
                 Call PrintPageText(game, "story", CsrLin, "He meows with delight when he sees you and jumps into")
                 Call PrintPageText(game, "story", CsrLin, "your waiting arms.  Oh what a wonderful cat he is!")
@@ -969,7 +999,7 @@ Sub LookAction (game As Book, world() As String, directions() As String)
                 If (Contains%(game.inventory, "SWORD", ",")) And (game.isDragonDead = 0) Then
                     Call PrintPageText(game, "story", CsrLin, "With quick reflexes you use your mighty sword to slay the dragon.")
                     Call PrintPageText(game, "story", CsrLin, "The townspeople are saved.  And you are today a hero!!!")
-                    game.score = game.score + 100
+                    Call IncreaseScore(game, 100)
                     Color _RGB(0, 0, 0)
                     Call PrintPageText(game, "story", CsrLin, "Score +100")
                     game.isDragonDead = 1
@@ -978,7 +1008,7 @@ Sub LookAction (game As Book, world() As String, directions() As String)
                         Call PrintPageText(game, "story", CsrLin, "With quick reflexes you use your UNO REVERSE card to send the dragon's")
                         Call PrintPageText(game, "story", CsrLin, "flames back at it.  With each fiery burst, the dragon destroys itself.")
                         Call PrintPageText(game, "story", CsrLin, "The townspeople are saved.  And you are today a hero!!!")
-                        game.score = game.score + 100
+                        Call IncreaseScore(game, 100)
                         Color _RGB(0, 0, 0)
                         Call PrintPageText(game, "story", CsrLin, "Score +100")
                         game.isDragonDead = 1
@@ -998,7 +1028,7 @@ Sub LookAction (game As Book, world() As String, directions() As String)
         Call PrintPageText(game, "story", CsrLin, "see a mighty silver sword, fit for slaying a dragon.")
         If (Contains%(game.inventory, "GOLD", ",")) And (Not Contains%(game.inventory, "SWORD", ",")) Then
             Call PrintPageText(game, "story", CsrLin, "You deposit some gold coins into the vending machine...")
-            game.inventory = game.inventory + ",SWORD"
+            Call IncreaseInventory(game, "SWORD")
             Color _RGB(0, 0, 0)
             Call PrintPageText(game, "story", CsrLin, "Inventory +SWORD")
         Else
@@ -1017,7 +1047,7 @@ Sub LookAction (game As Book, world() As String, directions() As String)
         If (Contains%(game.inventory, "GOLD", ",")) And (Not Contains%(game.inventory, "UNO REVERSE", ",")) Then
             Call PrintPageText(game, "story", CsrLin, "You leave some gold coins on the table in exchange for the UNO deck.")
             Call PrintPageText(game, "story", CsrLin, "You look at the cards and discover the legendary... UNO REVERSE!!!")
-            game.inventory = game.inventory + ",UNO REVERSE"
+            Call IncreaseInventory(game, "UNO REVERSE")
             Color _RGB(0, 0, 0)
             Call PrintPageText(game, "story", CsrLin, "Inventory +UNO REVERSE")
         Else
@@ -1150,7 +1180,7 @@ Sub MoveAheadAction (game As Book, world() As String, directions() As String)
                     game.storySound = PlaySound&("grey.mp3", 1, 0)
                 End If
                 If scene$ = "ZARA'S STORE" Then
-                    game.storySound = PlaySound&("zara.mp3", 1, 0)
+                    game.storySound = PlaySound&("zara.mp3", 1, 1)
                 End If
             End If
 
@@ -1253,6 +1283,7 @@ Sub PressAnyKey (game As Book, page As String)
     End If
     Call PrintPageText(game, page, game.lastRow - 1, prompt$)
     ' Suspend program execution until the any key is pressed
+    ' TODO - Refactor this so the mouse can be used to click the text
     Sleep
     _KeyClear
     ' Reposition the cursor
@@ -1421,6 +1452,7 @@ Sub RefreshPages (game As Book, world() As String, directions() As String, mapIn
     Print
     Call PrintPageText(game, "control", CsrLin, "HP:" + Str$(game.hitPoints))
     Call PrintPageText(game, "control", CsrLin, "MP:" + Str$(game.magicPoints))
+    Call PrintPageText(game, "control", CsrLin, "XP:" + Str$(game.experiencePoints))
     Color _RGB(146, 146, 146) ' darker grey
     Call PrintPageText(game, "control", CsrLin, "_______________________________________________________________")
     Color _RGB(0, 0, 0) ' black
@@ -1521,13 +1553,7 @@ Sub SpeakNameAction (game As Book)
         Else
             Call PrintPageText(game, "story", CsrLin, "You look down at your ring and it glows with power.")
         End If
-        If game.inventory = "NOTHING" Then
-            game.inventory = "RING OF TAMING"
-        Else
-            If Not Contains%(game.inventory, "RING OF TAMING", ",") Then
-                game.inventory = game.inventory + ",RING OF TAMING"
-            End If
-        End If
+        Call IncreaseInventory(game, "RING OF TAMING")
     Else
         If nameGuess$ = "EXIT GAME" Then
             Call ExitAction(game)
@@ -1593,17 +1619,13 @@ End Function
 Sub TakeGoldAction (game As Book)
     game.storyChoices = game.basicStoryChoices
     If Not Contains%(game.inventory, "GOLD", ",") Then
-        game.score = game.score + 100
+        Call IncreaseScore(game, 100)
         Print
         Call PrintPageText(game, "story", CsrLin, "All the gold now belongs to you!")
         Call PrintPageText(game, "story", CsrLin, "Score +100")
         Call PrintPageText(game, "story", CsrLin, "Inventory +GOLD")
         Print
-        If game.inventory = "NOTHING" Then
-            game.inventory = "GOLD"
-        Else
-            game.inventory = game.inventory + ",GOLD"
-        End If
+        Call IncreaseInventory(game, "GOLD")
     End If
 End Sub
 
