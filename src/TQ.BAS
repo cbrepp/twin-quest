@@ -1,8 +1,10 @@
 ' Resources:
 ' book.png - Empty book by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
 ' castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
+' clouds.png - OpenClipart-Vectors (https://pixabay.com/vectors/sunrise-clouds-rising-sun-sky-sun-153600/)
 ' dragon.mp3 - The Roar of a 5-Headed Dragon (https://freesound.org/people/bevibeldesign/sounds/366095/)
 ' elevator.wav - music elevator ext (https://freesound.org/people/Jay_You/sounds/467240/)
+' elevator-doors.png - Krolestwo_Nauki (https://pixabay.com/vectors/elevator-elevator-door-building-6232385/)
 ' elevator-open.mp3 - Elevator ding door open close, noisy, 10.mp3 (https://freesound.org/people/TRP/sounds/576359/)
 ' epic.mp3 - Epic Trailer Background Music (https://freesound.org/people/Migfus20/sounds/560454/)
 ' fluff.wav - Spanish Lick I, Acoustic- AB split stereo pair (Oktava).wav (https://freesound.org/people/debudding/sounds/44366/)
@@ -10,6 +12,7 @@
 ' grey.mp3 - 8-Bit Coin Or Power Up FX For Retro Video Games (https://freesound.org/people/Cloud-10/sounds/647977/)
 ' inventory.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
 ' magic.mp3 - Magic.mp3 (https://freesound.org/people/Bastianhallo/sounds/434050/)
+' mylee.jpg - A Mr. Chris original
 ' points.mp3 - 320655__rhodesmas__level-up-01.mp3 (https://freesound.org/people/shinephoenixstormcrow/sounds/337049/)
 ' select-player.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
 ' select-player-grey.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
@@ -54,6 +57,7 @@ Type Book
     levelSize As Integer
     magicPoints As Integer
     maxPageLength As Integer
+    pageNumber As Integer
     pageTurnSound As Long
     player As String
     playerDirection As Integer
@@ -115,7 +119,7 @@ game.pointsSound = _SndOpen("points.mp3")
 
 ' Display pre-chapter pages with epic music
 game.pageTurnSound = PlaySound&("turn-page.mp3", 1, 0)
-game.storySound = PlaySound&("suspense.mp3", 1, 1)
+game.storySound = PlaySound&("epic.mp3", 1, 1)
 Call DisplayTitlePage(game)
 game.chapter = "CREDITS"
 Call DisplayCreditsPage(game)
@@ -126,6 +130,7 @@ Call DisplaySelectPlayerPage(game)
 
 ' Start the actual story
 game.chapter = "INTRODUCTION"
+game.pageNumber = 1
 game.storyChoices = game.basicStoryChoices
 Dim world(5, 5) As String
 Dim directions(4) As String
@@ -154,7 +159,10 @@ Do
     ' TODO - Refactor this to be a re-usable story mode that activates before the story prompt
     If game.chapter = "INTRODUCTION" Then
         Call DisplayIntroduction(game)
-        choice$ = "MOVE AHEAD"
+        If game.chapter = "CHAPTER 1" Then
+            ' Every first step in every great adventure is... a first step
+            choice$ = "MOVE AHEAD"
+        End If
     Else
         ' Prompt for choice
         Locate game.cursor.lastStoryRow + 1, 1
@@ -432,32 +440,119 @@ End Sub
 ' Parameters:
 ' game - Book instance
 Sub DisplayIntroduction (game As Book)
-    ' TODO - Track the progress of the introduction... if a game choice is selected the introduction needs to restart at the right place.
-    ' Also, would be nice to add back and forward arrows in the bottom corners of the story page.
-    Call PrintPageText(game, "story", game.firstRow + 2, game.twin + ": " + Chr$(34) + "Ahh!  " + game.player + " save me!!!" + Chr$(34))
-    Call PressAnyKey(game, "story")
-    Call PrintPageText(game, "story", CsrLin + 1, game.player + ": I don't know if I can, but I will try!!!  Where are you " + game.twin + "?" + Chr$(34))
-    Call PressAnyKey(game, "story")
-    Call PrintPageText(game, "story", CsrLin + 1, game.twin + ": " + Chr$(34) + game.player + " I'm in the back bedroom!  He got me!  A big black cat got me!" + Chr$(34))
-    Call PressAnyKey(game, "story")
-    Call PrintPageText(game, "story", CsrLin + 1, "You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your twin's voice just in time to see the door to the leprechaun closet in the back bedroom slam shut.  You run to the closet door, open it and what you see next amazes you... the door and what you see next takes your breath away...")
-    Call PrintPageText(game, "story", CsrLin + 1, "Sticking your head into what was supposed to be a small closet you look around at what appears to be the surface of a cloud high above Pendleton, Indiana.  You cautiously tap the cloud with your hand and find that it's firm enough to walk on.  You carefully put one foot into the closet, lower your head, and step through the doorway so you can get a better look.")
-    Call PrintPageText(game, "story", CsrLin + 1, "")
-    Call StopSound(game.storySound)
-    elevator& = PlaySound&("elevator-open.mp3", 1, 0)
-    Call PressAnyKey(game, "story")
-    game.storySound = PlaySound&("elevator.wav", 1, 1)
+    ' TODO - Would be nice to add back and forward arrows in the bottom corners of the story page.
 
-    Call StopSound(elevator&)
+    If game.pageNumber = 1 Then
+        Call StopSound(game.storySound)
+        game.storySound = PlaySound&("suspense.mp3", 1, 1)
+        Call PrintPageText(game, "story", game.firstRow + 2, game.twin + ": " + Chr$(34) + "Ahh!!!  " + game.player + "!!!  Save me!!!" + Chr$(34))
+        Call PressAnyKey(game, "story")
+        Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "I don't know if I can, but I will try!!!" + Chr$(34))
+        Call PressAnyKey(game, "story")
+        Call PrintPageText(game, "story", CsrLin + 1, game.twin + ": " + Chr$(34) + game.player + " he got me!!!  A big black cat got me!!!" + Chr$(34))
+        Call PressAnyKey(game, "story")
+        Call PrintPageText(game, "story", CsrLin + 1, "You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your twin's voice just in time to see the door to the leprechaun closet in the back bedroom slam shut.  You run to the closet door, open it, and what you see next takes your breath away...")
+        Call PressAnyKey(game, "story")
+        Call PrintPageText(game, "story", CsrLin + 1, "Sticking your head into what was supposed to be a small closet you look around at what appears to be the surface of a cloud floating high above Pendleton, Indiana.  You wonder if this is perhaps a magic portal.")
+        Call PressAnyKey(game, "story")
+        Call PrintPageText(game, "story", CsrLin + 1, "You cautiously tap the cloud with your hand and discover that it's firm enough to walk on.  You then oh so very carefully put one foot into the closet, lower your head, and step through the doorway so you can get a better look...")
+        Call PressAnyKey(game, "story")
+        game.pageNumber = 2
+    Else
+        If game.pageNumber = 2 Then
+            cloudsImage& = _LoadImage("clouds.png")
+            elevatorDoorsImage& = _LoadImage("elevator-doors.png")
+            Locate game.firstRow + 2, 1
+            Call DisplayImage(game, "story", cloudsImage&)
+            Locate game.firstRow + 2, 1
+            Call DisplayImage(game, "story", elevatorDoorsImage&)
+            Call PrintPageText(game, "story", CsrLin + 2, "You are now standing on the surface of a cloud floating high up in the sky.  You look around and see nothing but the large poofy white cloud, the blue sky, the bright yellow sun... and... what appears to be elevator doors in the middle of the cloud.")
+            Call PressAnyKey(game, "story")
+            Call PrintPageText(game, "story", CsrLin + 1, "Anxiety and fear grip you.  But you have no choice.  You must save " + game.twin + ".  And so...")
+            Call PressAnyKey(game, "story")
+            elevator& = PlaySound&("elevator-open.mp3", 1, 0)
+            Call PrintPageText(game, "story", CsrLin + 1, "You press the elevator button to open the door.  And... you step inside...")
+            Call PressAnyKey(game, "story")
+            game.pageNumber = 3
 
-    ' TODO - Continue writing story
-    ' Switch at some point to the player entering a mysterious elevator and play elevator music
-    ' Add a picture of Mylee and introduce her as the elevator operator
-    ' Have Mylee introduce the story, then the game mechanics.  Treat this is a tutorial.  Mylee introduces the GAME BOOK which enables the Game Choies on the control page..  this is a precursor to getting the SPELL BOOK.
-    ' Mylee tells the player that if they want to go to any other levels they'll need to give her some gold.  (But if the dragon is alive the dragon will kill the player.)  And if the player doesn't tame Gianni the player won't get the long distance weapon and Night Owl will kill them.
-    ' When done, player should automatically advance into the first cell
-    Call PressAnyKey(game, "story")
-    game.chapter = "CHAPTER 1"
+            _FreeImage elevatorDoorsImage&
+            _FreeImage cloudsImage&
+        Else
+            If game.pageNumber = 3 Then
+                Call StopSound(game.storySound)
+                game.storySound = PlaySound&("elevator.wav", 1, 1)
+                Locate game.firstRow + 2, 1
+                myleeImage& = _LoadImage("mylee.jpg")
+                Call DisplayImage(game, "story", myleeImage&)
+                Call PrintPageText(game, "story", CsrLin + 2, "Mylee: " + Chr$(34) + "Oh hey kid." + Chr$(34))
+                Call PressAnyKey(game, "story")
+                Call PrintPageText(game, "story", CsrLin + 1, "You're confused for a moment.  Inside the elevator there's a cat perched up on a box by the main elevator switch.  Is a cat operating this elevator?  And... did that cat just talk???")
+                Call PressAnyKey(game, "story")
+                Call PrintPageText(game, "story", CsrLin + 1, "Mylee: " + Chr$(34) + "You're wondering if I just talked even though I'm a cat.  And the answer is 'yes'.  Yes I did." + Chr$(34))
+                Call PressAnyKey(game, "story")
+                Call PrintPageText(game, "story", CsrLin + 1, "Wait, what?  Can this cat read your mind?")
+                Call PressAnyKey(game, "story")
+                Call PrintPageText(game, "story", CsrLin + 1, "Mylee: " + Chr$(34) + "And you're probably wondering now if I can read your mind.  The answer to that is... no.  And I definitely wouldn't want to if I could.  You humans are just too weird." + Chr$(34))
+                Call PressAnyKey(game, "story")
+                Call PrintPageText(game, "story", CsrLin + 1, "Weird is right.")
+                Call PressAnyKey(game, "story")
+                Call PrintPageText(game, "story", CsrLin + 1, "Mylee: " + Chr$(34) + "Enough small talk, human.  You look confused.  How about you ask me some questions." + Chr$(34))
+                Call PressAnyKey(game, "story")
+                game.pageNumber = 4
+
+                _FreeImage myleeImage&
+            Else
+                If game.pageNumber = 4 Then
+                    Call PrintPageText(game, "story", game.firstRow + 2, "Mylee: " + Chr$(34) + "You look like you're new to this so I'll help you out.  See that 'Ask Mylee' prompt below?  It's giving you some choices.  Pick one.  You can learn about this game before you begin your quest." + Chr$(34))
+                    Locate CsrLin + 2, 1
+                    ' TODO - The first letter of the mouse-selected choice disappears.  Oops.
+                    choice$ = StoryPrompt$(game, "Ask Mylee", "WHO ARE YOU,WHERE IS MY TWIN,WHO IS BIG CHUNG,NOTHING", 0, 1, 16)
+                    If choice$ = "WHO ARE YOU" Then
+                        Call PrintPageText(game, "story", CsrLin + 2, "Mylee: " + Chr$(34) + "I'm Mylee Marie!" + Chr$(34))
+                        Call PressAnyKey(game, "story")
+                        Call PrintPageText(game, "story", CsrLin + 1, "You wait a moment for Mylee to say more but she doesn't.  Okay... at least you got her name.")
+                        Call PressAnyKey(game, "story")
+                    Else
+                        If choice$ = "WHERE IS MY TWIN" Then
+                            Call PrintPageText(game, "story", CsrLin + 2, "Mylee: " + Chr$(34) + "Oh you poor kid.  I'm afraid your twin was captured by my younger brother, Big Chung.  It is a shame." + Chr$(34))
+                            Call PressAnyKey(game, "story")
+                        Else
+                            If choice$ = "WHO IS BIG CHUNG" Then
+                                Call PrintPageText(game, "story", CsrLin + 2, "Mylee: " + Chr$(34) + "Oh he's quite the cat!  His appetite is as big as they come.  Some day he may eat the whole world.  But for now it seems like he's settled on your twin." + Chr$(34))
+                                Call PressAnyKey(game, "story")
+                                Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "He's going to eat " + game.twin + "???" + Chr$(34))
+                                Call PressAnyKey(game, "story")
+                                Call PrintPageText(game, "story", CsrLin + 1, "Mylee: " + Chr$(34) + "Perhaps.  But you might have some time.  He just ate an entire Red Lobster restaurant for breakfast this morning so he might be full.  I bet your twin is an appetizer for later." + Chr$(34))
+                                Call PressAnyKey(game, "story")
+                                Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "That's horrible!!!" + Chr$(34))
+                                Call PressAnyKey(game, "story")
+                                Call PrintPageText(game, "story", CsrLin + 1, "Mylee: " + Chr$(34) + "Don't I know it, kid.  But hey, tell you what... these elevator doors can take you to a magical world.  If you want to save your twin, gain some experience out there and then come back.  If you bring me some GOLD I'll take you to the level that Big Chung hangs out on.  But be careful, Night Owl and a Dragon like gold and if you remove any from their level they might come after you.  Best slay that dragon if you can and ask my friend Gianni for help with that Night Owl problem.  Don't you dare try to fight Night Owl in a dark place.  He'll swoop down on you before you have a chance to defend yourself." + Chr$(34))
+                                Call PressAnyKey(game, "story")
+                            Else
+                                If choice$ = "NOTHING" Then
+                                    Call PrintPageText(game, "story", CsrLin + 2, "Mylee: " + Chr$(34) + "Nothing else, huh.  Okay.  Well take this then..." + Chr$(34))
+                                    Call IncreaseInventory(game, "GAME BOOK")
+                                    Call PrintPageText(game, "story", CsrLin + 1, "INVENTORY +GAME BOOK")
+                                    Call PrintPageText(game, "story", CsrLin + 1, "Mylee: " + Chr$(34) + "It's called a 'GAME BOOK'.  It will give you some options on the other page for exiting the game and stuff.  Maybe if you can find that SPELL BOOK I lost you'll have two books and a way to defeat Big Chung.  But don't worry, things like that have a way of turning up eventually.  Even when you don't think you'll find them again they make their way back to you." + Chr$(34))
+                                    Call PressAnyKey(game, "story")
+                                    Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "Umm, thanks?" + Chr$(34))
+                                    Call PressAnyKey(game, "story")
+                                    Call PrintPageText(game, "story", CsrLin + 1, "Mylee: " + Chr$(34) + "You're welcome.  Now off with you!  Just turn that page to begin your quest.  And... bring me back some gold!!!" + Chr$(34))
+                                    elevator& = PlaySound&("elevator-open.mp3", 1, 0)
+                                    Call StopSound(elevator&)
+                                    Call PressAnyKey(game, "story")
+                                    Call PrintPageText(game, "story", CsrLin + 1, "It would seem like you're no longer welcome in this elevator.  You step through the doors but find that you are no longer on the cloud...")
+                                    Call PressAnyKey(game, "story")
+                                    game.chapter = "CHAPTER 1"
+                                End If
+                            End If
+                        End If
+                    End If
+                Else
+                End If
+            End If
+        End If
+    End If
 End Sub
 
 ' Display the select player page
@@ -784,9 +879,10 @@ Function GetInput$ (game As Book, prompt As String, enableArrowKeys As Integer, 
     Wend
     ' Clear the current input
     _KeyClear
+    ' TODO - If the player uses the mouse to click a choice, blanking the prompt actually blanks the first character of the choice... oops
     ' Clear the cursor
-    Locate currentRow%, currentCol%
-    Print " "
+    'Locate currentRow%, currentCol%
+    'Print " "
     ' Trim whitespace from the beginning and end of the input string
     GetInput$ = RTrim$(LTrim$(inp$))
     ' Reset the foreground text color and print mode of printing text over the book image
@@ -1443,6 +1539,7 @@ Sub RefreshPages (game As Book, world() As String, directions() As String, mapIn
         End If
     End If
 
+    ' TODO - Make this it's own sub so it can be called on-demand during story mode to update the inventory and player stats
     Color _RGB(146, 146, 146) ' darker grey
     firstRow% = game.firstRow + 2
     Call PrintPageText(game, "control", firstRow%, "_" + game.player + String$(62 - Len(game.player), "_"))
@@ -1486,19 +1583,21 @@ Sub RefreshPages (game As Book, world() As String, directions() As String, mapIn
     Locate nextRow%, 1
 
     ' Display game control choices
-    Color _RGB(0, 0, 0) ' black
-    Locate game.cursor.lastControlRow + 1, 1
-    game.controlChoicesRow = CsrLin + 1
-    gamePrompt$ = "Game Choices: "
-    Call PrintPageText(game, "control", CsrLin, gamePrompt$)
-    _PrintMode _FillBackground ' Replace background instead of displaying just text over the image
-    Color _RGB(0, 139, 139), _RGB(255, 255, 255) ' dark cyan on white
-    controlChoices$ = game.controlChoices
-    Call PrintPageText(game, "control", CsrLin, controlChoices$)
-    game.controlChoicesColumn = game.cursor.lastColumn
-    _PrintMode _KeepBackground
-    Color _RGB(0, 0, 0)
-    Call PrintPageText(game, "control", CsrLin, "[Use arrow keys to turn and move]")
+    If Contains%(game.inventory, "GAME BOOK", ",") Then
+        Color _RGB(0, 0, 0) ' black
+        Locate game.cursor.lastControlRow + 1, 1
+        game.controlChoicesRow = CsrLin + 1
+        gamePrompt$ = "Game Choices: "
+        Call PrintPageText(game, "control", CsrLin, gamePrompt$)
+        _PrintMode _FillBackground ' Replace background instead of displaying just text over the image
+        Color _RGB(0, 139, 139), _RGB(255, 255, 255) ' dark cyan on white
+        controlChoices$ = game.controlChoices
+        Call PrintPageText(game, "control", CsrLin, controlChoices$)
+        game.controlChoicesColumn = game.cursor.lastColumn
+        _PrintMode _KeepBackground
+        Color _RGB(0, 0, 0)
+        Call PrintPageText(game, "control", CsrLin, "[Use arrow keys to turn and move]")
+    End If
 End Sub
 
 ' Replay an already open sound file
