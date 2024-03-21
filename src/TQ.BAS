@@ -560,7 +560,7 @@ Sub DisplayIntroduction (game As Book, world() As String, directions() As String
                                 Call PressAnyKey(game, "story")
                                 Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "That's horrible!!!" + Chr$(34))
                                 Call PressAnyKey(game, "story")
-                                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Don't I know it, kid.  But hey, tell you what... these elevator doors can take you to a magical world.  If you want to save your twin, gain some experience out there and then come back.  If you bring me some GOLD I'll take you to the level that Big Chung hangs out on.  But be careful, Night Owl and a Dragon like gold and if you remove any from their level they might come after you.  Best slay that dragon if you can and ask my friend Gianni for help with that Night Owl problem.  Don't you dare try to fight Night Owl in a dark place.  He'll swoop down on you before you have a chance to defend yourself." + Chr$(34))
+                                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Don't I know it, kid.  But hey, tell you what... these elevator doors can take you to a magical world.  If you want to save your twin, gain some experience out there and then come back.  If you bring me some GOLD I'll take you to the level that Big Chung hangs out on.  But be careful, NIGHT OWL and a Dragon like gold and if you remove any from their level they might come after you.  Best slay that dragon if you can and ask my friend Gianni for help with that NIGHT OWL problem.  Don't you dare try to fight NIGHT OWL in a dark place.  He'll swoop down on you before you have a chance to defend yourself." + Chr$(34))
                                 Call PressAnyKey(game, "story")
                             Else
                                 If choice$ = "NOTHING" Then
@@ -1039,7 +1039,7 @@ Sub LookAction (game As Book, world() As String, directions() As String)
         nightOwlChance% = Int(Rnd * 3) + 1
         If nightOwlChance% = 3 Then
             Call PrintPageText(game, "story", CsrLin, "The sky is dark and you hear the sound of flapping wings.")
-            Call PrintPageText(game, "story", CsrLin, "By the time you look up it's too late.  Night Owl has claimed")
+            Call PrintPageText(game, "story", CsrLin, "By the time you look up it's too late.  NIGHT OWL has claimed")
             Call PrintPageText(game, "story", CsrLin, "you as his prey!  What an unfortunate way to end your journey.")
             Print
             Color _RGB(0, 0, 0)
@@ -1053,11 +1053,11 @@ Sub LookAction (game As Book, world() As String, directions() As String)
             If nightOwlChance% = 2 Then
                 Call PrintPageText(game, "story", CsrLin, "The sky is dark and you hear the sound of flapping wings.")
                 Call PrintPageText(game, "story", CsrLin, "By the time you look up there's already a scream close by")
-                Call PrintPageText(game, "story", CsrLin, "as Night Owl has claimed a poor creature as his prey.  You")
+                Call PrintPageText(game, "story", CsrLin, "as NIGHT OWL has claimed a poor creature as his prey.  You")
                 Call PrintPageText(game, "story", CsrLin, "have escaped death.  But... for how long?")
             Else
-                Call PrintPageText(game, "story", CsrLin, "The sky is dark and Night Owl is hiding somewhere.  You must")
-                Call PrintPageText(game, "story", CsrLin, "take care to tread lightly lest a noise alert Night Owl to")
+                Call PrintPageText(game, "story", CsrLin, "The sky is dark and NIGHT OWL is hiding somewhere.  You must")
+                Call PrintPageText(game, "story", CsrLin, "take care to tread lightly lest a noise alert NIGHT OWL to")
                 Call PrintPageText(game, "story", CsrLin, "your whereabouts.  Be very, very quiet.")
             End If
         End If
