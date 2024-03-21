@@ -1,4 +1,5 @@
 ' Resources:
+' bionic-bunny.jpg - Bionic Bunny Soldier by Zara
 ' book.png - Empty book by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
 ' castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
 ' clouds.png - OpenClipart-Vectors (https://pixabay.com/vectors/sunrise-clouds-rising-sun-sky-sun-153600/)
@@ -7,12 +8,16 @@
 ' elevator-doors.png - Krolestwo_Nauki (https://pixabay.com/vectors/elevator-elevator-door-building-6232385/)
 ' elevator-open.mp3 - Elevator ding door open close, noisy, 10.mp3 (https://freesound.org/people/TRP/sounds/576359/)
 ' epic.mp3 - Epic Trailer Background Music (https://freesound.org/people/Migfus20/sounds/560454/)
+' fluff.jpg - Gallant Sir Fluff on a mountain by Mr. Chris
+' fluff2.jpg - Gallant Sir Fluff looking perplexed by Mr. Chris
 ' fluff.wav - Spanish Lick I, Acoustic- AB split stereo pair (Oktava).wav (https://freesound.org/people/debudding/sounds/44366/)
 ' gianni.mp3 - bonfire flames sizzling (https://freesound.org/people/florianreichelt/sounds/563764/)
+' gianni.jpg - Son of Fluff climbing a stair railing by Mr. Chris
+' gianni2.jpg - Son of Fluff curled up on a blanket by Mr. Chris
 ' grey.mp3 - 8-Bit Coin Or Power Up FX For Retro Video Games (https://freesound.org/people/Cloud-10/sounds/647977/)
 ' inventory.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
 ' magic.mp3 - Magic.mp3 (https://freesound.org/people/Bastianhallo/sounds/434050/)
-' mylee.jpg - A Mr. Chris original
+' mylee.jpg - Mylee Marie by Mr. Chris
 ' points.mp3 - 320655__rhodesmas__level-up-01.mp3 (https://freesound.org/people/shinephoenixstormcrow/sounds/337049/)
 ' select-player.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
 ' select-player-grey.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
@@ -95,11 +100,11 @@ game.storyChoices = "" ' current choices for the player
 game.storyChoicesColumn = 0
 game.storyChoicesRow = 0
 game.player = "" ' GREYSON or ZARA
-game.controlChoices = "CREDITS,HIGH SCORES,EXIT GAME"
+game.controlChoices = "CREDITS,FLIP BOOK,HIGH SCORES,EXIT GAME"
 game.basicStoryChoices = "LOOK,LISTEN"
 game.secretChoices = "MOVE AHEAD,MOVE BACKWARDS,TURN LEFT,TURN RIGHT,ALL THE THINGS"
 game.score = 0
-game.inventory = "NOTHING"
+game.inventory = ""
 game.isDragonDead = 0
 game.isCatTamed = 0
 game.storySound = 0
@@ -149,7 +154,8 @@ GoSub InitLevel1
 ' Main game loop
 choice$ = ""
 Do
-    Call RefreshPages(game, world(), directions(), mapInfo(), playerSymbol(), choice$)
+    Call RefreshStoryPage(game, choice$, world(), directions())
+    Call RefreshControlPage(game, world(), directions(), mapInfo(), playerSymbol())
     If game.isOver Then
         _Continue
     End If
@@ -158,7 +164,7 @@ Do
 
     ' TODO - Refactor this to be a re-usable story mode that activates before the story prompt
     If game.chapter = "INTRODUCTION" Then
-        Call DisplayIntroduction(game)
+        Call DisplayIntroduction(game, world(), directions(), mapInfo(), playerSymbol())
         If game.chapter = "CHAPTER 1" Then
             ' Every first step in every great adventure is... a first step
             choice$ = "MOVE AHEAD"
@@ -177,7 +183,13 @@ If game.score > 0 Then
     GoSub ChallengeHighScores
 End If
 
-' TODO - Print something epic like "THE END"
+Locate game.cursor.lastStoryRow + 2, 1
+Call PrintPageText(game, "story", CsrLin, " _____ _            _____           _")
+Call PrintPageText(game, "story", CsrLin, "|_   _| |__   ___  | ____|_ __   __| |")
+Call PrintPageText(game, "story", CsrLin, "  | | | '_ \ / _ \ |  _| | '_ \ / _` |")
+Call PrintPageText(game, "story", CsrLin, "  | | | | | |  __/ | |___| | | | (_| |")
+Call PrintPageText(game, "story", CsrLin, "  |_| |_| |_|\___| |_____|_| |_|\__,_|")
+Call PrintPageText(game, "story", CsrLin + 1, "(Press any key to exit the program)")
 
 End
 
@@ -291,27 +303,6 @@ world(4, 5) = "WILDERNESS"
 world(5, 5) = "WILDERNESS"
 Return
 
-Sub ChaseBunniesAction (game As Book)
-    Color _RGB(0, 100, 0) ' dark green
-    Call PrintPageText(game, "story", CsrLin, "Seems like an unimportant thing to do but nonetheless")
-    Call PrintPageText(game, "story", CsrLin, "you try to chase some of the bunnies.  And... you can't")
-    Call PrintPageText(game, "story", CsrLin, "catch a single one.  They are too fast!  Oh well, time")
-    Call PrintPageText(game, "story", CsrLin, "to continue on with your quest.")
-End Sub
-
-' Does a string contain a given token? (1/0)
-'
-' Parameters:
-' myString - String to search
-' token - Token to find
-' delimiter - String delimiting the tokens, if any
-'
-' Returns:
-' Token was found? (1/0)
-Function Contains% (myString As String, token As String, delimiter As String)
-    Contains% = InStr(1, (delimiter + myString + delimiter), (delimiter + token + delimiter)) > 0
-End Function
-
 Sub AllTheThingsAction (game As Book)
     thingDone% = 0
     If game.level = 1 Then
@@ -361,6 +352,44 @@ Sub AllTheThingsAction (game As Book)
         End If
     End If
 End Sub
+
+' Chase bunnies action
+'
+' Parameters:
+' game - Book instance
+Sub ChaseBunniesAction (game As Book)
+    Color _RGB(0, 100, 0) ' dark green
+    Call PrintPageText(game, "story", CsrLin, "Seems like an unimportant thing to do but nonetheless you try to chase some of the bunnies.")
+    Call PrintPageText(game, "story", CsrLin + 1, "And...")
+
+    Randomize Timer
+    bunnyChance% = Int(Rnd * 3) + 1
+    If bunnyChance% = 3 Then
+        bunnyImage& = _LoadImage("bionic-bunny.jpg")
+        Call DisplayImage(game, "story", bunnyImage&)
+        Call PrintPageText(game, "story", CsrLin + 1, "Instead the bunnies start chasing you!  What are they, bionic???  You run as fast as you can to get away.")
+        Call PrintPageText(game, "story", CsrLin + 1, "It would be best to forget this ever happened and continue on with your quest.")
+    Else
+        Call PrintPageText(game, "story", CsrLin + 1, "You can't catch a single one.  They are too fast!  Oh well, next time maybe.  You need to continue on with your quest.")
+    End If
+
+    If bunnyChance% = 3 Then
+        _FreeImage bunnyImage&
+    End If
+End Sub
+
+' Does a string contain a given token? (1/0)
+'
+' Parameters:
+' myString - String to search
+' token - Token to find
+' delimiter - String delimiting the tokens, if any
+'
+' Returns:
+' Token was found? (1/0)
+Function Contains% (myString As String, token As String, delimiter As String)
+    Contains% = InStr(1, (delimiter + myString + delimiter), (delimiter + token + delimiter)) > 0
+End Function
 
 ' Display the credits page
 '
@@ -439,7 +468,11 @@ End Sub
 '
 ' Parameters:
 ' game - Book instance
-Sub DisplayIntroduction (game As Book)
+' world() - World data
+' directions() - Cardinal directions
+' mapInfo() - Map data
+' playerSymbol() - Player map symbols
+Sub DisplayIntroduction (game As Book, world() As String, directions() As String, mapInfo() As String, playerSymbol() As String)
     ' TODO - Would be nice to add back and forward arrows in the bottom corners of the story page.
 
     If game.pageNumber = 1 Then
@@ -470,9 +503,10 @@ Sub DisplayIntroduction (game As Book)
             Call PressAnyKey(game, "story")
             Call PrintPageText(game, "story", CsrLin + 1, "Anxiety and fear grip you.  But you have no choice.  You must save " + game.twin + ".  And so...")
             Call PressAnyKey(game, "story")
-            elevator& = PlaySound&("elevator-open.mp3", 1, 0)
+            elevator& = PlaySound&("elevator-open.mp3", 1, 1)
             Call PrintPageText(game, "story", CsrLin + 1, "You press the elevator button to open the door.  And... you step inside...")
             Call PressAnyKey(game, "story")
+            Call StopSound(elevator&)
             game.pageNumber = 3
 
             _FreeImage elevatorDoorsImage&
@@ -486,7 +520,7 @@ Sub DisplayIntroduction (game As Book)
                 Call DisplayImage(game, "story", myleeImage&)
                 Call PrintPageText(game, "story", CsrLin + 2, "Mylee: " + Chr$(34) + "Oh hey kid." + Chr$(34))
                 Call PressAnyKey(game, "story")
-                Call PrintPageText(game, "story", CsrLin + 1, "You're confused for a moment.  Inside the elevator there's a cat perched up on a box by the main elevator switch.  Is a cat operating this elevator?  And... did that cat just talk???")
+                Call PrintPageText(game, "story", CsrLin + 1, "You're confused for a moment.  Inside the elevator there's a cat perched up on a shelf by the main elevator switch.  Is a cat operating this elevator?  And... did that cat just talk???")
                 Call PressAnyKey(game, "story")
                 Call PrintPageText(game, "story", CsrLin + 1, "Mylee: " + Chr$(34) + "You're wondering if I just talked even though I'm a cat.  And the answer is 'yes'.  Yes I did." + Chr$(34))
                 Call PressAnyKey(game, "story")
@@ -504,21 +538,21 @@ Sub DisplayIntroduction (game As Book)
             Else
                 If game.pageNumber = 4 Then
                     Call PrintPageText(game, "story", game.firstRow + 2, "Mylee: " + Chr$(34) + "You look like you're new to this so I'll help you out.  See that 'Ask Mylee' prompt below?  It's giving you some choices.  Pick one.  You can learn about this game before you begin your quest." + Chr$(34))
-                    Locate CsrLin + 2, 1
-                    ' TODO - The first letter of the mouse-selected choice disappears.  Oops.
+                    currentRow% = CsrLin
+                    Locate currentRow% + 2, 1
                     choice$ = StoryPrompt$(game, "Ask Mylee", "WHO ARE YOU,WHERE IS MY TWIN,WHO IS BIG CHUNG,NOTHING", 0, 1, 16)
                     If choice$ = "WHO ARE YOU" Then
-                        Call PrintPageText(game, "story", CsrLin + 2, "Mylee: " + Chr$(34) + "I'm Mylee Marie!" + Chr$(34))
+                        Call PrintPageText(game, "story", currentRow% + 8, "Mylee: " + Chr$(34) + "I'm Mylee Marie!" + Chr$(34))
                         Call PressAnyKey(game, "story")
                         Call PrintPageText(game, "story", CsrLin + 1, "You wait a moment for Mylee to say more but she doesn't.  Okay... at least you got her name.")
                         Call PressAnyKey(game, "story")
                     Else
                         If choice$ = "WHERE IS MY TWIN" Then
-                            Call PrintPageText(game, "story", CsrLin + 2, "Mylee: " + Chr$(34) + "Oh you poor kid.  I'm afraid your twin was captured by my younger brother, Big Chung.  It is a shame." + Chr$(34))
+                            Call PrintPageText(game, "story", currentRow% + 8, "Mylee: " + Chr$(34) + "Oh you poor kid.  I'm afraid your twin was captured by my younger brother, Big Chung.  It is a shame." + Chr$(34))
                             Call PressAnyKey(game, "story")
                         Else
                             If choice$ = "WHO IS BIG CHUNG" Then
-                                Call PrintPageText(game, "story", CsrLin + 2, "Mylee: " + Chr$(34) + "Oh he's quite the cat!  His appetite is as big as they come.  Some day he may eat the whole world.  But for now it seems like he's settled on your twin." + Chr$(34))
+                                Call PrintPageText(game, "story", currentRow% + 8, "Mylee: " + Chr$(34) + "Oh he's quite the cat!  His appetite is as big as they come.  Some day he may eat the whole world.  But for now it seems like he's settled on your twin." + Chr$(34))
                                 Call PressAnyKey(game, "story")
                                 Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "He's going to eat " + game.twin + "???" + Chr$(34))
                                 Call PressAnyKey(game, "story")
@@ -530,19 +564,21 @@ Sub DisplayIntroduction (game As Book)
                                 Call PressAnyKey(game, "story")
                             Else
                                 If choice$ = "NOTHING" Then
-                                    Call PrintPageText(game, "story", CsrLin + 2, "Mylee: " + Chr$(34) + "Nothing else, huh.  Okay.  Well take this then..." + Chr$(34))
+                                    Call PrintPageText(game, "story", currentRow% + 8, "Mylee: " + Chr$(34) + "Nothing else, huh.  Okay.  Well take this then..." + Chr$(34))
                                     Call IncreaseInventory(game, "GAME BOOK")
-                                    Call PrintPageText(game, "story", CsrLin + 1, "INVENTORY +GAME BOOK")
+                                    currentRow% = CsrLin ' Remember the current row because refreshing the control page will change it
+                                    Call RefreshControlPage(game, world(), directions(), mapInfo(), playerSymbol())
+                                    Call PrintPageText(game, "story", currentRow% + 1, "INVENTORY +GAME BOOK")
                                     Call PrintPageText(game, "story", CsrLin + 1, "Mylee: " + Chr$(34) + "It's called a 'GAME BOOK'.  It will give you some options on the other page for exiting the game and stuff.  Maybe if you can find that SPELL BOOK I lost you'll have two books and a way to defeat Big Chung.  But don't worry, things like that have a way of turning up eventually.  Even when you don't think you'll find them again they make their way back to you." + Chr$(34))
                                     Call PressAnyKey(game, "story")
                                     Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "Umm, thanks?" + Chr$(34))
                                     Call PressAnyKey(game, "story")
-                                    Call PrintPageText(game, "story", CsrLin + 1, "Mylee: " + Chr$(34) + "You're welcome.  Now off with you!  Just turn that page to begin your quest.  And... bring me back some gold!!!" + Chr$(34))
-                                    elevator& = PlaySound&("elevator-open.mp3", 1, 0)
+                                    Call PrintPageText(game, "story", CsrLin + 1, "Mylee: " + Chr$(34) + "You're welcome.  Now off with you!  I'll open the magic elevator doors for you.  Remember: Don't die.  And... bring me back some gold!!!" + Chr$(34))
+                                    Call PressAnyKey(game, "story")
+                                    elevator& = PlaySound&("elevator-open.mp3", 1, 1)
+                                    Call PrintPageText(game, "story", CsrLin + 1, "It would seem like you're no longer welcome in this elevator.  MYLEE flips a switch and the doors open.  You walk out and find that you are no longer on the cloud...")
+                                    Call PressAnyKey(game, "story")
                                     Call StopSound(elevator&)
-                                    Call PressAnyKey(game, "story")
-                                    Call PrintPageText(game, "story", CsrLin + 1, "It would seem like you're no longer welcome in this elevator.  You step through the doors but find that you are no longer on the cloud...")
-                                    Call PressAnyKey(game, "story")
                                     game.chapter = "CHAPTER 1"
                                 End If
                             End If
@@ -654,8 +690,8 @@ End Sub
 Sub ExitAction (game As Book)
     game.isOver = 1
     If Contains%(game.inventory, "GOLD", ",") Then
-        Call PrintPageText(game, "story", CsrLin, "But you were doing so well!  The magic door is out there.")
-        Call PrintPageText(game, "story", CsrLin, "You found the gold but didn't bring it home.")
+        Call PrintPageText(game, "story", CsrLin, "But you were doing so well!  You could have tried returning the GOLD to the elevator.")
+        Call PrintPageText(game, "story", CsrLin, "You found the GOLD but didn't bring it home.")
     End If
     Call PrintPageText(game, "story", CsrLin, "Your quest has ended... no fame.  And certainly no fortune.")
     Call PrintPageText(game, "story", CsrLin, "REMEMBER: Quitters never win.")
@@ -681,6 +717,8 @@ Function GetInput$ (game As Book, prompt As String, enableArrowKeys As Integer, 
     ' to remove text without implementing something that does this via a command like GET that copies each slice of a region that could
     ' be printed on so it can be redisplayed later.
     inp$ = ""
+    While _MouseInput <> 0 ' Read the mouse input until there is no more left to clear previous clicks
+    Wend
     highlightedChoice$ = ""
     highlightedChoiceRow% = 0
     highlightedChoiceCol% = 0
@@ -885,6 +923,12 @@ Function GetInput$ (game As Book, prompt As String, enableArrowKeys As Integer, 
     'Print " "
     ' Trim whitespace from the beginning and end of the input string
     GetInput$ = RTrim$(LTrim$(inp$))
+    If highlightedChoice$ <> "" Then
+        ' Remove the highlight from the last highlighted choice
+        Locate highlightedChoiceRow%, highlightedChoiceCol%
+        Color _RGB(0, 139, 139), _RGB(255, 255, 255) ' dark cyan on white
+        Print highlightedChoice$
+    End If
     ' Reset the foreground text color and print mode of printing text over the book image
     _PrintMode _KeepBackground
     Color _RGB(0, 0, 0)
@@ -895,7 +939,7 @@ End Function
 ' item - Item to add to the inventory
 Sub IncreaseInventory (game As Book, item As String)
     If Not Contains%(game.inventory, item, ",") Then
-        If game.inventory = "NOTHING" Then
+        If game.inventory = "" Then
             game.inventory = item
         Else
             game.inventory = game.inventory + "," + item
@@ -915,7 +959,7 @@ End Sub
 
 Sub ListenAction (game As Book, world() As String)
     scene$ = world(game.playerX, game.playerY)
-    Call PrintPageText(game, "story", CsrLin, "You are in " + playerView$ + ".")
+    Call PrintPageText(game, "story", CsrLin, "You are in " + scene$ + ".")
     ' Decribe what the player is hearing, and restart audio if not currently playing
     If game.storySound = 0 Then
         Call PrintPageText(game, "story", CsrLin, "You hear nothing.")
@@ -1028,36 +1072,36 @@ Sub LookAction (game As Book, world() As String, directions() As String)
         Call PrintPageText(game, "story", CsrLin, "be gifted with a magical item.'")
     End If
     If playerView$ = "MOUNT FLUFF" Then
+        fluffImage& = _LoadImage("fluff.jpg")
+        Call DisplayImage(game, "story", fluffImage&)
         Color _RGB(0, 0, 0)
-        Call PrintPageText(game, "story", CsrLin, "You come upon the base of a mountain and see a gallant white")
-        Call PrintPageText(game, "story", CsrLin, "tom cat wearing boots and playing a spanish guitar.  His")
-        Call PrintPageText(game, "story", CsrLin, "melody hypnotizes you.  And my... he is so fluffy!")
-        Call PrintPageText(game, "story", CsrLin, "You are astonished to learn that this cat can speak.  He")
-        Call PrintPageText(game, "story", CsrLin, "enjoys challenging others to a guessing game.  If you solve")
-        Call PrintPageText(game, "story", CsrLin, "his riddle, he might just give you a prize.")
+        Call PrintPageText(game, "story", CsrLin + 1, "You come upon the base of a mountain and see a gallant white tom cat wearing boots and playing a spanish guitar.  His melody hypnotizes you.  And my... he is so fluffy!")
+        Call PrintPageText(game, "story", CsrLin + 1, "You are astonished to learn that this cat can speak.  He enjoys challenging others to a guessing game.  If you solve his riddle, he might just give you a prize.")
+        _FreeImage fluffImage&
     End If
     If playerView$ = "GIANNI'S DEN" Then
         Color _RGB(169, 169, 169)
-        Call PrintPageText(game, "story", CsrLin, "You find yourself in a dark cave.  A fire burns deep inside.")
-        Call PrintPageText(game, "story", CsrLin, "You explore the cave and find yourself face to face with an")
-        Call PrintPageText(game, "story", CsrLin, "adorable black cat curled up on a Pittsburgh Steelers blanket.")
-        Call PrintPageText(game, "story", CsrLin, "He's so cuuuuuuute!")
+        Call PrintPageText(game, "story", CsrLin, "You find yourself in a dark cave.  A fire burns deep inside.  You explore the cave and find yourself face to face with an adorable black cat curled up on a Pittsburgh Steelers blanket.")
+        Call PrintPageText(game, "story", CsrLin + 1, "He's so cuuuuuuute!")
         Print
         If Contains%(game.inventory, "RING OF TAMING", ",") Then
+            gianniImage& = _LoadImage("gianni.jpg")
+            Call DisplayImage(game, "story", gianniImage&)
+            _FreeImage gianniImage&
             If game.isCatTamed = 0 Then
                 game.isCatTamed = 1
-                Call PrintPageText(game, "story", CsrLin, "You use your ring of taming on him and he jumps into")
-                Call PrintPageText(game, "story", CsrLin, "your waiting arms.  You pet him for hours and hours.")
+                Call PrintPageText(game, "story", CsrLin + 1, "You use your ring of taming on him and he jumps into your waiting arms.  You pet him for hours and hours.")
                 Color _RGB(0, 0, 0)
                 Call PrintPageText(game, "story", CsrLin, "Score +100")
                 Call IncreaseScore(game, 100)
             Else
-                Call PrintPageText(game, "story", CsrLin, "He meows with delight when he sees you and jumps into")
-                Call PrintPageText(game, "story", CsrLin, "your waiting arms.  Oh what a wonderful cat he is!")
+                Call PrintPageText(game, "story", CsrLin + 1, "He meows with delight when he sees you and jumps into your waiting arms.  Oh what a wonderful cat he is!")
             End If
         Else
-            Call PrintPageText(game, "story", CsrLin, "You attempt to pet him but he runs away.  If only you could")
-            Call PrintPageText(game, "story", CsrLin, "tame him.  But such a feat would require strong magic...")
+            gianniImage& = _LoadImage("gianni2.jpg")
+            Call DisplayImage(game, "story", gianniImage&)
+            _FreeImage gianniImage&
+            Call PrintPageText(game, "story", CsrLin + 1, "You attempt to pet him but he climbs a stair railing to get away.  If only you could tame him.  But such a feat would require strong magic...")
         End If
     End If
     If playerView$ = "DRAGON'S DEN" Then
@@ -1177,7 +1221,7 @@ Sub LookAction (game As Book, world() As String, directions() As String)
     End If
     If (aheadX% = game.doorX) And (aheadY% = game.doorY) Then
         Color _RGB(184, 115, 51)
-        Call PrintPageText(game, "story", CsrLin, "Ahead you see a magic door.  Perhaps an exit to this world?")
+        Call PrintPageText(game, "story", CsrLin, "Ahead you see an elevator.  Perhaps an exit to this world?")
     Else
         If game.isOver = 0 Then
             If (aheadX% = 0) Or (aheadX% = (game.levelSize + 1)) Or (aheadY% = 0) Or (aheadY% = (game.levelSize + 1)) Then
@@ -1311,11 +1355,14 @@ Sub MoveBackwardsAction (game As Book)
     Call PrintPageText(game, "story", CsrLin, "Please don't try walking backwards.  You might trip.")
 End Sub
 
+' Play fluffy game action
+'
+' Parameters:
+' game - Book instance
 Sub PlayGameAction (game As Book)
     Call TurnPage(game, 1)
-    Call PrintPageText(game, "story", CsrLin, "Fluffy Cat: Answer me this, and a magical name I will give to you.")
-    Print
-    Call PrintPageText(game, "story", CsrLin, "What is blue... and is also the sky?")
+    Call PrintPageText(game, "story", CsrLin, "FLUFFY CAT: " + Chr$(34) + "Answer me this, and a magical name I will give to you." + Chr$(34))
+    Call PrintPageText(game, "story", CsrLin + 1, Chr$(34) + "What is blue... and is also the sky?" + Chr$(34))
     Print
     riddle$ = GetInput$(game, "You", 0, 0, 40)
     If (riddle$ = "THE SKY") Or (riddle$ = "THE BLUE SKY") Or (riddle$ = "BLUE SKY") Then
@@ -1323,17 +1370,19 @@ Sub PlayGameAction (game As Book)
     End If
     Print
     If riddle$ = "SKY" Then
-        Call PrintPageText(game, "story", CsrLin, "Fluffy Cat: Alas you have bested me!  And that was my")
-        Call PrintPageText(game, "story", CsrLin, "finest riddle!  Very well then.  A deal is a deal. The")
-        Call PrintPageText(game, "story", CsrLin, "magical name you seek is... SHMEBULOCK.")
+        fluffImage& = _LoadImage("fluff2.jpg")
+        Call DisplayImage(game, "story", fluffImage&)
+        Call PrintPageText(game, "story", CsrLin + 1, "FLUFFY CAT: " + Chr$(34) + "Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK." + Chr$(34))
+        _FreeImage fluffImage&
     Else
         If riddle$ = "EXIT GAME" Then
             Call ExitAction(game)
         Else
-            Call PrintPageText(game, "story", CsrLin, "Fluffy Cat: Aha!  It appears that I have bested you!  That")
-            Call PrintPageText(game, "story", CsrLin, "answer is INCORRECT.  No one is as clever as I!")
-            Print
-            Call PrintPageText(game, "story", CsrLin, "Better luck next time.")
+            fluffImage& = _LoadImage("fluff3.jpg")
+            Call DisplayImage(game, "story", fluffImage&)
+            Call PrintPageText(game, "story", CsrLin, "FLUFFY CAT: " + Chr$(34) + "Aha!  It appears that I have bested you!  That answer is INCORRECT.  No one is as clever as I!" + Chr$(34))
+            Call PrintPageText(game, "story", CsrLin + 1, "Better luck next time.")
+            _FreeImage fluffImage&
         End If
     End If
 End Sub
@@ -1457,12 +1506,83 @@ Sub PrintPageText (game As Book, page As String, row As Integer, text As String)
     End If
 End Sub
 
-' Refresh the story and control pages
+' Refresh the control page
+'
+' Parameters:
+' game - Book instance
+' world() - World data
+' directions() - Cardinal directions
+' mapInfo() - Map data
+' playerSymbol() - Player map symbols
+Sub RefreshControlPage (game As Book, world() As String, directions() As String, mapInfo() As String, playerSymbol() As String)
+    Color _RGB(146, 146, 146) ' darker grey
+    firstRow% = game.firstRow + 2
+    Call PrintPageText(game, "control", firstRow%, "_" + game.player + String$(62 - Len(game.player), "_"))
+    Color _RGB(0, 0, 0) ' black
+    Call PrintPageText(game, "control", CsrLin, "Score: " + LTrim$(Str$(game.score)))
+    Call PrintPageText(game, "control", CsrLin, "Inventory: " + game.inventory)
+    Print
+    Call PrintPageText(game, "control", CsrLin, "HP:" + Str$(game.hitPoints))
+    Call PrintPageText(game, "control", CsrLin, "MP:" + Str$(game.magicPoints))
+    Call PrintPageText(game, "control", CsrLin, "XP:" + Str$(game.experiencePoints))
+    Color _RGB(146, 146, 146) ' darker grey
+    Call PrintPageText(game, "control", CsrLin, "_______________________________________________________________")
+    Color _RGB(0, 0, 0) ' black
+    Print
+
+    ' Display the map
+    For i% = 1 To 5 Step 1
+        mapInfo(i%) = ""
+    Next
+    If (game.playerX > 0) And (game.playerY > 0) And (game.isOver = 0) Then
+        mapInfo(1) = "Level: " + LTrim$(Str$(game.level))
+        mapInfo(2) = "Location: " + LTrim$(Str$(game.playerX)) + "," + LTrim$(Str$(game.playerY))
+        mapInfo(3) = "Facing: " + directions(game.playerDirection)
+    End If
+    Call PrintPageText(game, "control", CsrLin, String$((game.levelSize - 1) / 2, " ") + "Map")
+    curRow% = CsrLin
+    Call PrintPageText(game, "control", CsrLin, String$(game.levelSize + 2, "-")) ' Top border
+    For y% = 1 To game.levelSize Step 1
+        Call PrintPageText(game, "control", CsrLin, "|" + String$(game.levelSize, " ") + "|" + "   " + mapInfo(y%))
+    Next
+    Call PrintPageText(game, "control", CsrLin, String$(game.levelSize + 2, "-")) ' Bottom border
+    nextRow% = CsrLin
+    Locate curRow% + game.doorY, game.doorX + game.cursor.lastColumn
+    Print "*"
+    If (game.isOver = 0) And (game.playerX > 0) And (game.playerY > 0) Then
+        symbol$ = playerSymbol(game.playerDirection)
+        Locate curRow% + game.playerY, game.playerX + game.cursor.lastColumn
+        Print symbol$
+    End If
+    Color _RGB(0, 0, 0)
+    Locate nextRow%, 1
+
+    ' Display game control choices
+    If Contains%(game.inventory, "GAME BOOK", ",") Then
+        Color _RGB(0, 0, 0) ' black
+        Locate game.cursor.lastControlRow + 1, 1
+        game.controlChoicesRow = CsrLin + 1
+        gamePrompt$ = "Game Choices: "
+        Call PrintPageText(game, "control", CsrLin, gamePrompt$)
+        _PrintMode _FillBackground ' Replace background instead of displaying just text over the image
+        Color _RGB(0, 139, 139), _RGB(255, 255, 255) ' dark cyan on white
+        controlChoices$ = game.controlChoices
+        Call PrintPageText(game, "control", CsrLin, controlChoices$)
+        game.controlChoicesColumn = game.cursor.lastColumn
+        _PrintMode _KeepBackground
+        Color _RGB(0, 0, 0)
+        Call PrintPageText(game, "control", CsrLin, "[Use arrow keys to turn and move]")
+    End If
+End Sub
+
+' Refresh the story page by evaluating a choice from the player
 '
 ' Parameters:
 ' game - Book instance
 ' choice - Player's selected choice
-Sub RefreshPages (game As Book, world() As String, directions() As String, mapInfo() As String, playerSymbol() As String, choice As String)
+' world() - World data
+' directions() - Cardinal directions
+Sub RefreshStoryPage (game As Book, choice As String, world() As String, directions() As String)
     If (Not Contains%(game.storyChoices, choice, ",")) And (Not Contains%(game.controlChoices, choice, ",")) And (Not Contains%(game.secretChoices, choice, ",")) Then
         Call TurnPage(game, 0)
         If choice <> "" Then
@@ -1490,7 +1610,22 @@ Sub RefreshPages (game As Book, world() As String, directions() As String, mapIn
             choice = "LOOK"
             Call TurnPage(game, 1)
             Call LookAction(game, world(), directions())
-        End If '
+        End If
+        If choice = "FLIP BOOK" Then
+            If game.isRightHanded = 0 Then
+                game.isRightHanded = 1
+            Else
+                game.isRightHanded = 0
+            End If
+            Call TurnPage(game, 0)
+            Call LookAction(game, world(), directions())
+        End If
+        If choice = "GO RIGHT-HANDED" Then
+            game.isRightHanded = 1
+            game.controlChoices = "CREDITS,GO LEFT-HANDED,HIGH SCORES,EXIT GAME"
+            Call TurnPage(game, 0)
+            Call LookAction(game, world(), directions())
+        End If
         If choice = "LISTEN" Then
             Call ListenAction(game, world())
         End If
@@ -1537,66 +1672,6 @@ Sub RefreshPages (game As Book, world() As String, directions() As String, mapIn
         If (choice = "ALL THE THINGS") Then
             Call AllTheThingsAction(game)
         End If
-    End If
-
-    ' TODO - Make this it's own sub so it can be called on-demand during story mode to update the inventory and player stats
-    Color _RGB(146, 146, 146) ' darker grey
-    firstRow% = game.firstRow + 2
-    Call PrintPageText(game, "control", firstRow%, "_" + game.player + String$(62 - Len(game.player), "_"))
-    Color _RGB(0, 0, 0) ' black
-    Call PrintPageText(game, "control", CsrLin, "Score: " + LTrim$(Str$(game.score)))
-    Call PrintPageText(game, "control", CsrLin, "Inventory: " + game.inventory)
-    Print
-    Call PrintPageText(game, "control", CsrLin, "HP:" + Str$(game.hitPoints))
-    Call PrintPageText(game, "control", CsrLin, "MP:" + Str$(game.magicPoints))
-    Call PrintPageText(game, "control", CsrLin, "XP:" + Str$(game.experiencePoints))
-    Color _RGB(146, 146, 146) ' darker grey
-    Call PrintPageText(game, "control", CsrLin, "_______________________________________________________________")
-    Color _RGB(0, 0, 0) ' black
-    Print
-
-    ' Display the map
-    For i% = 1 To 5 Step 1
-        mapInfo(i%) = ""
-    Next
-    If (game.playerX > 0) And (game.playerY > 0) And (game.isOver = 0) Then
-        mapInfo(1) = "Level: " + LTrim$(Str$(game.level))
-        mapInfo(2) = "Location: " + LTrim$(Str$(game.playerX)) + "," + LTrim$(Str$(game.playerY))
-        mapInfo(3) = "Facing: " + directions(game.playerDirection)
-    End If
-    Call PrintPageText(game, "control", CsrLin, String$((game.levelSize - 1) / 2, " ") + "Map")
-    curRow% = CsrLin
-    Call PrintPageText(game, "control", CsrLin, String$(game.levelSize + 2, "-")) ' Top border
-    For y% = 1 To game.levelSize Step 1
-        Call PrintPageText(game, "control", CsrLin, "|" + String$(game.levelSize, " ") + "|" + "   " + mapInfo(y%))
-    Next
-    Call PrintPageText(game, "control", CsrLin, String$(game.levelSize + 2, "-")) ' Bottom border
-    nextRow% = CsrLin
-    Locate curRow% + game.doorY, game.doorX + game.cursor.lastColumn
-    Print "*"
-    If game.isOver = 0 Then
-        symbol$ = playerSymbol(game.playerDirection)
-        Locate curRow% + game.playerY, game.playerX + game.cursor.lastColumn
-        Print symbol$
-    End If
-    Color _RGB(0, 0, 0)
-    Locate nextRow%, 1
-
-    ' Display game control choices
-    If Contains%(game.inventory, "GAME BOOK", ",") Then
-        Color _RGB(0, 0, 0) ' black
-        Locate game.cursor.lastControlRow + 1, 1
-        game.controlChoicesRow = CsrLin + 1
-        gamePrompt$ = "Game Choices: "
-        Call PrintPageText(game, "control", CsrLin, gamePrompt$)
-        _PrintMode _FillBackground ' Replace background instead of displaying just text over the image
-        Color _RGB(0, 139, 139), _RGB(255, 255, 255) ' dark cyan on white
-        controlChoices$ = game.controlChoices
-        Call PrintPageText(game, "control", CsrLin, controlChoices$)
-        game.controlChoicesColumn = game.cursor.lastColumn
-        _PrintMode _KeepBackground
-        Color _RGB(0, 0, 0)
-        Call PrintPageText(game, "control", CsrLin, "[Use arrow keys to turn and move]")
     End If
 End Sub
 
