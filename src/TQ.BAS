@@ -548,7 +548,7 @@ Sub DisplayIntroduction (game As Book, world() As String, directions() As String
                         Call PressAnyKey(game, "story")
                     Else
                         If choice$ = "WHERE IS MY TWIN" Then
-                            Call PrintPageText(game, "story", currentRow% + 8, "MYLEE: " + Chr$(34) + "Oh you poor kid.  I'm afraid your twin was captured by my younger brother, Big Chung.  It is a shame." + Chr$(34))
+                            Call PrintPageText(game, "story", currentRow% + 8, "MYLEE: " + Chr$(34) + "Oh you poor kid.  I'm afraid your twin was captured by my younger brother, BIG CHUNG.  It is a shame." + Chr$(34))
                             Call PressAnyKey(game, "story")
                         Else
                             If choice$ = "WHO IS BIG CHUNG" Then
@@ -560,7 +560,7 @@ Sub DisplayIntroduction (game As Book, world() As String, directions() As String
                                 Call PressAnyKey(game, "story")
                                 Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "That's horrible!!!" + Chr$(34))
                                 Call PressAnyKey(game, "story")
-                                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Don't I know it, kid.  But hey, tell you what... these elevator doors can take you to a magical world.  If you want to save your twin, gain some experience out there and then come back.  If you bring me some GOLD I'll take you to the level that Big Chung hangs out on.  But be careful, NIGHT OWL and a Dragon like gold and if you remove any from their level they might come after you.  Best slay that dragon if you can and ask my friend Gianni for help with that NIGHT OWL problem.  Don't you dare try to fight NIGHT OWL in a dark place.  He'll swoop down on you before you have a chance to defend yourself." + Chr$(34))
+                                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Don't I know it, kid.  But hey, tell you what... these elevator doors can take you to a magical world.  If you want to save your twin, gain some experience out there and then come back.  If you bring me some GOLD I'll take you to the level that BIG CHUNG hangs out on.  But be careful, NIGHT OWL and a Dragon like gold and if you remove any from their level they might come after you.  Best slay that dragon if you can and ask my friend Gianni for help with that NIGHT OWL problem.  Don't you dare try to fight NIGHT OWL in a dark place.  He'll swoop down on you before you have a chance to defend yourself." + Chr$(34))
                                 Call PressAnyKey(game, "story")
                             Else
                                 If choice$ = "NOTHING" Then
@@ -569,7 +569,7 @@ Sub DisplayIntroduction (game As Book, world() As String, directions() As String
                                     currentRow% = CsrLin ' Remember the current row because refreshing the control page will change it
                                     Call RefreshControlPage(game, world(), directions(), mapInfo(), playerSymbol())
                                     Call PrintPageText(game, "story", currentRow% + 1, "INVENTORY +GAME BOOK")
-                                    Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "It's called a 'GAME BOOK'.  It will give you some options on the other page for exiting the game and stuff.  Maybe if you can find that SPELL BOOK I lost you'll have two books and a way to defeat Big Chung.  But don't worry, things like that have a way of turning up eventually.  Even when you don't think you'll find them again they make their way back to you." + Chr$(34))
+                                    Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "It's called a 'GAME BOOK'.  It will give you some options on the other page for exiting the game and stuff.  Maybe if you can find that SPELL BOOK I lost you'll have two books and a way to defeat BIG CHUNG.  But don't worry, things like that have a way of turning up eventually.  Even when you don't think you'll find them again they make their way back to you." + Chr$(34))
                                     Call PressAnyKey(game, "story")
                                     Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "Umm, thanks?" + Chr$(34))
                                     Call PressAnyKey(game, "story")
