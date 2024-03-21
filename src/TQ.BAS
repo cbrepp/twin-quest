@@ -524,7 +524,7 @@ Sub DisplayIntroduction (game As Book, world() As String, directions() As String
                 Call PressAnyKey(game, "story")
                 Call PrintPageText(game, "story", CsrLin + 1, "Mylee: " + Chr$(34) + "You're wondering if I just talked even though I'm a cat.  And the answer is 'yes'.  Yes I did." + Chr$(34))
                 Call PressAnyKey(game, "story")
-                Call PrintPageText(game, "story", CsrLin + 1, "Wait, what?  Can this cat read your mind?")
+                Call PrintPageText(game, "story", CsrLin + 1, "Wait, what?  Can this talking cat read your mind?")
                 Call PressAnyKey(game, "story")
                 Call PrintPageText(game, "story", CsrLin + 1, "Mylee: " + Chr$(34) + "And you're probably wondering now if I can read your mind.  The answer to that is... no.  And I definitely wouldn't want to if I could.  You humans are just too weird." + Chr$(34))
                 Call PressAnyKey(game, "story")
