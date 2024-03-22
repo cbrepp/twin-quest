@@ -223,7 +223,7 @@ Else
 End If
 If rank% > 0 Then
     Print
-    Call PrintPageText(game, "story", CsrLin, "You have a new high score... rank " + LTrim$(Str$(rank%)) + "!")
+    Call PrintPageText(game, "story", game.cursor.lastStoryRow + 2, "You have a new high score... rank " + LTrim$(Str$(rank%)) + "!")
     highScoreInitials$ = GetInput$(game, "Enter your initials", 0, 0, 3)
     highScores(rank%) = LTrim$(Str$(game.score)) + "   " + highScoreInitials$ + "   " + Date$
     Open "high-scores.txt" For Output As #1
@@ -687,6 +687,59 @@ Sub DumbAction (game As Book)
     Print
 End Sub
 
+' Elevator action
+'
+' Parameters:
+' game - Book instance
+Sub ElevatorAction (game As Book)
+    _SndStop game.storySound
+    elevator& = PlaySound&("elevator-open.mp3", 1, 1)
+    elevatorMusic& = PlaySound&("elevator.wav", 1, 1)
+    Locate game.firstRow + 2, 1
+    myleeImage& = _LoadImage("mylee.jpg")
+    Call DisplayImage(game, "story", myleeImage&)
+    Call PrintPageText(game, "story", CsrLin + 2, "MYLEE: " + Chr$(34) + "Oh hey kid, welcome back." + Chr$(34))
+    Call PressAnyKey(game, "story")
+    Call StopSound(elevator&)
+    If Not Contains%(game.inventory, "GOLD", ",") Then
+        Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "So... I noticed you don't have any GOLD.  You're not very good at following directions are you?  Off with you, human.  I have very important work to do and you're wasting my time." + Chr$(34))
+        Call PrintPageText(game, "story", CsrLin + 1, "With that MYLEE flips a switch and the elevator doors open.  Hmm... seems like you're still not welcome in this elevator.  Maybe you should get some GOLD.")
+        Call ReplaySound(elevator&, 1, 1) ' Elevator doors are on a loop because if the player waits to leave they should open and close multiple times
+        Call PressAnyKey(game, "story")
+        Call StopSound(elevatorMusic&)
+        Call ReplaySound(game.storySound, 1, 1)
+        Call StopSound(elevator&)
+    Else
+        If game.isDragonDead = 0 Then
+            Call StopSound(elevatorMusic&)
+            Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Oh no you didn't!!!  Did you come back here with GOLD without first slaying the DRAGON???" + Chr$(34))
+            Call PrintPageText(game, "story", CsrLin + 1, "You hear a thunderous sound behind you and turn to see the elevator doors burst open as a fearsome DRAGON sticks his head in and gobbles you up.  You'd like to say that at least you got the GOLD but that doesn't matter much when you're dead.")
+            game.isOver = 1
+        Else
+            If game.isCatTamed = 0 Then
+                Call StopSound(elevatorMusic&)
+                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Oh no you didn't!!!  Did you come back here with GOLD without first getting a long-range weapon from GIANNI???" + Chr$(34))
+                Call PrintPageText(game, "story", CsrLin + 1, "You hear a thunderous sound behind you and turn to see the elevator doors burst open as NIGHT OWL sticks his head in and gobbles you up.  You'd like to say that at least you got the GOLD but that doesn't matter much when you're dead.")
+                game.isOver = 1
+            Else
+                If game.player = "GREYSON" Then
+                    weapon$ = "BOW & ARROWS"
+                Else
+                    weapon$ = "CAT-APULT"
+                End If
+                Call StopSound(elevatorMusic&)
+                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Oh no you didn't!!!  You brought NIGHT OWL back here!!!  He wants that GOLD!!!" + Chr$(34))
+                Call PrintPageText(game, "story", CsrLin + 1, "You hear a thunderous sound behind you and turn to see the elevator doors burst open as NIGHT OWL sticks his head in.  Before he can gobble you up, you hit him on the head with your trusty " + weapon$ + " and he lets out a painful, shrieking hoot.  NIGHT OWL backs away into the bright light of the WILDERNESS where you can finally fight him in a fair battle.  You march after him with your " + weapon$ + " and decide to end his reign of terror once and for all.")
+                Call PrintPageText(game, "story", CsrLin + 1, "[INSERT NIGHT OWL MINI-GAME]")
+                game.isOver = 1
+                Call PressAnyKey(game, "story")
+                Call PrintPageText(game, "story", CsrLin + 1, "You have won the game!!!")
+                Call PrintPageText(game, "story", CsrLin + 1, "MAXIMUM SCORE!!!")
+            End If
+        End If
+    End If
+End Sub
+
 Sub ExitAction (game As Book)
     game.isOver = 1
     If Contains%(game.inventory, "GOLD", ",") Then
@@ -1090,10 +1143,17 @@ Sub LookAction (game As Book, world() As String, directions() As String)
             _FreeImage gianniImage&
             If game.isCatTamed = 0 Then
                 game.isCatTamed = 1
-                Call PrintPageText(game, "story", CsrLin + 1, "You use your ring of taming on him and he jumps into your waiting arms.  You pet him for hours and hours.")
+                Call PrintPageText(game, "story", CsrLin + 1, "You use your ring of taming on him and he jumps into your waiting arms.  You pet him for hours and hours.  As a reward for your petting, he gives you a long-range weapon to aid you in your quest.")
                 Color _RGB(0, 0, 0)
                 Call PrintPageText(game, "story", CsrLin, "Score +100")
                 Call IncreaseScore(game, 100)
+                If game.player = "GREYSON" Then
+                    Call PrintPageText(game, "story", CsrLin, "Inventory +BOW & ARROWS")
+                    Call IncreaseInventory(game, "BOW & ARROWS")
+                Else
+                    Call PrintPageText(game, "story", CsrLin, "Inventory +CAT-APULT")
+                    Call IncreaseInventory(game, "CAT-APULT")
+                End If
             Else
                 Call PrintPageText(game, "story", CsrLin + 1, "He meows with delight when he sees you and jumps into your waiting arms.  Oh what a wonderful cat he is!")
             End If
@@ -1252,21 +1312,10 @@ Sub MoveAheadAction (game As Book, world() As String, directions() As String)
         aheadX% = aheadX% - 1
     End If
     If (aheadX% = game.doorX) And (aheadY% = game.doorY) Then
-        game.playerX = aheadX%
-        game.playerY = aheadY%
-        game.isOver = 1
-        Call PrintPageText(game, "story", CsrLin, "You have exited the world.")
-        If Contains%(game.inventory, "GOLD", ",") Then
-            Call PrintPageText(game, "story", CsrLin, "You have safely brought your riches back home.")
-            Call PrintPageText(game, "story", CsrLin, "Fame and fortune are yours.")
-            Call PrintPageText(game, "story", CsrLin, "YOU HAVE WON THE GAME!!!")
-            If game.score = 300 Then
-                Call PrintPageText(game, "story", CsrLin, "MAXIMUM SCORE!!!")
-            End If
-        Else
-            Call PrintPageText(game, "story", CsrLin, "You did not return home with the gold.")
-            Call PrintPageText(game, "story", CsrLin, "This is a horrible fate.")
-            Call PrintPageText(game, "story", CsrLin, "YOU HAVE LOST THE GAME.")
+        Call ElevatorAction(game)
+        If game.isOver = 0 Then
+            Call TurnPage(game, 1)
+            Call LookAction(game, world(), directions())
         End If
     Else
         If (aheadX% = 0) Or (aheadX% = (game.levelSize + 1)) Or (aheadY% = 0) Or (aheadY% = (game.levelSize + 1)) Then
