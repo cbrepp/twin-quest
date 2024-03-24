@@ -4,8 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.1.0] - 2024-03-23
+
+### Added
+
+- Added introduction and the ELEVATOR as a place to which the player can return
+
 ### Changed
 
+- Added additional images and scene content
 - Added sound for turning the page
 - Added general page headers for the book title and current chapter
 - Added book image as a general game mat

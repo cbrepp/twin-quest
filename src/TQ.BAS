@@ -224,7 +224,10 @@ End If
 If rank% > 0 Then
     Print
     Call PrintPageText(game, "story", game.cursor.lastStoryRow + 2, "You have a new high score... rank " + LTrim$(Str$(rank%)) + "!")
-    highScoreInitials$ = GetInput$(game, "Enter your initials", 0, 0, 3)
+    highScoreInitials$ = ""
+    While Len(highScoreInitials$) <> 3
+        highScoreInitials$ = GetInput$(game, "Enter your initials", 0, 0, 3)
+    Wend
     highScores(rank%) = LTrim$(Str$(game.score)) + "   " + highScoreInitials$ + "   " + Date$
     Open "high-scores.txt" For Output As #1
     For i% = 1 To 10

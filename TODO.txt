@@ -1,16 +1,40 @@
 Priorities:
-- Add missing sounds to level 1
-- Add custom types and controller functions for those types
-- Add a game mat
-    - IN PROGRESS!  Need to unhork everything by adding a "PRINT" function that LOCATEs the column starting at 15 for left page and 83 for right page.  Function should word wrap automatically and just accept a paragraph of text to display... PrintText "left", "My very long string of text to display"
-    - Then, add headers for the current "CHAPTER" right-aligned (which is increment each time you enter a new level) on the right page and current points on the left.
-    - Then, the right page should only be about what you're currently seeing and reading for each scene.  And, the left page is everything else-- player controls, game information, etc.
-    - Display CREDITS on underneath the title page content... on the right page should be high scores and press any key should be at the bottom of the right page
-- New intro... The Elevator
+- General scene-by-scene cleanup
+    - Player select should allow images to be selectable
+    - Add navigation arrows in the bottom corners of the introduction for skip page, back one page, and restart and get to the end
+    - Add more riddles (randomly chosen to the fluff scene... and different games like hangman and rock, paper, scissors, shoot)
+    - Allow the mouse to pet each cat image as a hidden bonus
+    - Arrange each scene on the map randomly.  (MOUNT FLUFF will always be the center square.)
+- General code cleanup
+    - Add custom types and controller functions for those types
+        - The cardinal directions can easily be a type
+        - Game events (ie, isNightOwlDead) can easily be a custom type
+        - The world could be managed by a static array in a function... Scene("get",world,level,x,y,scene)... "get" and "set" could be type constants
+        - Level type could contain a isNightTime Boolean
+        - game.pages.storyPage would be a great constant type
+    - Clean up the GetInput() function and allow different lines of text to be clicked (ie, inventory items to display details about each item).  The "Press Any Key" text should also be something the player can click.
+    - Make the display of inventory, map, etc something that can truly be refreshed (because the book area was captured before anything was rendered)
+    - Add an application icon (dark blue)
+- Use a custom font so the book title, current chapter, and keywords can be rendered in bold-faced text
+- Night Owl minigame
+    - Each minigame at the end of a level emulates a game platform and as the levels progress so do the game platforms.  For example, level 1 ends with Atari-like  game for battling Night Owl.  Level 2 ends with a 2d platformer.  Level 3 a 3d dos era raycaster.  Level 4 a Mine Craft clone.  At the end you play against BIG CHUNG in the ultimate game... chess.
+    - Use sound "Neon Dreams: A Retro-Futuristic Synthwave Track - MP3 Mixdown"
+    - When the spell book is received, Mylee explains that magic isn't magical, it just amplifies what's already there... ie, only bunnies and land can be cloned
+    - The XP counter can be used to learn spells from MYLEE
+    - NIGHT OWL doesn't really die... you just wound it.  It goes back to the dark woods.  Player has to return to the woods on level 3 to face NIGHT OWL in a 3d raycaster with jump scares.
+- Level 2
+    - MOUNT FLUFF transcends all levels.  Meaning, the player can climb up or down once they aquire hiking boots.  Maybe have MYLEE's ELEVATOR get stuck and the player needs to return to level 1 to get something to repair it.
+    - Level 2 is stuck on night mode.  A puzzle involves returning the light.  The player must rely on LISTEN to nagivate the scenes.
+        - Music box sound would be perfect for level 2 in night mode.
+    - When daylight is restored the player can see clearly that their twin is stuck in a corner of the map, cut off by missing scenes that BIG CHUNG ate to trap the twin.
+    - At some point the player can learn a transportation spell to reach their twin.  Attempting to move into the missing scenes gives the standard message about not being able to jump off the edge of the world.
+- Improve graphics
+    - https://qb64.com/wiki/GIF-Images includes example code for displaying gifs
 
 General:
 - Bugs:
     - When turning and the mouse is hovering over a possible choice, the highlighting for that choice goes away
+    - When the application window is resized it dorks with the ability to use the mouse
 - Code Cleanup:
     - Fix all outstanding TODOs
     - Explore using custom TYPEs
