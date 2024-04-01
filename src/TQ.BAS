@@ -18,6 +18,7 @@
 ' inventory.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
 ' magic.mp3 - Magic.mp3 (https://freesound.org/people/Bastianhallo/sounds/434050/)
 ' mylee.jpg - Mylee Marie by Mr. Chris
+' old-books.jpg - Old books, Book, Old image. Free for use. by jarmoluk (https://pixabay.com/photos/old-books-book-old-library-436498/)
 ' points.mp3 - 320655__rhodesmas__level-up-01.mp3 (https://freesound.org/people/shinephoenixstormcrow/sounds/337049/)
 ' select-player.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
 ' select-player-grey.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
@@ -30,19 +31,33 @@
 ' woods.mp3 - forestsurroundings.mp3 (https://freesound.org/people/Luftrum/sounds/48411/)
 ' zara.mp3 - 050816 a crowded grocery store Sapporo.mp3 (https://freesound.org/people/pflanigan/sounds/390254/)
 
+' Declare that arrays are dynamic
+Rem $DYNAMIC
+
+' Define collection events as shared, constant values
+Const CREATE = 1, RETRIEVE = 2, UPDATE = 3, DELETE = 4
+
 Type TextCursor
     lastColumn As Integer
     lastControlRow As Integer
     lastStoryRow As Integer
 End Type
 
+Type Scene
+    color As Long
+    description As String
+    name As String
+End Type
+
 ' TODO - Extract map properties into a new Map type
 Type Book
+    author As String
     basicStoryChoices As String
     chapter As String
     controlChoices As String
     controlChoicesColumn As Integer
     controlChoicesRow As Integer
+    credits As String
     cursor As TextCursor
     doorX As Integer
     doorY As Integer
@@ -72,6 +87,7 @@ Type Book
     rightPageStartingColumn As Integer
     score As Integer
     secretChoices As String
+    story As String
     storyChoices As String
     storyChoicesColumn As Integer
     storyChoicesRow As Integer
@@ -83,7 +99,6 @@ End Type
 
 ' Initialize the game
 Dim game As Book
-game.title = "Twin Quest"
 game.version = "0.1.0"
 game.chapter = ""
 game.isOver = 0
@@ -113,7 +128,7 @@ game.magicPoints = 0
 game.experiencePoints = 0
 
 ' Configure application window
-_Title game.title$ + " " + game.version ' Set the application window's title
+_Title "Twin Quest " + game.version ' Set the application window's title
 $Resize:On
 '$Resize:Smooth
 ' TODO - $Resize:Smooth would be nice, but it cuts off the top of the book image and dorks with mouse coordinates tracking
@@ -128,6 +143,9 @@ game.pointsSound = _SndOpen("points.mp3")
 ' Display pre-chapter pages with epic music
 game.pageTurnSound = PlaySound&("turn-page.mp3", 1, 0)
 game.storySound = PlaySound&("epic.mp3", 1, 1)
+game.chapter = "SELECT STORY"
+Call LoadStory(game)
+game.chapter = ""
 Call DisplayTitlePage(game)
 game.chapter = "CREDITS"
 Call DisplayCreditsPage(game)
@@ -136,7 +154,7 @@ Call DisplayHighScoresPage(game)
 game.chapter = "SELECT MAIN CHARACTER"
 Call DisplaySelectPlayerPage(game)
 
-' Start the actual story
+' Start the story
 game.chapter = "INTRODUCTION"
 game.pageNumber = 1
 game.storyChoices = game.basicStoryChoices
@@ -193,8 +211,9 @@ Call PrintPageText(game, "story", CsrLin, "  | | | '_ \ / _ \ |  _| | '_ \ / _` 
 Call PrintPageText(game, "story", CsrLin, "  | | | | | |  __/ | |___| | | | (_| |")
 Call PrintPageText(game, "story", CsrLin, "  |_| |_| |_|\___| |_____|_| |_|\__,_|")
 Call PrintPageText(game, "story", CsrLin + 1, "(Press any key to exit the program)")
+Sleep
 
-End
+System ' Ends the program immediately and closes the application window
 
 ChallengeHighScores:
 Dim highScores(10) As String
@@ -397,17 +416,54 @@ Function Contains% (myString As String, token As String, delimiter As String)
     Contains% = InStr(1, (delimiter + myString + delimiter), (delimiter + token + delimiter)) > 0
 End Function
 
+' Get files in current directory
+'
+' (Copied and modified from QB64 help to support Linux filesystems and not used Shared variables)
+'
+' Parameters:
+' [spec] - File spec (ie, "*.txt").  Use empty string to return other files from last call.
+' fileCount - Count of files in directory
+'
+' Returns:
+' Last file discovered (decrements index each time this function is called)
+Function DIR$ (spec As String, fileCount As Integer)
+    Const TmpFile$ = "DIRINF0.TMP", ListMAX% = 500 'change maximum to suit your needs
+    Static Ready%, Index%, DirList$()
+    If Not Ready% Then ReDim DirList$(ListMAX%): Ready% = -1 'DIM array first use
+    If spec$ > "" Then 'get file names when a spec is given
+        If _OS$ = "WINDOWS" Then
+            Shell _Hide "DIR " + spec$ + " /b > " + TmpFile$
+        Else
+            Shell _Hide "ls " + spec$ + " > " + TmpFile$
+        End If
+        Index% = 0: DirList$(Index%) = "": ff% = FreeFile
+        Open TmpFile$ For Append As #ff%
+        size& = LOF(ff%)
+        Close #ff%
+        If size& = 0 Then Kill TmpFile$: Exit Function
+        Open TmpFile$ For Input As #ff%
+        Do While Not EOF(ff%) And Index% < ListMAX%
+            Index% = Index% + 1
+            Line Input #ff%, DirList$(Index%)
+        Loop
+        fileCount = Index% 'SHARED variable can return the file count
+        Close #ff%
+        Kill TmpFile$
+    Else
+        If Index% > 0 Then
+            Index% = Index% - 1 'no spec sends next file name
+        End If
+    End If
+    DIR$ = DirList$(Index%)
+End Function
+
 ' Display the credits page
 '
 ' Parameters:
 ' game - Book instance
 Sub DisplayCreditsPage (game As Book)
     Call TurnPage(game, 1)
-    Call PrintPageText(game, "story", CsrLin, "Business Manager: Wayne Chung")
-    Call PrintPageText(game, "story", CsrLin, "Executive Producer: Wayne Chung")
-    Call PrintPageText(game, "story", CsrLin, "Power of Attorney: Wayne Chung")
-    Call PrintPageText(game, "story", CsrLin, "Development: Mylee and Mr. Chris")
-    Call PrintPageText(game, "story", CsrLin, "Creative Design: Zara and Greyson")
+    Call PrintPageText(game, "story", CsrLin, game.credits)
     Call PressAnyKey(game, "control")
 End Sub
 
@@ -663,26 +719,29 @@ Sub DisplayTitlePage (game As Book)
     Call TurnPage(game, 1)
     Color _RGB(139, 0, 0) ' dark red
     ' TODO - Since TurnPage() moves the cursor to row 5, can the row parameters all just be CsrLin?
-    Call PrintPageText(game, "story", 5, "                                   ___, ____--'")
-    Call PrintPageText(game, "story", 6, "                              _,-.'_,-'      (")
-    Call PrintPageText(game, "story", 7, "                           ,-' _.-''....____(")
-    Call PrintPageText(game, "story", 8, "                 ,))_     /  ,'\ `'-.     (          /\")
-    Call PrintPageText(game, "story", 9, "         __ ,+..a`  \(_   ) /   \    `'-..(         /  \")
-    Call PrintPageText(game, "story", 10, "         )`-;...,_   \(_ ) /     \  ('''    ;'^^`\ <./\.>")
-    Call PrintPageText(game, "story", 11, "             ,_   )   |( )/   ,./^``_..._  < /^^\ \_.))")
-    Call PrintPageText(game, "story", 12, "            `=;; (    (/_')-- -'^^`      ^^-.`_.-` >-'")
-    Call PrintPageText(game, "story", 13, "            `=\\ (                             _,./")
-    Call PrintPageText(game, "story", 14, "              ,\`(                         )^^^")
-    Call PrintPageText(game, "story", 15, "                ``;         __-'^^\       /")
-    Call PrintPageText(game, "story", 16, "                  / _>---^^^   `\..`-.    ``'.")
-    Call PrintPageText(game, "story", 17, "                 / /               / /``'`; /")
-    Call PrintPageText(game, "story", 18, "                / /          ,-=='-`=-'  / /")
-    Call PrintPageText(game, "story", 19, "          ,-=='-`=-.               ,-=='-`=-.")
+    Call PrintPageText(game, "story", CsrLin, "                                   ___, ____--'")
+    Call PrintPageText(game, "story", CsrLin, "                              _,-.'_,-'      (")
+    Call PrintPageText(game, "story", CsrLin, "                           ,-' _.-''....____(")
+    Call PrintPageText(game, "story", CsrLin, "                 ,))_     /  ,'\ `'-.     (          /\")
+    Call PrintPageText(game, "story", CsrLin, "         __ ,+..a`  \(_   ) /   \    `'-..(         /  \")
+    Call PrintPageText(game, "story", CsrLin, "         )`-;...,_   \(_ ) /     \  ('''    ;'^^`\ <./\.>")
+    Call PrintPageText(game, "story", CsrLin, "             ,_   )   |( )/   ,./^``_..._  < /^^\ \_.))")
+    Call PrintPageText(game, "story", CsrLin, "            `=;; (    (/_')-- -'^^`      ^^-.`_.-` >-'")
+    Call PrintPageText(game, "story", CsrLin, "            `=\\ (                             _,./")
+    Call PrintPageText(game, "story", CsrLin, "              ,\`(                         )^^^")
+    Call PrintPageText(game, "story", CsrLin, "                ``;         __-'^^\       /")
+    Call PrintPageText(game, "story", CsrLin, "                  / _>---^^^   `\..`-.    ``'.")
+    Call PrintPageText(game, "story", CsrLin, "                 / /               / /``'`; /")
+    Call PrintPageText(game, "story", CsrLin, "                / /          ,-=='-`=-'  / /")
+    Call PrintPageText(game, "story", CsrLin, "          ,-=='-`=-.               ,-=='-`=-.")
     Color _RGB(0, 0, 0) ' black
-    Call PrintPageText(game, "story", 20, "        *******************************************")
-    Call PrintPageText(game, "story", 21, "                    T W I N   Q U E S T")
-    Call PrintPageText(game, "story", 24, "                            b y")
-    Call PrintPageText(game, "story", 26, "                  Wayne Chung Enterprises")
+    Call PrintPageText(game, "story", CsrLin, "        *******************************************")
+    Call PrintPageText(game, "story", CsrLin, "                    T W I N   Q U E S T")
+    halfStoryLen% = _Round(Len(game.story) / 2)
+    Call PrintPageText(game, "story", CsrLin + 1, "        " + String$(22 - halfStoryLen%, " ") + game.story)
+    Call PrintPageText(game, "story", CsrLin + 2, "                            b y")
+    halfAuthorLen% = _Round(Len(game.author) / 2)
+    Call PrintPageText(game, "story", CsrLin + 1, "        " + String$(22 - halfAuthorLen%, " ") + game.author)
     Print
     Print
     Call PressAnyKey(game, "control")
@@ -1016,6 +1075,36 @@ Sub IncreaseScore (game As Book, points As Integer)
     Call ReplaySound(game.pointsSound, 1, 0)
 End Sub
 
+' Get the delimited length of a string
+'
+' Parameters:
+' text - Full string of text
+' delimiter - Text that delimits substrings within the full string of text
+'
+' Returns:
+' Number of delimited substrings
+Function Length% (text As String, delimiter As String)
+    currentPiece% = 1
+    delimiterPos% = InStr(1, text, delimiter)
+    If (delimiter = "") Or (delimiterPos% = 0) Then
+        Length% = currentPiece%
+    Else
+        position% = 1
+        atEnd% = 0
+        delimiterLen% = Len(delimiter)
+        While atEnd% = 0
+            position% = delimiterPos% + delimiterLen%
+            delimiterPos% = InStr(position%, text, delimiter)
+            currentPiece% = currentPiece% + 1
+            If delimiterPos% = 0 Then
+                delimiterPos% = Len(text) + 1
+                atEnd% = 1
+            End If
+        Wend
+        Length% = currentPiece%
+    End If
+End Function
+
 Sub ListenAction (game As Book, world() As String)
     scene$ = world(game.playerX, game.playerY)
     Call PrintPageText(game, "story", CsrLin, "You are in " + scene$ + ".")
@@ -1082,6 +1171,97 @@ Sub ListenAction (game As Book, world() As String)
         End If
     End If
     Color _RGB(0, 0, 0)
+End Sub
+
+' Load the game story
+'
+' Parameters:
+' game - Book instance
+Sub LoadStory (game As Book)
+    ' Load the story
+    Dim newScene As Scene
+    newScene.color = _RGB(0, 100, 0)
+    newScene.name = "WILDERNESS"
+    newScene.description = ""
+    Call WorldScene(CREATE, 1, 1, 1, 1, newScene)
+    Dim tempScene As Scene
+    Call WorldScene(RETRIEVE, 1, 1, 1, 1, tempScene)
+    Print "color = " + Str$(tempScene.color)
+    Print "name = " + tempScene.name
+    Print "desc = " + tempScene.description
+
+    Call PrintPageText(game, "story", CsrLin, "Current directory = " + _CWD$)
+
+    storyFile$ = ""
+    file$ = DIR$("*.quest", fileCount%) 'use a file spec ONCE to find the last file name listed
+    Call PrintPageText(game, "story", CsrLin, "File count = " + Str$(fileCount%))
+    Call PrintPageText(game, "story", CsrLin, "File handle = " + file$)
+
+    If fileCount% = 0 Then
+        Call PrintPageText(game, "story", CsrLin, "No story files!!!")
+    Else
+        If fileCount% = 1 Then
+            storyFile$ = file$
+        Else
+            ' There are multiple story files, so build a comma-delimited list of stories
+            stories$ = file$
+            maxLength% = Len(file$)
+            Do
+                file$ = DIR$("", fileCount%) 'use an empty string parameter to return a list of files!
+                If file$ <> "" Then
+                    If stories$ <> "" Then
+                        stories$ = stories$ + ","
+                    End If
+                    stories$ = stories$ + file$
+                    If Len(file$) > maxLength% Then
+                        maxLength% = Len(file$)
+                    End If
+                End If
+            Loop Until Len(file$) = 0 'file list ends with an empty string
+
+            oldBooks& = _LoadImage("old-books.jpg")
+            turnPageSound% = 1
+            Do
+                Call TurnPage(game, turnPageSound%)
+                Call DisplayImage(game, "story", oldBooks&)
+                Locate CsrLin + 1, 1
+                storyFile$ = StoryPrompt$(game, "Choose Quest", stories$, 0, 1, maxLength%)
+                turnPageSound% = 0 ' If the player enters an incorrect choice and the page is turned to reset the screen, be silent
+            Loop While Not Contains%(game.storyChoices, storyFile$, ",")
+            _FreeImage oldBooks&
+            Locate CsrLin + 3, 1
+        End If
+    End If
+
+    If _FileExists(storyFile$) Then
+        Open storyFile$ For Input As #1
+        Do Until EOF(1)
+            Input #1, fileLine$
+            If Mid$(fileLine$, 1, 1) = "[" Then
+                section$ = Mid$(fileLine$, 2, Len(fileLine$) - 2)
+            Else
+                If section$ = "title" Then
+                    game.story = fileLine$
+                    game.title = "Twin Quest: " + game.story
+                    _Continue
+                End If
+                If section$ = "author" Then
+                    game.author = fileLine$
+                    _Continue
+                End If
+                If section$ = "credits" Then
+                    If game.credits <> "" Then
+                        game.credits = game.credits + "<br>"
+                    End If
+                    game.credits = game.credits + fileLine$
+                    _Continue
+                End If
+            End If
+        Loop
+        Close #1
+    Else
+        Call PrintPageText(game, "story", CsrLin, storyFile$ + " does not exist")
+    End If
 End Sub
 
 Sub LookAction (game As Book, world() As String, directions() As String)
@@ -1410,6 +1590,37 @@ Sub MoveBackwardsAction (game As Book)
     Call PrintPageText(game, "story", CsrLin, "Please don't try walking backwards.  You might trip.")
 End Sub
 
+' Extract a substring for a given delimiter and index position
+'
+' Parameters:
+' text - Full string of text to search
+' delimiter - Text that delimits the subpieces in the full string
+' index - Delimited position of substring
+'
+' Returns:
+' Delimited substring
+Function Piece$ (text As String, delimiter As String, index As Integer)
+    delimiterPos% = InStr(1, text, delimiter)
+    If (delimiter = "") Or (delimiterPos% = 0) Then
+        Piece$ = text
+    Else
+        currentPiece% = 1
+        position% = 1
+        atEnd% = 0
+        delimiterLen% = Len(delimiter)
+        While (currentPiece% < index) And (atEnd% = 0)
+            position% = delimiterPos% + delimiterLen%
+            delimiterPos% = InStr(position%, text, delimiter)
+            currentPiece% = currentPiece% + 1
+            If delimiterPos% = 0 Then
+                delimiterPos% = Len(text) + 1
+                atEnd% = 1
+            End If
+        Wend
+        Piece$ = Mid$(text, position%, delimiterPos% - position%)
+    End If
+End Function
+
 ' Play fluffy game action
 '
 ' Parameters:
@@ -1499,6 +1710,16 @@ End Sub
 ' row - Text row
 ' text - Text to print
 Sub PrintPageText (game As Book, page As String, row As Integer, text As String)
+    ' If the text contains the break tag, recursively call this subroutine for each intended line of text
+    If Contains%(text, "<br>", "") Then
+        lineCount% = Length%(text, "<br>")
+        For i = 1 To lineCount%
+            currentPiece$ = Piece$(text, "<br>", i)
+            Call PrintPageText(game, page, row + i - 1, currentPiece$)
+        Next i
+        Exit Sub
+    End If
+
     lastColumn = 0
 
     ' Determine the starting position for the text based on the designated page
@@ -1928,5 +2149,36 @@ Sub TurnRightAction (game As Book, world() As String, directions() As String)
         game.playerDirection = 1
     End If
     Call LookAction(game, world(), directions())
+End Sub
+
+' World Scene Class
+'
+' Parameters:
+' event - Collection event integer (CREATE, RETRIEVE, UPDATE, DELETE)
+' world - World number
+' Level - Level number
+' x - x-coordinate
+' y - y-coordinate
+' scene - Scene instance
+Sub WorldScene (event As Integer, world As Integer, level As Integer, x As Integer, y As Integer, scene As Scene)
+    Static sceneCount As Integer, scenes() As Scene
+
+    If event = CREATE Then
+        sceneCount = sceneCount + 1
+        If sceneCount = 1 Then
+            ' One time only array init
+            Dim scenes(10, 10, 10, 10) As Scene
+        End If
+        scenes(world, level, x, y) = scene
+    End If
+    If event = RETRIEVE Then
+        scene = scenes(world, level, x, y)
+    End If
+    If event = UPDATE Then
+        scenes(world, level, x, y) = scene
+    End If
+    If event = DELETE Then
+        ' Unsupported at this time
+    End If
 End Sub
 
