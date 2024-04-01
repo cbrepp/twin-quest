@@ -114,6 +114,9 @@ game.experiencePoints = 0
 
 ' Configure application window
 _Title game.title$ + " " + game.version ' Set the application window's title
+$Resize:On
+'$Resize:Smooth
+' TODO - $Resize:Smooth would be nice, but it cuts off the top of the book image and dorks with mouse coordinates tracking
 
 ' Display "splash screen"
 Call DisplaySplashScreen(game)

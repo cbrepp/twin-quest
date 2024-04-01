@@ -1,33 +1,62 @@
 Priorities:
-- Bugs:
-    - When turning and the mouse is hovering over a possible choice, the highlighting for that choice goes away
-    - When the application window is resized it dorks with the ability to use the mouse
-        - Figure out a better way to center the application window on the main monitor... currently, "-_SCREENMOVE _MIDDLE" moves the window between both monitors requiring a fudge factor
-    - Comment each code block, subroutine, and function
-- General scene-by-scene cleanup
-    - Player select should allow images to be selectable
-    - Add navigation arrows in the bottom corners of the introduction for skip page, back one page, and restart and get to the end
-    - Add more riddles (randomly chosen to the fluff scene... and different games like hangman and rock, paper, scissors, shoot)
-    - Allow the mouse to pet each cat image as a hidden bonus
-    - Arrange each scene on the map randomly.  (MOUNT FLUFF will always be the center square.)
-    - Add more ASCII art... getting the gold, fighting the dragon, taming Gianni, and winning or losing the game
-    - Attempting to fight the dragon with the long-range weapon results in DEATH because the dragon is in a cave.  Mention with UNO REVERSE about how effective it is at short-range deflection.
-    - MYLEE needs to stress that unless BIG CHUNG is stopped, he'll eat the whole universe
-    - When leaving the ELEVATOR in the introduction, emphasis is placed on how bright the outside is
-    - Mylee hints that NIGHT OWL works for BIG CHUNG and won't be happy about you continuing on... maybe add a question about NIGHT OWL that the player can ask MYLEE.
-        - Mylee hints that NIGHT OWL has a spell book and that the player might need it to continue their quest on the remaining levels
-    - When the player returns to the ELEVATOR without GOLD, show a picture of MYLEE in the sink.  (She didn't think the player would come back so soon so she decided to take a bath.)
-- Sounds:
-    - Add death sound when dying
-    - Add victory sound when game is won
-    - Add sound for slaying the dragon
-    - Add game over sound when game is lost or user exits
-- General code cleanup
-    - Add custom types and controller functions for those types
-        - The cardinal directions can easily be a type
-        - Game events (ie, isNightOwlDead) can easily be a custom type
-        - The world could be managed by a static array in a function... Scene("get",world,level,x,y,scene)... "get" and "set" could be type constants
-        - Level type could contain a isNightTime Boolean- Mylee announces at the beginning that she's the world's greatest spellcaster because magic is simply about being able to figure things out and she's great at that... an allusion to her being the world's greatest detective
+- Modularize Level 1 so it can be designed with a designer
+- Create a story designer
+    - See if QB64 has a way to scan the contents of a folder to find any files ending with ".quest"
+- Rewrite Level 1 so it can be loaded via the designer
+- Continue with the remaining levels, starting with the NIGHT OWL minigame.  Each new game feature should enhance the designer.  (ie, the NIGHT OWL minigame can be reused with different images, etc.)
+
+Bugs:
+- When turning and the mouse is hovering over a possible choice, the highlighting for that choice goes away
+- Comment each code block, subroutine, and function
+
+General scene-by-scene cleanup:
+- Player select should allow images to be selectable
+- Add navigation arrows in the bottom corners of the introduction for skip page, back one page, and restart and get to the end
+- Add more riddles (randomly chosen to the fluff scene... and different games like hangman and rock, paper, scissors, shoot)
+- Allow the mouse to pet each cat image as a hidden bonus
+- Arrange each scene on the map randomly.  (MOUNT FLUFF will always be the center square.)
+- Add more ASCII art... getting the gold, fighting the dragon, taming Gianni, and winning or losing the game
+- Attempting to fight the dragon with the long-range weapon results in DEATH because the dragon is in a cave.  Mention with UNO REVERSE about how effective it is at short-range deflection.
+- MYLEE needs to stress that unless BIG CHUNG is stopped, he'll eat the whole universe
+- When leaving the ELEVATOR in the introduction, emphasis is placed on how bright the outside is
+- Mylee hints that NIGHT OWL works for BIG CHUNG and won't be happy about you continuing on... maybe add a question about NIGHT OWL that the player can ask MYLEE.
+    - Mylee hints that NIGHT OWL has a spell book and that the player might need it to continue their quest on the remaining levels
+- When the player returns to the ELEVATOR without GOLD, show a picture of MYLEE in the sink.  (She didn't think the player would come back so soon so she decided to take a bath.)
+
+Sounds:
+- Add death sound when dying
+- Add victory sound when game is won
+- Add sound for slaying the dragon- Improve graphics
+    - https://qb64.com/wiki/GIF-Images includes example code for displaying gifs
+- Add game over sound when game is lost or user exits
+
+General code cleanup:
+- Add custom types and controller functions for those types
+- The cardinal directions can easily be a type
+- Game events (ie, isNightOwlDead) can easily be a custom typea doom like
+- The world could be managed by a static array in a function... Scene("get",world,level,x,y,scene)... "get" and "set" could be type constants
+- Level type could contain a isNightTime Boolean- Mylee announces at the bega doom like inning that she's the world's greatest spellcaster because magic is simply about being able to figure things out and she's great at that... an allusion to her being the world's greatest detective
+- game.pages.storyPage would be a great constant type
+- Clean up the GetInput() function and allow different lines of text to be clicked (ie, inventory items to display details about each item).  The "Press Any Key" text should also be something the player can click.
+- Make the display of inventory, map, etc something that can truly be refreshed (because the book area was captured before anything was rendered)
+- Add an application icon (dark blue)
+- Color code each scene on the game mapa doom like
+- Add arrow and backspace support for entering text... plus, HOME, END, and anything else
+- Use a custom font so the book title, current chapter, and keywords can be rendered in bold-faced text
+- Improve graphics
+    - https://qb64.com/wiki/GIF-Images includes example code for displaying gifs
+
+NIGHT OWL minigame:
+- Each minigame at the end of a level emulates a game platform and as the levels progress so do the game platforms.  For example, level 1 ends with Atari-like  game for battling Night Owl.  Level 2 ends with a 2d platformer.  Level 3 a 3d dos era raycaster.  Level 4 a Mine Craft clone.  At the end you play against BIG CHUNG in the ultimate game... chess.
+- Use sound "Neon Dreams: A Retro-Futuristic Synthwave Track - MP3 Mixdown"
+- When the spell book is received, Mylee explains that magic isn't magical, it just amplifies what's already there... ie, only bunnies and land can be cloned
+- The XP counter can be used to learn spells from MYLEE
+- NIGHT OWL doesn't really die... you just wound it.  It goes back to the dark woods.  Player has to return to the woods on level 3 to face NIGHT OWL in a 3d raycaster with jump scares.
+
+Level 2:
+- MYLEE gives the player a magic word at the end of each level that can be used at any time to do all the things ("ALL THE THINGS") for that level as a sort of checkpoint implementation
+- Each level begins with MYLEE questions
+- Mylee describes the progression of the combat system as a natural consequence of BIG CHUNG eating away at the fabric of the universe and dimensions collapsing into infinity... place space music during this.
 - Player's twin is in a corner of the map closed off by empty squares - Mylee announces at the beginning that she's the world's greatest spellcaster because magic is simply about being able to figure things out and she's great at that... an allusion to her being the world's greatest detective
 - Player's twin is in a corner of the map closed off by empty squares that BIG CHUNG ate to imprison the twin... symbol of cell on map is a diamond using the twin's color
 - SUMMON spell can be used to summon your twin once they are free'ed... will be necessary to complete a quest.  Scene viewer changes to the twin's name.
@@ -36,50 +65,41 @@ Priorities:
 - SUMMON spell can be used to summon your twin once they are free'ed... will be necessary to complete a quest.  Scene viewer changes to the twin's name.
 - Zara wants to see bunnies that ate toxic waste and drop bazookas.  Add a toxic scene with bunnies.
 - Need a way to tame the bunnies so they fight on your side
-        - game.pages.storyPage would be a great constant type
-    - Clean up the GetInput() function and allow different lines of text to be clicked (ie, inventory items to display details about each item).  The "Press Any Key" text should also be something the player can click.
-    - Make the display of inventory, map, etc something that can truly be refreshed (because the book area was captured before anything was rendered)
-    - Add an application icon (dark blue)
-    - Color code each scene on the game mapa doom like
-    - Add arrow and backspace support for entering text... plus, HOME, END, and anything else
-- Use a custom font so the book title, current chapter, and keywords can be rendered in bold-faced text
-- Night Owl minigame
-    - Each minigame at the end of a level emulates a game platform and as the levels progress so do the game platforms.  For example, level 1 ends with Atari-like  game for battling Night Owl.  Level 2 ends with a 2d platformer.  Level 3 a 3d dos era raycaster.  Level 4 a Mine Craft clone.  At the end you play against BIG CHUNG in the ultimate game... chess.
-    - Use sound "Neon Dreams: A Retro-Futuristic Synthwave Track - MP3 Mixdown"
-    - When the spell book is received, Mylee explains that magic isn't magical, it just amplifies what's already there... ie, only bunnies and land can be cloned
-    - The XP counter can be used to learn spells from MYLEE
-    - NIGHT OWL doesn't really die... you just wound it.  It goes back to the dark woods.  Player has to return to the woods on level 3 to face NIGHT OWL in a 3d raycaster with jump scares.
-- Level 2
-    - Level 2's main goal is to get hiking boots so the player can return to level 1, obtain an item from the dark woods to fix the elevator, and have MYLEE teach you how to transport yourself to the twin's scene to rescue the twin
-    - MOUNT FLUFF transcends all levels.  Meaning, the player can climb up or down once they aquire hiking boots.  Maybe have MYLEE's ELEVATOR get stuck and the player needs to return to level 1 to get something to repair it.
-    - Level 2 is stuck on night mode.  A puzzle involves returning the light.  The player must rely on LISTEN to nagivate the scenes.
-        - Music box sound would be perfect for level 2 in night mode.
-    - When daylight is restored the player can see clearly that their twin is stuck in a corner of the map, cut off by missing scenes that BIG CHUNG ate to trap the twin.
-    - At some point the player can learn a transportation spell to reach their twin.  Attempting to move into the missing scenes gives the standard message about not being able to jump off the edge of the world.
-    - Mylee announces at the beginning that she's the world's greatest spellcaster because magic is simply about being able to figure things out and she's great at that... an allusion to her being the world's greatest detective
-    - Player's twin is in a corner of the map closed off by empty squares that BIG CHUNG ate to imprison the twin... symbol of cell on map is a diamond using the twin's color
-    - SUMMON spell can be used to summon your twin once they are free'ed... will be necessary to complete a quest.  Scene viewer changes to the twin's name.
-    - Zara wants to see bunnies that ate toxic waste and drop bazookas.  Add a toxic scene with bunnies.
-    - Need a way to tame the bunnies so they fight on your side
-- Improve graphics
-    - https://qb64.com/wiki/GIF-Images includes example code for displaying gifs
+- Level 2's main goal is to get hiking boots so the player can return to level 1, obtain an item from the dark woods to fix the elevator, and have MYLEE teach you how to transport yourself to the twin's scene to rescue the twin
+- MOUNT FLUFF transcends all levels.  Meaning, the player can climb up or down once they aquire hiking boots.  Maybe have MYLEE's ELEVATOR get stuck and the player needs to return to level 1 to get something to repair it.
+- Level 2 is stuck on night mode.  A puzzle involves returning the light.  The player must rely on LISTEN to nagivate the scenes.
+    - Music box sound would be perfect for level 2 in night mode.
+- When daylight is restored the player can see clearly that their twin is stuck in a corner of the map, cut off by missing scenes that BIG CHUNG ate to trap the twin.
+- At some point the player can learn a transportation spell to reach their twin.  Attempting to move into the missing scenes gives the standard message about not being able to jump off the edge of the world.
+- Mylee announces at the beginning that she's the world's greatest spellcaster because magic is simply about being able to figure things out and she's great at that... an allusion to her being the world's greatest detective
+- Player's twin is in a corner of the map closed off by empty squares that BIG CHUNG ate to imprison the twin... symbol of cell on map is a diamond using the twin's color
+- SUMMON spell can be used to summon your twin once they are free'ed... will be necessary to complete a quest.  Scene viewer changes to the twin's name.
+- Zara wants to see bunnies that ate toxic waste and drop bazookas.  Add a toxic scene with bunnies.
+- Need a way to tame the bunnies so they fight on your side
+
 - Future
-    - Add gameplays "modes"-- starts in normal mode, then switching into your twin enters twin mode or switching into a cat enters cat mode
-    - Keep an array of gameplay transactions to enable a time travel spell.  (Only backwards time travel should be permissable... attempting to travel to the future should display "Alas, the future is unwritten." to spite the Calvinists.)  Maybe a stasis spell could permit seeing what the future would be like, and combined with a world copy spell would allow the player to see what awaits a copied version of the world and resume normal gameplay afterwards.
-    - Combat System:
-        - After the NIGHT OWL minigame, combat is introduced.  Future scenes with monsters allow combat.  The combat system emulates the last minigame... ie, level 2 combat is like Atari.  Level 3 is like Mario.  Level 4 is like Doom-Mine Craft.
-    - Spells:
-        - Spells have to be learned, one by one.  MYLEE will teach each spell in exchange for XP.
-        - SCRY - Spell that given a level and coordinates will perform the LOOK action remotely.  Level 1 is limited to current level.  Level 2 for any level.  (But only unlocked levels.)
-        - TELEPORT - Level 1 of spell lets you move anywhere on a map for the current level.  Level 2 of spell lets you move to any square of any level.  (But only unlocked levels.)
-        - SUMMON - Level 1 only works on small creatures (cats/bunnies).  Level 2 can be used on large creatures (BIG CHUNG himself.)
-        - TAKE/DROP - Level 1 is for small objects.  Level 2 can be used for an entire scene.
-        - TRANSMUTE - Player can change into a cat to gain action for smelling a scene; Can be used to solve a puzzle where a scene has a hidden object that needs to be sniffed out.
-- Level 3:
-    - Empty map.  Goal is for player to use TAKE/DROP spell to drop individual scenes to try to SUMMON BIG CHUNG who will eat them and die because maybe after a lot of scenes with bunnies he gets tired and will eat a scene with TOXIC BUNNIES?  LAVA scenes?  Maybe a third dangerous thing from level two the player can clone.
-- Level 4:
-    - With BIG CHUNG tired and in a weakened state, the final boss battle begins... first an atari like battle, then a 2d platformer battle, then a mine craft like battle.
-- Level 5 is an 8x8 chessboard.  The player plays BIG CHUNG a game of chess.  Winner takes all.
+- Add gameplays "modes"-- starts in normal mode, then switching into your twin enters twin mode or switching into a cat enters cat mode
+- Keep an array of gameplay transactions to enable a time travel spell.  (Only backwards time travel should be permissable... attempting to travel to the future should display "Alas, the future is unwritten." to spite the Calvinists.)  Maybe a stasis spell could permit seeing what the future would be like, and combined with a world copy spell would allow the player to see what awaits a copied version of the world and resume normal gameplay afterwards.
+- Combat System:
+    - After the NIGHT OWL minigame, combat is introduced.  Future scenes with monsters allow combat.  The combat system emulates the last minigame... ie, level 2 combat is like Atari.  Level 3 is like Mario.  Level 4 is like Doom-Mine Craft.
+
+Spells:
+- Spells have to be learned, one by one.  MYLEE will teach each spell in exchange for XP.
+- SCRY - Spell that given a level and coordinates will perform the LOOK action remotely.  Level 1 is limited to current level.  Level 2 for any level.  (But only unlocked levels.)
+- TELEPORT - Level 1 of spell lets you move anywhere on a map for the current level.  Level 2 of spell lets you move to any square of any level.  (But only unlocked levels.)
+- SUMMON - Level 1 only works on small creatures (cats/bunnies).  Level 2 can be used on large creatures (BIG CHUNG himself.)
+- TAKE/DROP - Level 1 is for small objects.  Level 2 can be used for an entire scene.
+- TRANSMUTE - Player can change into a cat to gain action for smelling a scene; Can be used to solve a puzzle where a scene has a hidden object that needs to be sniffed out.
+
+Level 3:
+- Empty map.  Goal is for player to use TAKE/DROP spell to drop individual scenes to try to SUMMON BIG CHUNG who will eat them and die because maybe after a lot of scenes with bunnies he gets tired and will eat a scene with TOXIC BUNNIES?  LAVA scenes?  Maybe a third dangerous thing from level two the player can clone.
+- Level 3 spell used to populate a missing scene can be leveled up at the end of the game as a special bonus.  The unused scene in level 1 is the only remaining unused scene.  The unused scene can be a way to jump/link to episode 2.  Have this additional blank scene by instead blank with a description that says it is mysterious and suspicious.
+
+Level 4:
+- With BIG CHUNG tired and in a weakened state, the final boss battle begins... first an atari like battle, then a 2d platformer battle, then a mine craft like battle.
+
+Level 5:
+- Level is an 8x8 chessboard.  The player plays BIG CHUNG a game of chess.  Winner takes all.
 
 Easter Eggs:
 - additional WILDERNESS square on level 1 can be configured dynamically... kind of like a mini game
