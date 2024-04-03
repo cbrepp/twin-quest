@@ -17,6 +17,7 @@
 ' grey.mp3 - 8-Bit Coin Or Power Up FX For Retro Video Games (https://freesound.org/people/Cloud-10/sounds/647977/)
 ' inventory.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
 ' magic.mp3 - Magic.mp3 (https://freesound.org/people/Bastianhallo/sounds/434050/)
+' minigames.mp3 - video game menu music (https://freesound.org/people/magmadiverrr/sounds/661248/)
 ' mylee.jpg - Mylee Marie by Mr. Chris
 ' old-books.jpg - Old books, Book, Old image. Free for use. by jarmoluk (https://pixabay.com/photos/old-books-book-old-library-436498/)
 ' points.mp3 - 320655__rhodesmas__level-up-01.mp3 (https://freesound.org/people/shinephoenixstormcrow/sounds/337049/)
@@ -63,6 +64,7 @@ Type Book
     doorY As Integer
     experiencePoints As Integer
     firstRow As Integer
+    highScores As String
     hitPoints As Integer
     image As Long
     inventory As String
@@ -77,6 +79,7 @@ Type Book
     levelSize As Integer
     magicPoints As Integer
     maxPageLength As Integer
+    openingMusic As String
     pageNumber As Integer
     pageTurnSound As Long
     player As String
@@ -91,6 +94,7 @@ Type Book
     storyChoices As String
     storyChoicesColumn As Integer
     storyChoicesRow As Integer
+    storyFile As String
     storySound As Long
     title As String
     twin As String
@@ -142,9 +146,9 @@ game.pointsSound = _SndOpen("points.mp3")
 
 ' Display pre-chapter pages with epic music
 game.pageTurnSound = PlaySound&("turn-page.mp3", 1, 0)
-game.storySound = PlaySound&("epic.mp3", 1, 1)
 game.chapter = "SELECT STORY"
 Call LoadStory(game)
+game.storySound = PlaySound&(game.openingMusic, 1, 1)
 game.chapter = ""
 Call DisplayTitlePage(game)
 game.chapter = "CREDITS"
@@ -221,45 +225,86 @@ For i% = 1 To 10
     highScores(i%) = ""
 Next i%
 rank% = 0
-If _FileExists("high-scores.txt") Then
-    Open "high-scores.txt" For Input As #1
-    i% = 1
-    Do Until EOF(1)
-        Input #1, fileLine$
-        fileLineScore% = Val(Mid$(fileLine$, 1, 3))
-        If (rank% = 0) And (game.score > fileLineScore%) Then
-            rank% = i%
-            i% = i% + 1 ' Move Over, Beethoven
+If game.highScores <> "" Then
+    highScoresCount% = Length%(game.highScores, "<br>")
+    index% = 1
+    For i% = 1 To highScoresCount%
+        highScore$ = Piece$(game.highScores, "<br>", i%)
+        score% = Val(Piece$(highScore$, "   ", 1))
+        initials$ = Piece$(highScore$, "   ", 2)
+        scoreDate$ = Piece$(highScore$, "   ", 3)
+        If (rank% = 0) And (game.score > score%) Then
+            rank% = index%
+            index% = index% + 1 ' Move Over, Beethoven
         End If
-        If i% <= 10 Then
-            highScores(i%) = fileLine$
+        If index% <= 10 Then
+            highScores(index%) = highScore$
         End If
-        i% = i% + 1
-    Loop
-    Close #1
-    If i% <= 10 Then
-        rank% = i%
-    End If
+        index% = index% + 1
+    Next i%
 Else
     rank% = 1
 End If
+'If _FileExists(game.storyFile) Then
+'Open game.storyFile For Input As #1
+'i% = 1
+'Do Until EOF(1)
+'Input #1, fileLine$
+'fileLineScore% = Val(Mid$(fileLine$, 1, 3))
+'If (rank% = 0) And (game.score > fileLineScore%) Then
+'    rank% = i%
+'i% = i% + 1 ' Move Over, Beethoven
+'End If
+'If i% <= 10 Then
+'highScores(i%) = fileLine$
+'End If
+'i% = i% + 1
+'Loop
+'Close #1
+'If i% <= 10 Then
+'    rank% = i%
+'End If
+'Else
+'    rank% = 1
+'End If
 If rank% > 0 Then
     Print
     Call PrintPageText(game, "story", game.cursor.lastStoryRow + 2, "You have a new high score... rank " + LTrim$(Str$(rank%)) + "!")
     highScoreInitials$ = ""
     While Len(highScoreInitials$) <> 3
+        ' TODO - Only alphanumeric characters should be allowed
         highScoreInitials$ = GetInput$(game, "Enter your initials", 0, 0, 3)
     Wend
     highScores(rank%) = LTrim$(Str$(game.score)) + "   " + highScoreInitials$ + "   " + Date$
-    Open "high-scores.txt" For Output As #1
+
+    ' TODO - Read each file line and stop at the high scores
+    Dim storyFile(1000) As String
+    i% = 0
+    Open game.storyFile For Output As #1
+    Do Until EOF(1)
+        Input #1, fileLine$
+        If fileLine$ = "[high scores]" Then
+            Exit Do
+        End If
+        i% = i% + 1
+        storyFile(i%) = fileLine$
+    Loop
+    Close #1
+
+    Open game.storyFile For Output As #1
+    For j% = 1 To i%
+        Print #1, storyFile(j%) ' Restore the original file contents
+    Next j%
+    Print #1, "[high scores]"
     For i% = 1 To 10
         If (highScores(i%) <> "") Then
             Print #1, highScores(i%)
         End If
     Next i%
-    Close #1
+
     Call DisplayHighScoresPage(game)
 End If
+
 Return
 
 InitLevel1:
@@ -474,13 +519,8 @@ End Sub
 Sub DisplayHighScoresPage (game As Book)
     Call TurnPage(game, 1)
 
-    If _FileExists("high-scores.txt") Then
-        Open "high-scores.txt" For Input As #1
-        Do Until EOF(1)
-            Input #1, fileLine$
-            Call PrintPageText(game, "story", CsrLin, fileLine$)
-        Loop
-        Close #1
+    If game.highScores <> "" Then
+        Call PrintPageText(game, "story", CsrLin, game.highScores)
     Else
         Call PrintPageText(game, "story", CsrLin, "N/A")
     End If
@@ -1204,7 +1244,7 @@ Sub LoadStory (game As Book)
             storyFile$ = file$
         Else
             ' There are multiple story files, so build a comma-delimited list of stories
-            stories$ = file$
+            stories$ = Piece$(file$, ".quest", 1) ' Remove the file extension for readability
             maxLength% = Len(file$)
             Do
                 file$ = DIR$("", fileCount%) 'use an empty string parameter to return a list of files!
@@ -1212,7 +1252,7 @@ Sub LoadStory (game As Book)
                     If stories$ <> "" Then
                         stories$ = stories$ + ","
                     End If
-                    stories$ = stories$ + file$
+                    stories$ = stories$ + Piece$(file$, ".quest", 1) ' Remove the file extension for readability
                     If Len(file$) > maxLength% Then
                         maxLength% = Len(file$)
                     End If
@@ -1228,12 +1268,14 @@ Sub LoadStory (game As Book)
                 storyFile$ = StoryPrompt$(game, "Choose Quest", stories$, 0, 1, maxLength%)
                 turnPageSound% = 0 ' If the player enters an incorrect choice and the page is turned to reset the screen, be silent
             Loop While Not Contains%(game.storyChoices, storyFile$, ",")
+            storyFile$ = storyFile$ + ".quest" ' Re-add the file extension
             _FreeImage oldBooks&
             Locate CsrLin + 3, 1
         End If
     End If
 
     If _FileExists(storyFile$) Then
+        game.storyFile = storyFile$
         Open storyFile$ For Input As #1
         Do Until EOF(1)
             Input #1, fileLine$
@@ -1254,6 +1296,17 @@ Sub LoadStory (game As Book)
                         game.credits = game.credits + "<br>"
                     End If
                     game.credits = game.credits + fileLine$
+                    _Continue
+                End If
+                If section$ = "opening music" Then
+                    game.openingMusic = fileLine$
+                    _Continue
+                End If
+                If section$ = "high scores" Then
+                    If game.highScores <> "" Then
+                        game.highScores = game.highScores + "<br>"
+                    End If
+                    game.highScores = game.highScores + fileLine$
                     _Continue
                 End If
             End If
