@@ -50,6 +50,13 @@ Type Scene
     name As String
 End Type
 
+Type MapDirections
+    north As Integer
+    east As Integer
+    south As Integer
+    west As Integer
+End Type
+
 ' TODO - Extract map properties into a new Map type
 Type Book
     author As String
@@ -60,6 +67,7 @@ Type Book
     controlChoicesRow As Integer
     credits As String
     cursor As TextCursor
+    directions As MapDirections
     doorX As Integer
     doorY As Integer
     experiencePoints As Integer
@@ -103,6 +111,10 @@ End Type
 
 ' Initialize the game
 Dim game As Book
+game.directions.north = 1
+game.directions.east = 2
+game.directions.south = 3
+game.directions.west = 4
 game.version = "0.1.0"
 game.chapter = ""
 game.isOver = 0
@@ -163,11 +175,6 @@ game.chapter = "INTRODUCTION"
 game.pageNumber = 1
 game.storyChoices = game.basicStoryChoices
 Dim world(5, 5) As String
-Dim directions(4) As String
-directions(1) = "NORTH"
-directions(2) = "EAST"
-directions(3) = "SOUTH"
-directions(4) = "WEST"
 Dim mapInfo(5) As String
 Dim playerSymbol(4) As String
 playerSymbol(1) = "^"
@@ -179,8 +186,8 @@ GoSub InitLevel1
 ' Main game loop
 choice$ = ""
 Do
-    Call RefreshStoryPage(game, choice$, world(), directions())
-    Call RefreshControlPage(game, world(), directions(), mapInfo(), playerSymbol())
+    Call RefreshStoryPage(game, choice$, world())
+    Call RefreshControlPage(game, world(), mapInfo(), playerSymbol())
     If game.isOver Then
         _Continue
     End If
@@ -189,7 +196,7 @@ Do
 
     ' TODO - Refactor this to be a re-usable story mode that activates before the story prompt
     If game.chapter = "INTRODUCTION" Then
-        Call DisplayIntroduction(game, world(), directions(), mapInfo(), playerSymbol())
+        Call DisplayIntroduction(game, world(), mapInfo(), playerSymbol())
         If game.chapter = "CHAPTER 1" Then
             ' Every first step in every great adventure is... a first step
             choice$ = "MOVE AHEAD"
@@ -565,10 +572,9 @@ End Sub
 ' Parameters:
 ' game - Book instance
 ' world() - World data
-' directions() - Cardinal directions
 ' mapInfo() - Map data
 ' playerSymbol() - Player map symbols
-Sub DisplayIntroduction (game As Book, world() As String, directions() As String, mapInfo() As String, playerSymbol() As String)
+Sub DisplayIntroduction (game As Book, world() As String, mapInfo() As String, playerSymbol() As String)
     ' TODO - Would be nice to add back and forward arrows in the bottom corners of the story page.
 
     If game.pageNumber = 1 Then
@@ -663,7 +669,7 @@ Sub DisplayIntroduction (game As Book, world() As String, directions() As String
                                     Call PrintPageText(game, "story", currentRow% + 8, "MYLEE: " + Chr$(34) + "Nothing else, huh.  Okay.  Well take this then..." + Chr$(34))
                                     Call IncreaseInventory(game, "GAME BOOK")
                                     currentRow% = CsrLin ' Remember the current row because refreshing the control page will change it
-                                    Call RefreshControlPage(game, world(), directions(), mapInfo(), playerSymbol())
+                                    Call RefreshControlPage(game, world(), mapInfo(), playerSymbol())
                                     Call PrintPageText(game, "story", currentRow% + 1, "INVENTORY +GAME BOOK")
                                     Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "It's called a 'GAME BOOK'.  It will give you some options on the other page for exiting the game and stuff.  Maybe if you can find that SPELL BOOK I lost you'll have two books and a way to defeat BIG CHUNG.  But don't worry, things like that have a way of turning up eventually.  Even when you don't think you'll find them again they make their way back to you." + Chr$(34))
                                     Call PressAnyKey(game, "story")
@@ -1311,7 +1317,7 @@ Sub LoadStory (game As Book)
     End If
 End Sub
 
-Sub LookAction (game As Book, world() As String, directions() As String)
+Sub LookAction (game As Book, world() As String)
     playerView$ = world(game.playerX, game.playerY)
     Call PrintPageText(game, "story", CsrLin, "You are in " + playerView$ + ".")
     If playerView$ = "WILDERNESS" Then
@@ -1500,16 +1506,16 @@ Sub LookAction (game As Book, world() As String, directions() As String)
     End If
     aheadX% = game.playerX
     aheadY% = game.playerY
-    If directions(game.playerDirection) = "NORTH" Then
+    If game.playerDirection = game.directions.north Then
         aheadY% = aheadY% - 1
     End If
-    If directions(game.playerDirection) = "EAST" Then
+    If game.playerDirection = game.directions.east Then
         aheadX% = aheadX% + 1
     End If
-    If directions(game.playerDirection) = "SOUTH" Then
+    If game.playerDirection = game.directions.south Then
         aheadY% = aheadY% + 1
     End If
-    If directions(game.playerDirection) = "WEST" Then
+    If game.playerDirection = game.directions.west Then
         aheadX% = aheadX% - 1
     End If
     If (aheadX% = game.doorX) And (aheadY% = game.doorY) Then
@@ -1529,26 +1535,26 @@ Sub LookAction (game As Book, world() As String, directions() As String)
     Color _RGB(0, 0, 0)
 End Sub
 
-Sub MoveAheadAction (game As Book, world() As String, directions() As String)
+Sub MoveAheadAction (game As Book, world() As String)
     aheadX% = game.playerX
     aheadY% = game.playerY
-    If directions(game.playerDirection) = "NORTH" Then
+    If game.playerDirection = game.directions.north Then
         aheadY% = aheadY% - 1
     End If
-    If directions(game.playerDirection) = "EAST" Then
+    If game.playerDirection = game.directions.east Then
         aheadX% = aheadX% + 1
     End If
-    If directions(game.playerDirection) = "SOUTH" Then
+    If game.playerDirection = game.directions.south Then
         aheadY% = aheadY% + 1
     End If
-    If directions(game.playerDirection) = "WEST" Then
+    If game.playerDirection = game.directions.west Then
         aheadX% = aheadX% - 1
     End If
     If (aheadX% = game.doorX) And (aheadY% = game.doorY) Then
         Call ElevatorAction(game)
         If game.isOver = 0 Then
             Call TurnPage(game, 1)
-            Call LookAction(game, world(), directions())
+            Call LookAction(game, world())
         End If
     Else
         If (aheadX% = 0) Or (aheadX% = (game.levelSize + 1)) Or (aheadY% = 0) Or (aheadY% = (game.levelSize + 1)) Then
@@ -1628,7 +1634,7 @@ Sub MoveAheadAction (game As Book, world() As String, directions() As String)
             End If
 
             ' Refresh the scene's description
-            Call LookAction(game, world(), directions())
+            Call LookAction(game, world())
         End If
     End If
 End Sub
@@ -1834,10 +1840,9 @@ End Sub
 ' Parameters:
 ' game - Book instance
 ' world() - World data
-' directions() - Cardinal directions
 ' mapInfo() - Map data
 ' playerSymbol() - Player map symbols
-Sub RefreshControlPage (game As Book, world() As String, directions() As String, mapInfo() As String, playerSymbol() As String)
+Sub RefreshControlPage (game As Book, world() As String, mapInfo() As String, playerSymbol() As String)
     Color _RGB(146, 146, 146) ' darker grey
     firstRow% = game.firstRow + 2
     Call PrintPageText(game, "control", firstRow%, "_" + game.player + String$(62 - Len(game.player), "_"))
@@ -1854,13 +1859,26 @@ Sub RefreshControlPage (game As Book, world() As String, directions() As String,
     Print
 
     ' Display the map
+    directionWord$ = ""
+    If game.playerDirection = game.directions.north Then
+        directionWord$ = "North"
+    End If
+    If game.playerDirection = game.directions.east Then
+        directionWord$ = "East"
+    End If
+    If game.playerDirection = game.directions.south Then
+        directionWord$ = "South"
+    End If
+    If game.playerDirection = game.directions.west Then
+        directionWord$ = "West"
+    End If
     For i% = 1 To 5 Step 1
         mapInfo(i%) = ""
     Next
     If (game.playerX > 0) And (game.playerY > 0) And (game.isOver = 0) Then
         mapInfo(1) = "Level: " + LTrim$(Str$(game.level))
         mapInfo(2) = "Location: " + LTrim$(Str$(game.playerX)) + "," + LTrim$(Str$(game.playerY))
-        mapInfo(3) = "Facing: " + directions(game.playerDirection)
+        mapInfo(3) = "Facing: " + directionWord$
     End If
     Call PrintPageText(game, "control", CsrLin, String$((game.levelSize - 1) / 2, " ") + "Map")
     curRow% = CsrLin
@@ -1904,8 +1922,7 @@ End Sub
 ' game - Book instance
 ' choice - Player's selected choice
 ' world() - World data
-' directions() - Cardinal directions
-Sub RefreshStoryPage (game As Book, choice As String, world() As String, directions() As String)
+Sub RefreshStoryPage (game As Book, choice As String, world() As String)
     If (Not Contains%(game.storyChoices, choice, ",")) And (Not Contains%(game.controlChoices, choice, ",")) And (Not Contains%(game.secretChoices, choice, ",")) Then
         Call TurnPage(game, 0)
         If choice <> "" Then
@@ -1920,19 +1937,19 @@ Sub RefreshStoryPage (game As Book, choice As String, world() As String, directi
             Call ExitAction(game)
         End If
         If choice = "LOOK" Then
-            Call LookAction(game, world(), directions())
+            Call LookAction(game, world())
         End If
         If choice = "CREDITS" Then
             Call DisplayCreditsPage(game)
             choice = "LOOK"
             Call TurnPage(game, 1)
-            Call LookAction(game, world(), directions())
+            Call LookAction(game, world())
         End If
         If choice = "HIGH SCORES" Then
             Call DisplayHighScoresPage(game)
             choice = "LOOK"
             Call TurnPage(game, 1)
-            Call LookAction(game, world(), directions())
+            Call LookAction(game, world())
         End If
         If choice = "FLIP BOOK" Then
             If game.isRightHanded = 0 Then
@@ -1941,28 +1958,28 @@ Sub RefreshStoryPage (game As Book, choice As String, world() As String, directi
                 game.isRightHanded = 0
             End If
             Call TurnPage(game, 0)
-            Call LookAction(game, world(), directions())
+            Call LookAction(game, world())
         End If
         If choice = "GO RIGHT-HANDED" Then
             game.isRightHanded = 1
             game.controlChoices = "CREDITS,GO LEFT-HANDED,HIGH SCORES,EXIT GAME"
             Call TurnPage(game, 0)
-            Call LookAction(game, world(), directions())
+            Call LookAction(game, world())
         End If
         If choice = "LISTEN" Then
             Call ListenAction(game, world())
         End If
         If choice = "MOVE AHEAD" Then
-            Call MoveAheadAction(game, world(), directions())
+            Call MoveAheadAction(game, world())
         End If
         If choice = "MOVE BACKWARDS" Then
             Call MoveBackwardsAction(game)
         End If
         If choice = "TURN LEFT" Then
-            Call TurnLeftAction(game, world(), directions())
+            Call TurnLeftAction(game, world())
         End If
         If choice = "TURN RIGHT" Then
-            Call TurnRightAction(game, world(), directions())
+            Call TurnRightAction(game, world())
         End If
         If (choice = "PLAY GAME") Then
             Call PlayGameAction(game)
@@ -1970,14 +1987,14 @@ Sub RefreshStoryPage (game As Book, choice As String, world() As String, directi
             Call PressAnyKey(game, "control")
             choice = "LOOK"
             Call TurnPage(game, 1)
-            Call LookAction(game, world(), directions())
+            Call LookAction(game, world())
         End If
         If (choice = "SPEAK NAME") Then
             Call SpeakNameAction(game)
             Call PressAnyKey(game, "control")
             choice = "LOOK"
             Call TurnPage(game, 1)
-            Call LookAction(game, world(), directions())
+            Call LookAction(game, world())
         End If
         If (choice = "CHASE BUNNIES") Then
             Call ChaseBunniesAction(game)
@@ -1987,7 +2004,7 @@ Sub RefreshStoryPage (game As Book, choice As String, world() As String, directi
             Call PressAnyKey(game, "control")
             choice = "LOOK"
             Call TurnPage(game, 1)
-            Call LookAction(game, world(), directions())
+            Call LookAction(game, world())
         End If
         If (choice = "TAKE GOLD") Then
             Call TakeGoldAction(game)
@@ -2155,12 +2172,12 @@ Sub TameFluffAction (game As Book)
     Call PrintPageText(game, "story", CsrLin, "|  magnifico               \/   \         |")
 End Sub
 
-Sub TurnLeftAction (game As Book, world() As String, directions() As String)
+Sub TurnLeftAction (game As Book, world() As String)
     game.playerDirection = game.playerDirection - 1
     If game.playerDirection = 0 Then
         game.playerDirection = 4
     End If
-    Call LookAction(game, world(), directions())
+    Call LookAction(game, world())
 End Sub
 
 ' Wipe the current screen and redisplay the book image
@@ -2190,12 +2207,12 @@ Sub TurnPage (game As Book, playPageSound As Integer)
     Locate game.firstRow + 2, 1
 End Sub
 
-Sub TurnRightAction (game As Book, world() As String, directions() As String)
+Sub TurnRightAction (game As Book, world() As String)
     game.playerDirection = game.playerDirection + 1
     If game.playerDirection = 5 Then
         game.playerDirection = 1
     End If
-    Call LookAction(game, world(), directions())
+    Call LookAction(game, world())
 End Sub
 
 ' World Scene Class
