@@ -205,7 +205,7 @@ Loop While game.isOver = 0
 
 ' Check if the player has earned a spot on the HIGH SCORES list
 If game.score > 0 Then
-    GoSub ChallengeHighScores
+    Call ChallengeHighScores(game)
 End If
 
 Locate game.cursor.lastStoryRow + 2, 1
@@ -218,94 +218,6 @@ Call PrintPageText(game, "story", CsrLin + 1, "(Press any key to exit the progra
 Sleep
 
 System ' Ends the program immediately and closes the application window
-
-ChallengeHighScores:
-Dim highScores(10) As String
-For i% = 1 To 10
-    highScores(i%) = ""
-Next i%
-rank% = 0
-If game.highScores <> "" Then
-    highScoresCount% = Length%(game.highScores, "<br>")
-    index% = 1
-    For i% = 1 To highScoresCount%
-        highScore$ = Piece$(game.highScores, "<br>", i%)
-        score% = Val(Piece$(highScore$, "   ", 1))
-        initials$ = Piece$(highScore$, "   ", 2)
-        scoreDate$ = Piece$(highScore$, "   ", 3)
-        If (rank% = 0) And (game.score > score%) Then
-            rank% = index%
-            index% = index% + 1 ' Move Over, Beethoven
-        End If
-        If index% <= 10 Then
-            highScores(index%) = highScore$
-        End If
-        index% = index% + 1
-    Next i%
-Else
-    rank% = 1
-End If
-'If _FileExists(game.storyFile) Then
-'Open game.storyFile For Input As #1
-'i% = 1
-'Do Until EOF(1)
-'Input #1, fileLine$
-'fileLineScore% = Val(Mid$(fileLine$, 1, 3))
-'If (rank% = 0) And (game.score > fileLineScore%) Then
-'    rank% = i%
-'i% = i% + 1 ' Move Over, Beethoven
-'End If
-'If i% <= 10 Then
-'highScores(i%) = fileLine$
-'End If
-'i% = i% + 1
-'Loop
-'Close #1
-'If i% <= 10 Then
-'    rank% = i%
-'End If
-'Else
-'    rank% = 1
-'End If
-If rank% > 0 Then
-    Print
-    Call PrintPageText(game, "story", game.cursor.lastStoryRow + 2, "You have a new high score... rank " + LTrim$(Str$(rank%)) + "!")
-    highScoreInitials$ = ""
-    While Len(highScoreInitials$) <> 3
-        ' TODO - Only alphanumeric characters should be allowed
-        highScoreInitials$ = GetInput$(game, "Enter your initials", 0, 0, 3)
-    Wend
-    highScores(rank%) = LTrim$(Str$(game.score)) + "   " + highScoreInitials$ + "   " + Date$
-
-    ' TODO - Read each file line and stop at the high scores
-    Dim storyFile(1000) As String
-    i% = 0
-    Open game.storyFile For Output As #1
-    Do Until EOF(1)
-        Input #1, fileLine$
-        If fileLine$ = "[high scores]" Then
-            Exit Do
-        End If
-        i% = i% + 1
-        storyFile(i%) = fileLine$
-    Loop
-    Close #1
-
-    Open game.storyFile For Output As #1
-    For j% = 1 To i%
-        Print #1, storyFile(j%) ' Restore the original file contents
-    Next j%
-    Print #1, "[high scores]"
-    For i% = 1 To 10
-        If (highScores(i%) <> "") Then
-            Print #1, highScores(i%)
-        End If
-    Next i%
-
-    Call DisplayHighScoresPage(game)
-End If
-
-Return
 
 InitLevel1:
 game.level = 1
@@ -421,6 +333,88 @@ Sub AllTheThingsAction (game As Book)
             Call PrintPageText(game, "story", CsrLin, "You have done all the things for level " + LTrim$(Str$(game.level)) + ".")
         End If
     End If
+End Sub
+
+' Challenge the current set of high scores
+'
+' Parameters:
+' game - Book instance
+Sub ChallengeHighScores (game As Book)
+    Dim highScores(1 To 10) As String
+    For i% = 1 To 10
+        highScores(i%) = ""
+    Next i%
+    rank% = 0
+    If game.highScores <> "" Then
+        highScoresCount% = Length%(game.highScores, "<br>")
+        index% = 1
+        For i% = 1 To highScoresCount%
+            highScore$ = Piece$(game.highScores, "<br>", i%)
+            score% = Val(Piece$(highScore$, "   ", 1))
+            initials$ = Piece$(highScore$, "   ", 2)
+            scoreDate$ = Piece$(highScore$, "   ", 3)
+            If (rank% = 0) And (game.score > score%) Then
+                rank% = index%
+                index% = index% + 1 ' Move Over, Beethoven
+            End If
+            If index% <= 10 Then
+                highScores(index%) = highScore$
+            End If
+            index% = index% + 1
+        Next i%
+    Else
+        rank% = 1
+    End If
+
+    If rank% = 0 Then
+        Exit Sub
+    End If
+
+    Print
+    Call PrintPageText(game, "story", game.cursor.lastStoryRow + 2, "You have a new high score... rank " + LTrim$(Str$(rank%)) + "!")
+    highScoreInitials$ = ""
+    While Len(highScoreInitials$) <> 3
+        ' TODO - Only alphanumeric characters should be allowed
+        highScoreInitials$ = GetInput$(game, "Enter your initials", 0, 0, 3)
+    Wend
+    highScores(rank%) = LTrim$(Str$(game.score)) + "   " + highScoreInitials$ + "   " + Date$
+
+    ' TODO - Read each file line and stop at the high scores
+    Dim storyFile(1 To 1000) As String
+    i% = 0
+    Open game.storyFile For Input As #1
+    Do Until EOF(1)
+        Input #1, fileLine$
+        If fileLine$ = "[high scores]" Then
+            Exit Do
+        End If
+        i% = i% + 1
+        storyFile(i%) = fileLine$
+    Loop
+    Close #1
+
+    game.highScores = ""
+    Open game.storyFile For Output As #1
+    For j% = 1 To i%
+        If Mid$(storyFile(j%), 1, 1) = "[" Then
+            Print #1, storyFile(j%) ' Restore the original file contents
+        Else
+            Print #1, Chr$(34) + storyFile(j%) + Chr$(34) ' Restore the original file contents
+        End If
+    Next j%
+    Print #1, "[high scores]"
+    For i% = 1 To 10
+        If (highScores(i%) <> "") Then
+            Print #1, highScores(i%)
+            If game.highScores <> "" Then
+                game.highScores = game.highScores + "<br>"
+            End If
+            game.highScores = game.highScores + highScores(i%)
+        End If
+    Next i%
+    Close #1
+
+    Call DisplayHighScoresPage(game)
 End Sub
 
 ' Chase bunnies action
