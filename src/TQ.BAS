@@ -38,6 +38,9 @@ Rem $DYNAMIC
 ' Define collection events as shared, constant values
 Const CREATE = 1, RETRIEVE = 2, UPDATE = 3, DELETE = 4
 
+' Define player names as shared, constant values
+Const GREYSON = "GREYSON", GREY = "GREY", ZARA = "ZARA"
+
 Type TextCursor
     lastColumn As Integer
     lastControlRow As Integer
@@ -403,10 +406,11 @@ Sub ChallengeHighScores (game As Book)
     game.highScores = ""
     Open game.storyFile For Output As #1
     For j% = 1 To i%
-        If Mid$(storyFile(j%), 1, 1) = "[" Then
-            Print #1, storyFile(j%) ' Restore the original file contents
-        Else
+        If InStr(1, storyFile(j%), ",") > 0 Then
+            ' TODO - If the line contains a double quote, escape it
             Print #1, Chr$(34) + storyFile(j%) + Chr$(34) ' Restore the original file contents
+        Else
+            Print #1, storyFile(j%) ' Restore the original file contents
         End If
     Next j%
     Print #1, "[high scores]"
@@ -632,7 +636,7 @@ Sub DisplayIntroduction (game As Book, world() As String, mapInfo() As String, p
                 Call PressAnyKey(game, "story")
                 Call PrintPageText(game, "story", CsrLin + 1, "Weird is right.")
                 Call PressAnyKey(game, "story")
-                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Enough small talk, human.  You look confused.  How about you ask me some questions." + Chr$(34))
+                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Enough talk, human.  You look confused.  How about you ask me some questions." + Chr$(34))
                 Call PressAnyKey(game, "story")
                 game.pageNumber = 4
 
@@ -706,14 +710,14 @@ Sub DisplaySelectPlayerPage (game As Book)
     Do
         Call TurnPage(game, turnPageSound%)
         Call DisplayImage(game, "story", selectPlayerImage&)
-        game.player = StoryPrompt$(game, "Player Choices", "GREYSON,ZARA", 0, 1, 7)
+        game.player = StoryPrompt$(game, "Player Choices", GREYSON + "," + ZARA, 0, 1, 7)
         turnPageSound% = 0 ' If the player enters an incorrect choice and the page is turned to reset the screen, be silent
-    Loop While Not Contains%(game.storyChoices + ",GREY", game.player, ",")
+    Loop While Not Contains%(game.storyChoices + "," + GREY, game.player, ",")
 
-    If game.player = "ZARA" Then
-        game.twin = "GREYSON"
+    If game.player = ZARA Then
+        game.twin = GREYSON
     Else
-        game.twin = "ZARA"
+        game.twin = ZARA
     End If
 
     _FreeImage selectPlayerImage&
