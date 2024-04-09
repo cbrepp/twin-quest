@@ -51,6 +51,16 @@ Type Scene
     color As Long
     description As String
     name As String
+    page1 As String
+    page2 As String
+    page3 As String
+    page4 As String
+    page5 As String
+    page6 As String
+    page7 As String
+    page8 As String
+    page9 As String
+    page10 As String
 End Type
 
 Type MapDirections
@@ -570,6 +580,99 @@ Sub DisplayImage (game As Book, page As String, image As Long)
     nextRow% = imageRow% + _Ceil(imageHeight% / _FontHeight) + 1
     Locate nextRow%, leftColumn%
 End Sub
+
+' TODO - Experimental
+' TODO - Implement this and then implement a DisplayScene() that wraps this and iterates through each page in a scene
+Sub DisplayPage (game As Book, page As String)
+    divCount% = Length%(page, "<div>")
+    For i% = 1 To divCount%
+        div$ = Piece$(page, "<div>", i%)
+        div$ = LTrim$(RTrim$(div$))
+        divLength% = Len(div$)
+        storyText$ = ""
+        remainingDiv$ = div$
+        ' Process all tags in the division
+        Do
+            tag$ = GetTag$(remainingDiv$, tagStart%, tagEnd%)
+            If tag$ <> "" Then
+                storyText$ = storyText$ + Left$(remainingDiv$, tagStart% - 1)
+                remainingDiv$ = Mid$(remainingDiv$, tagEnd% + 1, Len(remainingDiv$))
+                ' TODO - Handle all tags
+                If Mid$(tag$, 1, Len("<story-sound ")) = "<story-sound " Then
+                    ' TODO - Print any storyText$ we already have and then wipe it clean
+                    soundFile$ = Mid$(tag$, Len("<story-sound ") + 1, tagEnd% - 1)
+                    Call StopSound(game.storySound)
+                    game.storySound = PlaySound&(soundFile$, 1, 1)
+                    _Continue
+                End If
+                If tag$ = "<twin>" Then
+                    storyText$ = storyText$ + game.twin
+                    _Continue
+                End If
+                If tag$ = "<player>" Then
+                    storyText$ = storyText$ + game.player
+                    _Continue
+                End If
+                If tag$ = "<quote>" Then
+                    storyText$ = storyText$ + Chr$(34)
+                    _Continue
+                End If
+                If tag$ = "<press-any-key>" Then
+                    ' TODO - Print any storyText$ we already have and then wipe it clean
+                    Call PressAnyKey(game, "story")
+                    _Continue
+                End If
+                If Mid$(tag$, 1, Len("<image ")) = "<image " Then
+                    ' TODO - Print any storyText$ we already have and then wipe it clean
+                    ' TODO - Display image... but first decompose it if the plus sign is used to concatenate images
+                    _Continue
+                End If
+                If Mid$(tag$, 1, Len("<play-sound ")) = "<play-sound " Then
+                    ' TODO - Print any storyText$ we already have and then wipe it clean
+                    ' TODO - Play sound
+                    _Continue
+                End If
+                If Mid$(tag$, 1, Len("<stop-sound ")) = "<stop-sound " Then
+                    ' TODO - Print any storyText$ we already have and then wipe it clean
+                    ' TODO - Stop the designated sound
+                    _Continue
+                End If
+                If Mid$(tag$, 1, Len("<story-prompt ")) = "<story-prompt " Then
+                    ' TODO - Print any storyText$ we already have and then wipe it clean
+                    ' TODO - Handle the story prompt
+                    _Continue
+                End If
+                storyText$ = storyText$ + tag$ ' Not a supported tag so just show its text
+            Else
+                storyText$ = storyText$ + remainingDiv$
+                remainingDiv$ = ""
+            End If
+        Loop Until tag$ = ""
+    Next i%
+End Sub
+
+' TODO - Experimental - Get the first tag in a string of text
+'
+' Paramters:
+' text - String of text to search
+' *tagStart - Starting position of the first tag character (<)
+' *tagEnd - Ending position of the last tag character (>)
+'
+' Returns:
+' First tag
+Function GetTag$ (text As String, tagStart As Integer, tagEnd As Integer)
+    GetTag$ = ""
+    tagStart = InStr(1, text, "<")
+    If tagStart = 0 Then
+        tagEnd = 0
+        Exit Function
+    End If
+    tagEnd = InStr(tagStart, text, ">")
+    If tagEnd = 0 Then
+        Exit Function
+    End If
+    GetTag$ = Mid$(text, tagStart, tagEnd - tagStart)
+End Function
 
 ' Display the introduction
 '
