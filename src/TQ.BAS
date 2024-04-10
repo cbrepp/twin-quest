@@ -523,7 +523,8 @@ End Function
 ' game - Book instance
 Sub DisplayCreditsPage (game As Book)
     Call TurnPage(game, 1)
-    Call PrintPageText(game, "story", CsrLin, game.credits)
+    'Call PrintPageText(game, "story", CsrLin, game.credits)
+    Call DisplayStoryPage(game, game.credits)
     Call PressAnyKey(game, "control")
 End Sub
 
@@ -535,7 +536,8 @@ Sub DisplayHighScoresPage (game As Book)
     Call TurnPage(game, 1)
 
     If game.highScores <> "" Then
-        Call PrintPageText(game, "story", CsrLin, game.highScores)
+        'Call PrintPageText(game, "story", CsrLin, game.highScores)
+        Call DisplayStoryPage(game, game.highScores)
     Else
         Call PrintPageText(game, "story", CsrLin, "N/A")
     End If
@@ -581,9 +583,24 @@ Sub DisplayImage (game As Book, page As String, image As Long)
     Locate nextRow%, leftColumn%
 End Sub
 
-' TODO - Experimental
-' TODO - Implement this and then implement a DisplayScene() that wraps this and iterates through each page in a scene
-Sub DisplayPage (game As Book, page As String)
+Sub DisplayScene (game As Book, scene As Scene)
+    ' TODO - For each page in a scene, call DisplayStoryPage()
+End Sub
+
+' TODO - Experimental - Display a single story page
+'
+' Parameters:
+' game - Book instance
+' page - Story text and supported tags
+Sub DisplayStoryPage (game As Book, page As String)
+    debug$ = ""
+
+    Dim soundsFiles$(1 To 100)
+    Dim soundsHandles&(1 To 100)
+    soundsCount% = 0
+
+    Locate game.firstRow + 2, 1
+
     divCount% = Length%(page, "<div>")
     For i% = 1 To divCount%
         div$ = Piece$(page, "<div>", i%)
@@ -593,51 +610,113 @@ Sub DisplayPage (game As Book, page As String)
         remainingDiv$ = div$
         ' Process all tags in the division
         Do
-            tag$ = GetTag$(remainingDiv$, tagStart%, tagEnd%)
+            tag$ = GetTag$(remainingDiv$, tagStart%, tagEnd%, tagValue$)
+            debug$ = debug$ + "read tag " + tag$
+            Print debug$
             If tag$ <> "" Then
                 storyText$ = storyText$ + Left$(remainingDiv$, tagStart% - 1)
                 remainingDiv$ = Mid$(remainingDiv$, tagEnd% + 1, Len(remainingDiv$))
                 ' TODO - Handle all tags
-                If Mid$(tag$, 1, Len("<story-sound ")) = "<story-sound " Then
-                    ' TODO - Print any storyText$ we already have and then wipe it clean
-                    soundFile$ = Mid$(tag$, Len("<story-sound ") + 1, tagEnd% - 1)
+                If tag$ = "story-sound" Then
+                    ' The Story-Sound tag prints any accumulated text, stops the current story sound, and then plays the new story sound in a loop
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    soundFile$ = tagValue$
                     Call StopSound(game.storySound)
                     game.storySound = PlaySound&(soundFile$, 1, 1)
                     _Continue
                 End If
-                If tag$ = "<twin>" Then
+                If tag$ = "twin" Then
+                    ' The Twin tag is translated into the name of the game player's twin
                     storyText$ = storyText$ + game.twin
                     _Continue
                 End If
-                If tag$ = "<player>" Then
+                If tag$ = "player" Then
+                    ' The Player tag is translated into the name of the game's player
                     storyText$ = storyText$ + game.player
                     _Continue
                 End If
-                If tag$ = "<quote>" Then
+                If tag$ = "quote" Then
+                    ' The Quote tag is translated into the double quote character
                     storyText$ = storyText$ + Chr$(34)
                     _Continue
                 End If
-                If tag$ = "<press-any-key>" Then
-                    ' TODO - Print any storyText$ we already have and then wipe it clean
+                If tag$ = "press-any-key" Then
+                    ' The Press-Any-Key tag prints any accumulated text and then causes the program to sleep until the player provides input
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
                     Call PressAnyKey(game, "story")
                     _Continue
                 End If
-                If Mid$(tag$, 1, Len("<image ")) = "<image " Then
-                    ' TODO - Print any storyText$ we already have and then wipe it clean
-                    ' TODO - Display image... but first decompose it if the plus sign is used to concatenate images
+                If tag$ = "br" Then
+                    debug$ = debug$ + " read br"
+                    ' The Break tag prints any accumulated text and advances to the next line
+                    If storyText$ <> "" Then
+                        debug$ = debug$ + " printing story text " + storyText$
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    Else
+                        debug$ = debug$ + " no story text when debug called"
+                        Locate CsrLin + 1, 1
+                    End If
                     _Continue
                 End If
-                If Mid$(tag$, 1, Len("<play-sound ")) = "<play-sound " Then
-                    ' TODO - Print any storyText$ we already have and then wipe it clean
-                    ' TODO - Play sound
+                If tag$ = "image" Then
+                    ' The Image tag prints any accumulated text and displays the image(s) on the next line
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    imageLine% = CsrLin
+                    imageCount% = Length%(tagValue$, "+")
+                    For j% = 1 To imageCount%
+                        imageFile$ = Piece$(tagValue$, "+", j%)
+                        image& = _LoadImage(imageFile$)
+                        Locate imageLine%, 1
+                        Call DisplayImage(game, "story", image&)
+                        _FreeImage image&
+                    Next j%
                     _Continue
                 End If
-                If Mid$(tag$, 1, Len("<stop-sound ")) = "<stop-sound " Then
-                    ' TODO - Print any storyText$ we already have and then wipe it clean
-                    ' TODO - Stop the designated sound
+                If tag$ = "play-sound" Then
+                    ' The Play-Sound tag prints any accumulated text and plays the new sound(s)
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    soundCount% = Length%(tagValue$, "+")
+                    For j% = 1 To soundCount%
+                        soundFile$ = Piece$(tagValue$, "+", j%)
+                        soundHandle& = PlaySound&(soundFile$, 1, 0)
+                        soundsCount% = soundsCount% + 1
+                        soundsFiles$(soundsCount%) = soundFile$
+                        soundsHandles&(soundsCount%) = soundHandle&
+                    Next j%
                     _Continue
                 End If
-                If Mid$(tag$, 1, Len("<story-prompt ")) = "<story-prompt " Then
+                If tag$ = "stop-sound" Then
+                    ' The Stop-Sound tag prints any accumulated text and stops the playing sound(s)
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    soundCount% = Length%(tagValue$, "+")
+                    For j% = 1 To soundCount%
+                        soundFile$ = Piece$(tagValue$, "+", j%)
+                        For k% = 1 To soundsCount%
+                            If soundsFiles$(k%) = soundFile$ Then
+                                soundHandle& = soundsHandles&(k%)
+                                Call StopSound(soundHandle&)
+                            End If
+                        Next k%
+                    Next j%
+                    _Continue
+                End If
+                If tag$ = "story-prompt" Then
                     ' TODO - Print any storyText$ we already have and then wipe it clean
                     ' TODO - Handle the story prompt
                     _Continue
@@ -649,6 +728,21 @@ Sub DisplayPage (game As Book, page As String)
             End If
         Loop Until tag$ = ""
     Next i%
+
+    ' Print any remaining story text
+    If storyText$ <> "" Then
+        debug$ = debug$ + " printing remaining story text " + storyText$
+        Call PrintPageText(game, "story", CsrLin, storyText$)
+        storyText$ = ""
+    End If
+
+    ' Stop all current play-once sounds
+    For i% = 1 To soundsCount%
+        soundHandle& = soundsHandles&(i%)
+        Call StopSound(soundHandle&)
+    Next i%
+
+    Print "DEBUG=" + debug$
 End Sub
 
 ' TODO - Experimental - Get the first tag in a string of text
@@ -657,11 +751,13 @@ End Sub
 ' text - String of text to search
 ' *tagStart - Starting position of the first tag character (<)
 ' *tagEnd - Ending position of the last tag character (>)
+' *tagValue - If the tag contains a space, the value to the right of the space
 '
 ' Returns:
 ' First tag
-Function GetTag$ (text As String, tagStart As Integer, tagEnd As Integer)
+Function GetTag$ (text As String, tagStart As Integer, tagEnd As Integer, tagValue As String)
     GetTag$ = ""
+    tagValue = ""
     tagStart = InStr(1, text, "<")
     If tagStart = 0 Then
         tagEnd = 0
@@ -671,7 +767,9 @@ Function GetTag$ (text As String, tagStart As Integer, tagEnd As Integer)
     If tagEnd = 0 Then
         Exit Function
     End If
-    GetTag$ = Mid$(text, tagStart, tagEnd - tagStart)
+    tagContents$ = Mid$(text, tagStart + 1, tagEnd - tagStart - 1)
+    GetTag$ = LCase$(Piece$(tagContents$, " ", 1))
+    tagValue = Piece$(tagContents$, " ", 2)
 End Function
 
 ' Display the introduction
@@ -682,6 +780,28 @@ End Function
 ' mapInfo() - Map data
 ' playerSymbol() - Player map symbols
 Sub DisplayIntroduction (game As Book, world() As String, mapInfo() As String, playerSymbol() As String)
+    ' TODO - Experimental redirect to the new story engine, DisplayStoryPage()
+    Dim introduction As Scene
+    Call WorldScene(RETRIEVE, 1, 0, 0, 0, introduction)
+    If game.pageNumber = 1 Then
+        Call DisplayStoryPage(game, introduction.page1)
+        Exit Sub
+    End If
+    If game.pageNumber = 2 Then
+        Call DisplayStoryPage(game, introduction.page2)
+        Exit Sub
+    End If
+    If game.pageNumber = 3 Then
+        Call DisplayStoryPage(game, introduction.page3)
+        Exit Sub
+    End If
+    If game.pageNumber = 4 Then
+        Call DisplayStoryPage(game, introduction.page4)
+        Exit Sub
+    End If
+
+    Exit Sub
+
     ' TODO - Would be nice to add back and forward arrows in the bottom corners of the story page.
 
     If game.pageNumber = 1 Then
@@ -1383,6 +1503,24 @@ Sub LoadStory (game As Book)
 
     If _FileExists(storyFile$) Then
         game.storyFile = storyFile$
+
+        ' TODO - Experimental code
+        Dim introduction As Scene
+        introduction.color = _RGB(255, 255, 255)
+        introduction.description = "Ye Olde Introduction"
+        introduction.name = "INTRODUCTION"
+        introduction.page1 = ""
+        introduction.page2 = ""
+        introduction.page3 = ""
+        introduction.page4 = ""
+        introduction.page5 = ""
+        introduction.page6 = ""
+        introduction.page7 = ""
+        introduction.page8 = ""
+        introduction.page9 = ""
+        introduction.page10 = ""
+        Call WorldScene(CREATE, 1, 0, 0, 0, introduction)
+
         Open storyFile$ For Input As #1
         Do Until EOF(1)
             Input #1, fileLine$
@@ -1414,6 +1552,39 @@ Sub LoadStory (game As Book)
                         game.highScores = game.highScores + "<br>"
                     End If
                     game.highScores = game.highScores + fileLine$
+                    _Continue
+                End If
+                If Left$(section$, Len("introduction")) = "introduction" Then
+                    pageNumber% = Val(Piece$(section$, " ", 2))
+                    ' TODO - The page numbers need to be handled dynamically
+                    If pageNumber% = 1 Then
+                        If introduction.page1 <> "" Then
+                            introduction.page1 = introduction.page1 + "<div>"
+                        End If
+                        introduction.page1 = introduction.page1 + fileLine$
+                        Call WorldScene(UPDATE, 1, 0, 0, 0, introduction) ' Publish the updated introduction
+                    End If
+                    If pageNumber% = 2 Then
+                        If introduction.page2 <> "" Then
+                            introduction.page2 = introduction.page2 + "<div>"
+                        End If
+                        introduction.page2 = introduction.page2 + fileLine$
+                        Call WorldScene(UPDATE, 1, 0, 0, 0, introduction) ' Publish the updated introduction
+                    End If
+                    If pageNumber% = 3 Then
+                        If introduction.page3 <> "" Then
+                            introduction.page3 = introduction.page3 + "<div>"
+                        End If
+                        introduction.page3 = introduction.page3 + fileLine$
+                        Call WorldScene(UPDATE, 1, 0, 0, 0, introduction) ' Publish the updated introduction
+                    End If
+                    If pageNumber% = 4 Then
+                        If introduction.page4 <> "" Then
+                            introduction.page4 = introduction.page4 + "<div>"
+                        End If
+                        introduction.page4 = introduction.page4 + fileLine$
+                        Call WorldScene(UPDATE, 1, 0, 0, 0, introduction) ' Publish the updated introduction
+                    End If
                     _Continue
                 End If
             End If
@@ -1870,16 +2041,6 @@ End Sub
 ' row - Text row
 ' text - Text to print
 Sub PrintPageText (game As Book, page As String, row As Integer, text As String)
-    ' If the text contains the break tag, recursively call this subroutine for each intended line of text
-    If Contains%(text, "<br>", "") Then
-        lineCount% = Length%(text, "<br>")
-        For i = 1 To lineCount%
-            currentPiece$ = Piece$(text, "<br>", i)
-            Call PrintPageText(game, page, row + i - 1, currentPiece$)
-        Next i
-        Exit Sub
-    End If
-
     lastColumn = 0
 
     ' Determine the starting position for the text based on the designated page
