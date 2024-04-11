@@ -48,19 +48,10 @@ Type TextCursor
 End Type
 
 Type Scene
+    id As Integer
     color As Long
     description As String
     name As String
-    page1 As String
-    page2 As String
-    page3 As String
-    page4 As String
-    page5 As String
-    page6 As String
-    page7 As String
-    page8 As String
-    page9 As String
-    page10 As String
 End Type
 
 Type MapDirections
@@ -611,8 +602,7 @@ Sub DisplayStoryPage (game As Book, page As String)
         ' Process all tags in the division
         Do
             tag$ = GetTag$(remainingDiv$, tagStart%, tagEnd%, tagValue$)
-            debug$ = debug$ + "read tag " + tag$
-            Print debug$
+            'Print "read tag " + tag$
             If tag$ <> "" Then
                 storyText$ = storyText$ + Left$(remainingDiv$, tagStart% - 1)
                 remainingDiv$ = Mid$(remainingDiv$, tagEnd% + 1, Len(remainingDiv$))
@@ -653,16 +643,21 @@ Sub DisplayStoryPage (game As Book, page As String)
                     _Continue
                 End If
                 If tag$ = "br" Then
-                    debug$ = debug$ + " read br"
+                    'Print " read br"
                     ' The Break tag prints any accumulated text and advances to the next line
                     If storyText$ <> "" Then
-                        debug$ = debug$ + " printing story text " + storyText$
+                        'Print " printing story text " + storyText$
                         Call PrintPageText(game, "story", CsrLin, storyText$)
                         storyText$ = ""
                     Else
-                        debug$ = debug$ + " no story text when debug called"
+                        'Print " no story text when debug called"
                         Locate CsrLin + 1, 1
                     End If
+                    _Continue
+                End If
+                If tag$ = "next-page" Then
+                    ' The Next-Page tag advances to the next page in the story scene
+                    game.pageNumber = game.pageNumber + 1
                     _Continue
                 End If
                 If tag$ = "image" Then
@@ -723,15 +718,17 @@ Sub DisplayStoryPage (game As Book, page As String)
                 End If
                 storyText$ = storyText$ + tag$ ' Not a supported tag so just show its text
             Else
+                'Print "NO MORE TAGS"
                 storyText$ = storyText$ + remainingDiv$
                 remainingDiv$ = ""
+                Call PrintPageText(game, "story", CsrLin, storyText$)
             End If
         Loop Until tag$ = ""
     Next i%
 
     ' Print any remaining story text
     If storyText$ <> "" Then
-        debug$ = debug$ + " printing remaining story text " + storyText$
+        'Print " printing remaining story text " + storyText$
         Call PrintPageText(game, "story", CsrLin, storyText$)
         storyText$ = ""
     End If
@@ -742,7 +739,7 @@ Sub DisplayStoryPage (game As Book, page As String)
         Call StopSound(soundHandle&)
     Next i%
 
-    Print "DEBUG=" + debug$
+    'Print "DEBUG=" + debug$
 End Sub
 
 ' TODO - Experimental - Get the first tag in a string of text
@@ -783,23 +780,8 @@ Sub DisplayIntroduction (game As Book, world() As String, mapInfo() As String, p
     ' TODO - Experimental redirect to the new story engine, DisplayStoryPage()
     Dim introduction As Scene
     Call WorldScene(RETRIEVE, 1, 0, 0, 0, introduction)
-    If game.pageNumber = 1 Then
-        Call DisplayStoryPage(game, introduction.page1)
-        Exit Sub
-    End If
-    If game.pageNumber = 2 Then
-        Call DisplayStoryPage(game, introduction.page2)
-        Exit Sub
-    End If
-    If game.pageNumber = 3 Then
-        Call DisplayStoryPage(game, introduction.page3)
-        Exit Sub
-    End If
-    If game.pageNumber = 4 Then
-        Call DisplayStoryPage(game, introduction.page4)
-        Exit Sub
-    End If
-
+    Call WorldScenePage(RETRIEVE, introduction.id, game.pageNumber, pageContents$)
+    Call DisplayStoryPage(game, pageContents$)
     Exit Sub
 
     ' TODO - Would be nice to add back and forward arrows in the bottom corners of the story page.
@@ -1509,16 +1491,6 @@ Sub LoadStory (game As Book)
         introduction.color = _RGB(255, 255, 255)
         introduction.description = "Ye Olde Introduction"
         introduction.name = "INTRODUCTION"
-        introduction.page1 = ""
-        introduction.page2 = ""
-        introduction.page3 = ""
-        introduction.page4 = ""
-        introduction.page5 = ""
-        introduction.page6 = ""
-        introduction.page7 = ""
-        introduction.page8 = ""
-        introduction.page9 = ""
-        introduction.page10 = ""
         Call WorldScene(CREATE, 1, 0, 0, 0, introduction)
 
         Open storyFile$ For Input As #1
@@ -1556,34 +1528,14 @@ Sub LoadStory (game As Book)
                 End If
                 If Left$(section$, Len("introduction")) = "introduction" Then
                     pageNumber% = Val(Piece$(section$, " ", 2))
-                    ' TODO - The page numbers need to be handled dynamically
-                    If pageNumber% = 1 Then
-                        If introduction.page1 <> "" Then
-                            introduction.page1 = introduction.page1 + "<div>"
-                        End If
-                        introduction.page1 = introduction.page1 + fileLine$
-                        Call WorldScene(UPDATE, 1, 0, 0, 0, introduction) ' Publish the updated introduction
-                    End If
-                    If pageNumber% = 2 Then
-                        If introduction.page2 <> "" Then
-                            introduction.page2 = introduction.page2 + "<div>"
-                        End If
-                        introduction.page2 = introduction.page2 + fileLine$
-                        Call WorldScene(UPDATE, 1, 0, 0, 0, introduction) ' Publish the updated introduction
-                    End If
-                    If pageNumber% = 3 Then
-                        If introduction.page3 <> "" Then
-                            introduction.page3 = introduction.page3 + "<div>"
-                        End If
-                        introduction.page3 = introduction.page3 + fileLine$
-                        Call WorldScene(UPDATE, 1, 0, 0, 0, introduction) ' Publish the updated introduction
-                    End If
-                    If pageNumber% = 4 Then
-                        If introduction.page4 <> "" Then
-                            introduction.page4 = introduction.page4 + "<div>"
-                        End If
-                        introduction.page4 = introduction.page4 + fileLine$
-                        Call WorldScene(UPDATE, 1, 0, 0, 0, introduction) ' Publish the updated introduction
+                    Call WorldScenePage(RETRIEVE, introduction.id, pageNumber%, pageContents$)
+                    If pageContents$ <> "" Then
+                        pageContents$ = pageContents$ + "<div>"
+                        pageContents$ = pageContents$ + fileLine$
+                        Call WorldScenePage(UPDATE, introduction.id, pageNumber%, pageContents$)
+                    Else
+                        pageContents$ = fileLine$
+                        Call WorldScenePage(CREATE, introduction.id, pageNumber%, pageContents$)
                     End If
                     _Continue
                 End If
@@ -2486,7 +2438,7 @@ End Sub
 ' World Scene Class
 '
 ' Parameters:
-' event - Collection event integer (CREATE, RETRIEVE, UPDATE, DELETE)
+' event - Collection event integer (CREATE, RETRIEVE, UPDATE, DELETE, EXISTS)
 ' world - World number
 ' Level - Level number
 ' x - x-coordinate
@@ -2501,7 +2453,12 @@ Sub WorldScene (event As Integer, world As Integer, level As Integer, x As Integ
             ' One time only array init
             Dim scenes(10, 10, 10, 10) As Scene
         End If
+        scene.id = sceneCount
         scenes(world, level, x, y) = scene
+        ' Initialize the scene's pages
+        For pageNumber% = 1 To 10
+            Call WorldScenePage(CREATE, scene.id, pageNumber%, "")
+        Next pageNumber%
     End If
     If event = RETRIEVE Then
         scene = scenes(world, level, x, y)
@@ -2513,4 +2470,33 @@ Sub WorldScene (event As Integer, world As Integer, level As Integer, x As Integ
         ' Unsupported at this time
     End If
 End Sub
+
+' World Scene Page Class
+'
+' Parameters:
+' sceneId - Scene Id
+' pageNumber - Page number
+' contents - Full text and tags of page contents
+Sub WorldScenePage (event As Integer, sceneId As Integer, pageNumber As Integer, contents As String)
+    Static pageCount As Integer, pages() As String
+
+    If event = CREATE Then
+        pageCount = pageCount + 1
+        If pageCount = 1 Then
+            ' One time only array init
+            Dim pages(1000, 10) As String
+        End If
+        pages(sceneId, pageNumber) = contents
+    End If
+    If event = RETRIEVE Then
+        contents = pages(sceneId, pageNumber)
+    End If
+    If event = UPDATE Then
+        pages(sceneId, pageNumber) = contents
+    End If
+    If event = DELETE Then
+        ' Unsupported at this time
+    End If
+End Sub
+
 

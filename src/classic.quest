@@ -16,16 +16,18 @@ epic.mp3
 <press-any-key>
 "<player>: <quote>I don't know if I can, but I will try!!!<quote>"
 <press-any-key>
-"<twin>: <quote><player>> he got me!!!  A big black cat got me!!!<quote>"
+"<twin>: <quote><player> he got me!!!  A big black cat got me!!!<quote>"
 <press-any-key>
 "You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your twin's voice just in time to see the door to the leprechaun closet in the back bedroom slam shut.  You run to the closet door, open it, and what you see next takes your breath away..."
 <press-any-key>
-"Sticking your head into what was supposed to be " + Chr$(34))a small closet you look around at what appears to be the surface of a cloud floating high above Pendleton, Indiana.  You wonder if this is perhaps a magic portal."
+"Sticking your head into what was supposed to be a small closet you look around at what appears to be the surface of a cloud floating high above Pendleton, Indiana.  You wonder if this is perhaps a magic portal."
 <press-any-key>
 "You cautiously tap the cloud with your hand and discover that it's firm enough to walk on.  You then oh so very carefully put one foot into the closet, lower your head, and step through the doorway so you can get a better look..."
 <press-any-key>
+<next-page>
 [introduction 2]
 <image clouds.png+elevator-doors.png>
+<br>
 "You are now standing on the surface of a cloud floating high up in the sky.  You look around and see nothing but the large poofy white cloud, the blue sky, the bright yellow sun... and... what appears to be elevator doors in the middle of the cloud."
 <press-any-key>
 "Anxiety and fear grip you.  But you have no choice.  You must save <twin>.  And so..."
@@ -34,6 +36,7 @@ epic.mp3
 "You press the elevator button to open the door.  And... you step inside..."
 <press-any-key>
 <stop-sound elevator-open.mp3>
+<next-page>
 [introduction 3]
 <story-sound elevator.wav>
 <image mylee.jpg>
@@ -44,15 +47,18 @@ epic.mp3
 "MYLEE: <quote>You're wondering if I just talked even though I'm a cat.  And the answer is 'yes'.  Yes I did.<quote>"
 <press-any-key>
 "Wait, what?  Can this talking cat read your mind?"
+<press-any-key>
 "MYLEE: <quote>And you're probably wondering now if I can read your mind.  The answer to that is... no.  And I definitely wouldn't want to if I could.  You humans are just too weird.<quote>"
 <press-any-key>
 "Weird is right."
 <press-any-key>
 "MYLEE: <quote>Enough talk, human.  You look confused.  How about you ask me some questions.<quote>
 <press-any-key>
+<next-page>
 [introduction 4]
 "MYLEE: <quote>You look like you're new to this so I'll help you out.  See that 'Ask MYLEE' prompt below?  It's giving you some choices.  Pick one.  You can learn about this game before you begin your quest.<quote>"
 TODO - Implement story prompt
+<press-any-key>
 [high scores]
 300   GRE   03-09-2024
 300   ZRT   03-09-2024
