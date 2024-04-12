@@ -24,7 +24,7 @@ epic.mp3
 <press-any-key>
 "You cautiously tap the cloud with your hand and discover that it's firm enough to walk on.  You then oh so very carefully put one foot into the closet, lower your head, and step through the doorway so you can get a better look..."
 <press-any-key>
-<next-page>
+<turn-page>
 [introduction 2]
 <image clouds.png+elevator-doors.png>
 <br>
@@ -36,9 +36,9 @@ epic.mp3
 "You press the elevator button to open the door.  And... you step inside..."
 <press-any-key>
 <stop-sound elevator-open.mp3>
-<next-page>
+<turn-page>
 [introduction 3]
-<story-sound elevator.wav>
+<story-sound elevator.wav>turn-page
 <image mylee.jpg>
 "MYLEE: <quote>Oh hey kid.<quote>"
 <press-any-key>
@@ -52,13 +52,25 @@ epic.mp3
 <press-any-key>
 "Weird is right."
 <press-any-key>
-"MYLEE: <quote>Enough talk, human.  You look confused.  How about you ask me some questions.<quote>
+"MYLEE: <quote>Enough talk, human.  You look confused.  How about you ask me some questions.<quote>"
 <press-any-key>
-<next-page>
+<turn-page>
 [introduction 4]
-"MYLEE: <quote>You look like you're new to this so I'll help you out.  See that 'Ask MYLEE' prompt below?  It's giving you some choices.  Pick one.  You can learn about this game before you begin your quest.<quote>"
-TODO - Implement story prompt
+"MYLEE: <quote>You look like you're new to this so I'll help you out.  See that 'Ask MYLEE' prompt below?  It's giving you some choices.  Pick one.  You can learn about this game before you begin your quest.<quote>"whe
+"<story-prompt Ask MYLEE:WHO ARE YOU,WHERE IS MY TWIN,WHO IS BIG CHUNG,NOTHING>"
+[[WHO ARE YOU]]
+Selected WHO ARE YOU
 <press-any-key>
+[[WHERE IS MY TWIN]]
+Selected WHERE IS MY TWIN
+<press-any-key>
+[[WHO IS BIG CHUNG]]
+Selected WHO IS BIG CHUNG
+<press-any-key>
+[[NOTHING]]
+Selected NOTHING
+<press-any-key>
+<goto-chapter 1>
 [high scores]
 300   GRE   03-09-2024
 300   ZRT   03-09-2024

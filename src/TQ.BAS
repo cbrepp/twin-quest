@@ -200,7 +200,15 @@ Do
 
     ' TODO - Refactor this to be a re-usable story mode that activates before the story prompt
     If game.chapter = "INTRODUCTION" Then
-        Call DisplayIntroduction(game, world(), mapInfo(), playerSymbol())
+        'Call DisplayIntroduction(game, world(), mapInfo(), playerSymbol())
+
+        ' TODO - Experimental redirect to the new story engine, DisplayStoryPage()
+        ' TODO - Have DisplayScene() do this
+        Dim introduction As Scene
+        Call WorldScene(RETRIEVE, 1, 0, 0, 0, introduction)
+        Call WorldScenePage(RETRIEVE, introduction.id, game.pageNumber, pageContents$)
+        Call DisplayStoryPage(game, pageContents$)
+
         If game.chapter = "CHAPTER 1" Then
             ' Every first step in every great adventure is... a first step
             choice$ = "MOVE AHEAD"
@@ -574,201 +582,6 @@ Sub DisplayImage (game As Book, page As String, image As Long)
     Locate nextRow%, leftColumn%
 End Sub
 
-Sub DisplayScene (game As Book, scene As Scene)
-    ' TODO - For each page in a scene, call DisplayStoryPage()
-End Sub
-
-' TODO - Experimental - Display a single story page
-'
-' Parameters:
-' game - Book instance
-' page - Story text and supported tags
-Sub DisplayStoryPage (game As Book, page As String)
-    debug$ = ""
-
-    Dim soundsFiles$(1 To 100)
-    Dim soundsHandles&(1 To 100)
-    soundsCount% = 0
-
-    Locate game.firstRow + 2, 1
-
-    divCount% = Length%(page, "<div>")
-    For i% = 1 To divCount%
-        div$ = Piece$(page, "<div>", i%)
-        div$ = LTrim$(RTrim$(div$))
-        divLength% = Len(div$)
-        storyText$ = ""
-        remainingDiv$ = div$
-        ' Process all tags in the division
-        Do
-            tag$ = GetTag$(remainingDiv$, tagStart%, tagEnd%, tagValue$)
-            'Print "read tag " + tag$
-            If tag$ <> "" Then
-                storyText$ = storyText$ + Left$(remainingDiv$, tagStart% - 1)
-                remainingDiv$ = Mid$(remainingDiv$, tagEnd% + 1, Len(remainingDiv$))
-                ' TODO - Handle all tags
-                If tag$ = "story-sound" Then
-                    ' The Story-Sound tag prints any accumulated text, stops the current story sound, and then plays the new story sound in a loop
-                    If storyText$ <> "" Then
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    End If
-                    soundFile$ = tagValue$
-                    Call StopSound(game.storySound)
-                    game.storySound = PlaySound&(soundFile$, 1, 1)
-                    _Continue
-                End If
-                If tag$ = "twin" Then
-                    ' The Twin tag is translated into the name of the game player's twin
-                    storyText$ = storyText$ + game.twin
-                    _Continue
-                End If
-                If tag$ = "player" Then
-                    ' The Player tag is translated into the name of the game's player
-                    storyText$ = storyText$ + game.player
-                    _Continue
-                End If
-                If tag$ = "quote" Then
-                    ' The Quote tag is translated into the double quote character
-                    storyText$ = storyText$ + Chr$(34)
-                    _Continue
-                End If
-                If tag$ = "press-any-key" Then
-                    ' The Press-Any-Key tag prints any accumulated text and then causes the program to sleep until the player provides input
-                    If storyText$ <> "" Then
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    End If
-                    Call PressAnyKey(game, "story")
-                    _Continue
-                End If
-                If tag$ = "br" Then
-                    'Print " read br"
-                    ' The Break tag prints any accumulated text and advances to the next line
-                    If storyText$ <> "" Then
-                        'Print " printing story text " + storyText$
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    Else
-                        'Print " no story text when debug called"
-                        Locate CsrLin + 1, 1
-                    End If
-                    _Continue
-                End If
-                If tag$ = "next-page" Then
-                    ' The Next-Page tag advances to the next page in the story scene
-                    game.pageNumber = game.pageNumber + 1
-                    _Continue
-                End If
-                If tag$ = "image" Then
-                    ' The Image tag prints any accumulated text and displays the image(s) on the next line
-                    If storyText$ <> "" Then
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    End If
-                    imageLine% = CsrLin
-                    imageCount% = Length%(tagValue$, "+")
-                    For j% = 1 To imageCount%
-                        imageFile$ = Piece$(tagValue$, "+", j%)
-                        image& = _LoadImage(imageFile$)
-                        Locate imageLine%, 1
-                        Call DisplayImage(game, "story", image&)
-                        _FreeImage image&
-                    Next j%
-                    _Continue
-                End If
-                If tag$ = "play-sound" Then
-                    ' The Play-Sound tag prints any accumulated text and plays the new sound(s)
-                    If storyText$ <> "" Then
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    End If
-                    soundCount% = Length%(tagValue$, "+")
-                    For j% = 1 To soundCount%
-                        soundFile$ = Piece$(tagValue$, "+", j%)
-                        soundHandle& = PlaySound&(soundFile$, 1, 0)
-                        soundsCount% = soundsCount% + 1
-                        soundsFiles$(soundsCount%) = soundFile$
-                        soundsHandles&(soundsCount%) = soundHandle&
-                    Next j%
-                    _Continue
-                End If
-                If tag$ = "stop-sound" Then
-                    ' The Stop-Sound tag prints any accumulated text and stops the playing sound(s)
-                    If storyText$ <> "" Then
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    End If
-                    soundCount% = Length%(tagValue$, "+")
-                    For j% = 1 To soundCount%
-                        soundFile$ = Piece$(tagValue$, "+", j%)
-                        For k% = 1 To soundsCount%
-                            If soundsFiles$(k%) = soundFile$ Then
-                                soundHandle& = soundsHandles&(k%)
-                                Call StopSound(soundHandle&)
-                            End If
-                        Next k%
-                    Next j%
-                    _Continue
-                End If
-                If tag$ = "story-prompt" Then
-                    ' TODO - Print any storyText$ we already have and then wipe it clean
-                    ' TODO - Handle the story prompt
-                    _Continue
-                End If
-                storyText$ = storyText$ + tag$ ' Not a supported tag so just show its text
-            Else
-                'Print "NO MORE TAGS"
-                storyText$ = storyText$ + remainingDiv$
-                remainingDiv$ = ""
-                Call PrintPageText(game, "story", CsrLin, storyText$)
-            End If
-        Loop Until tag$ = ""
-    Next i%
-
-    ' Print any remaining story text
-    If storyText$ <> "" Then
-        'Print " printing remaining story text " + storyText$
-        Call PrintPageText(game, "story", CsrLin, storyText$)
-        storyText$ = ""
-    End If
-
-    ' Stop all current play-once sounds
-    For i% = 1 To soundsCount%
-        soundHandle& = soundsHandles&(i%)
-        Call StopSound(soundHandle&)
-    Next i%
-
-    'Print "DEBUG=" + debug$
-End Sub
-
-' TODO - Experimental - Get the first tag in a string of text
-'
-' Paramters:
-' text - String of text to search
-' *tagStart - Starting position of the first tag character (<)
-' *tagEnd - Ending position of the last tag character (>)
-' *tagValue - If the tag contains a space, the value to the right of the space
-'
-' Returns:
-' First tag
-Function GetTag$ (text As String, tagStart As Integer, tagEnd As Integer, tagValue As String)
-    GetTag$ = ""
-    tagValue = ""
-    tagStart = InStr(1, text, "<")
-    If tagStart = 0 Then
-        tagEnd = 0
-        Exit Function
-    End If
-    tagEnd = InStr(tagStart, text, ">")
-    If tagEnd = 0 Then
-        Exit Function
-    End If
-    tagContents$ = Mid$(text, tagStart + 1, tagEnd - tagStart - 1)
-    GetTag$ = LCase$(Piece$(tagContents$, " ", 1))
-    tagValue = Piece$(tagContents$, " ", 2)
-End Function
-
 ' Display the introduction
 '
 ' Parameters:
@@ -777,13 +590,6 @@ End Function
 ' mapInfo() - Map data
 ' playerSymbol() - Player map symbols
 Sub DisplayIntroduction (game As Book, world() As String, mapInfo() As String, playerSymbol() As String)
-    ' TODO - Experimental redirect to the new story engine, DisplayStoryPage()
-    Dim introduction As Scene
-    Call WorldScene(RETRIEVE, 1, 0, 0, 0, introduction)
-    Call WorldScenePage(RETRIEVE, introduction.id, game.pageNumber, pageContents$)
-    Call DisplayStoryPage(game, pageContents$)
-    Exit Sub
-
     ' TODO - Would be nice to add back and forward arrows in the bottom corners of the story page.
 
     If game.pageNumber = 1 Then
@@ -902,6 +708,10 @@ Sub DisplayIntroduction (game As Book, world() As String, mapInfo() As String, p
     End If
 End Sub
 
+Sub DisplayScene (game As Book, scene As Scene)
+    ' TODO - For each page in a scene, call DisplayStoryPage()
+End Sub
+
 ' Display the select player page
 '
 ' Parameters:
@@ -958,6 +768,200 @@ Sub DisplaySplashScreen (game As Book)
     Cls , _RGB(0, 0, 0)
     _PutImage , game.image
     _FreeImage wayneChungImage& ' Free up memory used by the image
+End Sub
+
+' Display a single story page
+'
+' Parameters:
+' game - Book instance
+' page - Story text and supported tags
+Sub DisplayStoryPage (game As Book, page As String)
+    Dim soundsFiles$(1 To 100)
+    Dim soundsHandles&(1 To 100)
+    soundsCount% = 0
+    storyChoice$ = ""
+    subsection$ = ""
+
+    Locate game.firstRow + 2, 1
+
+    divCount% = Length%(page, "<div>")
+    For i% = 1 To divCount%
+        div$ = Piece$(page, "<div>", i%)
+        div$ = LTrim$(RTrim$(div$))
+        divLength% = Len(div$)
+        storyText$ = ""
+        remainingDiv$ = div$
+        If storyChoice$ <> "" Then
+            If Left$(remainingDiv$, 2) = "[[" Then
+                subsection$ = Piece$(remainingDiv$, "]]", 1)
+                subsection$ = Piece$(subsection$, "[[", 2)
+            End If
+            If subsection$ <> storyChoice$ Then
+                _Continue
+            End If
+        End If
+        ' Process all tags in the division
+        Do
+            tag$ = GetTag$(remainingDiv$, tagStart%, tagEnd%, tagValue$)
+
+            If tag$ <> "" Then
+                storyText$ = storyText$ + Left$(remainingDiv$, tagStart% - 1)
+                remainingDiv$ = Mid$(remainingDiv$, tagEnd% + 1, Len(remainingDiv$))
+                ' TODO - Handle all tags
+                If tag$ = "story-sound" Then
+                    ' The Story-Sound tag prints any accumulated text, stops the current story sound, and then plays the new story sound in a loop
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    soundFile$ = tagValue$
+                    Call StopSound(game.storySound)
+                    game.storySound = PlaySound&(soundFile$, 1, 1)
+                    _Continue
+                End If
+                If tag$ = "twin" Then
+                    ' The Twin tag is translated into the name of the game player's twin
+                    storyText$ = storyText$ + game.twin
+                    _Continue
+                End If
+                If tag$ = "player" Then
+                    ' The Player tag is translated into the name of the game's player
+                    storyText$ = storyText$ + game.player
+                    _Continue
+                End If
+                If tag$ = "quote" Then
+                    ' The Quote tag is translated into the double quote character
+                    storyText$ = storyText$ + Chr$(34)
+                    _Continue
+                End If
+                If tag$ = "press-any-key" Then
+                    ' The Press-Any-Key tag prints any accumulated text and then causes the program to sleep until the player provides input
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    Call PressAnyKey(game, "story")
+                    _Continue
+                End If
+                If tag$ = "br" Then
+                    ' The Break tag prints any accumulated text and advances to the next line
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    Else
+                        Locate CsrLin + 1, 1
+                    End If
+                    _Continue
+                End If
+                If tag$ = "turn-page" Then
+                    ' The Next-Page tag advances to the next page in the story scene
+                    game.pageNumber = game.pageNumber + 1
+                    _Continue
+                End If
+                If tag$ = "image" Then
+                    ' The Image tag prints any accumulated text and displays the image(s) on the next line
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    imageLine% = CsrLin
+                    imageCount% = Length%(tagValue$, "+")
+                    For j% = 1 To imageCount%
+                        imageFile$ = Piece$(tagValue$, "+", j%)
+                        image& = _LoadImage(imageFile$)
+                        Locate imageLine%, 1
+                        Call DisplayImage(game, "story", image&)
+                        _FreeImage image&
+                    Next j%
+                    _Continue
+                End If
+                If tag$ = "play-sound" Then
+                    ' The Play-Sound tag prints any accumulated text and plays the new sound(s)
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    soundCount% = Length%(tagValue$, "+")
+                    For j% = 1 To soundCount%
+                        soundFile$ = Piece$(tagValue$, "+", j%)
+                        soundHandle& = PlaySound&(soundFile$, 1, 0)
+                        soundsCount% = soundsCount% + 1
+                        soundsFiles$(soundsCount%) = soundFile$
+                        soundsHandles&(soundsCount%) = soundHandle&
+                    Next j%
+                    _Continue
+                End If
+                If tag$ = "stop-sound" Then
+                    ' The Stop-Sound tag prints any accumulated text and stops the playing sound(s)
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    soundCount% = Length%(tagValue$, "+")
+                    For j% = 1 To soundCount%
+                        soundFile$ = Piece$(tagValue$, "+", j%)
+                        For k% = 1 To soundsCount%
+                            If soundsFiles$(k%) = soundFile$ Then
+                                soundHandle& = soundsHandles&(k%)
+                                Call StopSound(soundHandle&)
+                            End If
+                        Next k%
+                    Next j%
+                    _Continue
+                End If
+                If tag$ = "story-prompt" Then
+                    ' The Story-Prompt tag prints any accumulated text and prompts the user with a list of choices
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    promptLabel$ = Piece$(tagValue$, ":", 1)
+                    promptChoices$ = Piece$(tagValue$, ":", 2)
+                    promptChoicesCount% = Length%(promptChoices$, ",")
+                    maxChoiceLength% = 0
+                    For j% = 1 To promptChoicesCount%
+                        choice$ = Piece$(promptChoices$, ",", j%)
+                        choiceLength% = Len(choice$)
+                        If choiceLength% > maxChoiceLength% Then
+                            maxChoiceLength% = choiceLength%
+                        End If
+                    Next j%
+                    If maxChoiceLength% > 40 Then
+                        ' TODO - Hopefully this never happens!
+                        maxChoiceLength% = 40
+                    End If
+                    Locate CsrLin + 1, 1
+                    ' TODO - Enable arrow keys if normal level chapter.  This is being passed as 0.
+                    storyChoice$ = StoryPrompt$(game, promptLabel$, promptChoices$, 0, 1, maxChoiceLength%)
+                    Locate CsrLin + 2, 1
+
+                    ' The remaining page text should now only be the sub-section for the selected choice, headed by [[choice]], and
+                    ' ending with the next choice's header or the end of the page text, whichever comes first
+                    ' TODO - The main for-loop needs to be updated to skip any <div> not in the selected choice's sub-section
+                    ' TODO - It's kind of magical that any remaining text in the div will be processed and then subsequent divs skipped if they
+                    ' don't match the target sub-section
+                    _Continue
+                End If
+                storyText$ = storyText$ + tag$ ' Not a supported tag so just show its text
+            Else
+                storyText$ = storyText$ + remainingDiv$
+                remainingDiv$ = ""
+                Call PrintPageText(game, "story", CsrLin, storyText$)
+            End If
+        Loop Until tag$ = ""
+    Next i%
+
+    ' Print any remaining story text
+    If storyText$ <> "" Then
+        Call PrintPageText(game, "story", CsrLin, storyText$)
+        storyText$ = ""
+    End If
+
+    ' Stop all current play-once sounds
+    For i% = 1 To soundsCount%
+        soundHandle& = soundsHandles&(i%)
+        Call StopSound(soundHandle&)
+    Next i%
 End Sub
 
 ' Display the title page
@@ -1301,6 +1305,34 @@ Function GetInput$ (game As Book, prompt As String, enableArrowKeys As Integer, 
     Color _RGB(0, 0, 0)
 End Function
 
+' Get the first tag in a string of text
+'
+' Paramters:
+' text - String of text to search
+' *tagStart - Starting position of the first tag character (<)
+' *tagEnd - Ending position of the last tag character (>)
+' *tagValue - If the tag contains a space, the value to the right of the space
+'
+' Returns:
+' First tag
+Function GetTag$ (text As String, tagStart As Integer, tagEnd As Integer, tagValue As String)
+    GetTag$ = ""
+    tagValue = ""
+    tagStart = InStr(1, text, "<")
+    If tagStart = 0 Then
+        tagEnd = 0
+        Exit Function
+    End If
+    tagEnd = InStr(tagStart, text, ">")
+    If tagEnd = 0 Then
+        Exit Function
+    End If
+    tagContents$ = Mid$(text, tagStart + 1, tagEnd - tagStart - 1)
+    tag$ = LCase$(Piece$(tagContents$, " ", 1))
+    GetTag$ = tag$
+    tagValue = Mid$(tagContents$, Len(tag$) + 2, Len(tagContents$))
+End Function
+
 ' Parameters:
 ' game - Book instance
 ' item - Item to add to the inventory
@@ -1428,23 +1460,9 @@ End Sub
 ' game - Book instance
 Sub LoadStory (game As Book)
     ' Load the story
-    Dim newScene As Scene
-    newScene.color = _RGB(0, 100, 0)
-    newScene.name = "WILDERNESS"
-    newScene.description = ""
-    Call WorldScene(CREATE, 1, 1, 1, 1, newScene)
-    Dim tempScene As Scene
-    Call WorldScene(RETRIEVE, 1, 1, 1, 1, tempScene)
-    Print "color = " + Str$(tempScene.color)
-    Print "name = " + tempScene.name
-    Print "desc = " + tempScene.description
-
-    Call PrintPageText(game, "story", CsrLin, "Current directory = " + _CWD$)
 
     storyFile$ = ""
     file$ = DIR$("*.quest", fileCount%) 'use a file spec ONCE to find the last file name listed
-    Call PrintPageText(game, "story", CsrLin, "File count = " + Str$(fileCount%))
-    Call PrintPageText(game, "story", CsrLin, "File handle = " + file$)
 
     If fileCount% = 0 Then
         Call PrintPageText(game, "story", CsrLin, "No story files!!!")
@@ -1496,7 +1514,8 @@ Sub LoadStory (game As Book)
         Open storyFile$ For Input As #1
         Do Until EOF(1)
             Input #1, fileLine$
-            If Mid$(fileLine$, 1, 1) = "[" Then
+            If (Mid$(fileLine$, 1, 1) = "[") And (Mid$(fileLine$, 2, 1) <> "[") Then
+                ' New sections are wrapped in brackets, but not double brackets
                 section$ = Mid$(fileLine$, 2, Len(fileLine$) - 2)
             Else
                 If section$ = "title" Then
