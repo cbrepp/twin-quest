@@ -104,3 +104,4 @@ Level 5:
 
 Easter Eggs:
 - additional WILDERNESS square on level 1 can be configured dynamically... kind of like a mini game
+- MYLEE's dialog alludes to BIG CHUNG having eaten the world before... but how can that be?  Add hints for a prequel involving time travel and stopping BIG CHUNG in a previous timeline.

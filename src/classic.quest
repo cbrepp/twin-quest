@@ -59,17 +59,43 @@ epic.mp3
 "MYLEE: <quote>You look like you're new to this so I'll help you out.  See that 'Ask MYLEE' prompt below?  It's giving you some choices.  Pick one.  You can learn about this game before you begin your quest.<quote>"whe
 "<story-prompt Ask MYLEE:WHO ARE YOU,WHERE IS MY TWIN,WHO IS BIG CHUNG,NOTHING>"
 [[WHO ARE YOU]]
-Selected WHO ARE YOU
+"MYLEE: <quote>I'm Mylee Marie!<quote>"
+<press-any-key>
+"..."
+<press-any-key>
+"You wait a moment for MYLEE to say more but she doesn't.  Okay... at least you got her name.  Perhaps it's time to ask another question?"
 <press-any-key>
 [[WHERE IS MY TWIN]]
-Selected WHERE IS MY TWIN
+"MYLEE: <quote>Oh you poor kid.  I'm afraid your twin was captured by my younger brother, BIG CHUNG.  It is a shame.<quote>"
+<press-any-key>
+"<player>: <quote>Why is that?<quote>"
+<press-any-key>
+"MYLEE: <quote>You'd have to understand my brother to know why that is...<quote>"
 <press-any-key>
 [[WHO IS BIG CHUNG]]
-Selected WHO IS BIG CHUNG
+"MYLEE: <quote>Oh he's quite the cat!  His appetite is as big as they come.  Some day he may eat the whole world.  (He's done it before.)  But for now it seems like he's settled on your twin.<quote>"
+<press-any-key>
+"<player>: <quote>He's going to eat <twin>???<quote>"
+<press-any-key>
+"MYLEE: <quote>Perhaps.  But you might have some time.  He just ate an entire Red Lobster restaurant for breakfast this morning so he might be full.  I bet your twin is an appetizer for later.<quote>"
+<press-any-key>
+"<player>: <quote>That's horrible!!!<quote>"
+<press-any-key>
+"MYLEE: <quote>Don't I know it, kid.  But hey, tell you what... these elevator doors can take you to a magical world.  If you want to save your twin, gain some experience out there and then come back.  If you bring me some GOLD I'll take you to the level that BIG CHUNG hangs out on.  But be careful, NIGHT OWL and a DRAGON like GOLD and if you remove any from their level they might come after you.  You better slay that dragon if you can and ask my friend GIANNI for help with that NIGHT OWL problem.  Don't you dare try to fight NIGHT OWL in a dark place.  He'll swoop down on you before you have a chance to defend yourself.<quote>"
 <press-any-key>
 [[NOTHING]]
-Selected NOTHING
+"MYLEE: <quote>Nothing else, huh.  Okay.  Well take this then...<quote>"
+<inventory-add GAME BOOK>
+"MYLEE: <quote>It's called a 'GAME BOOK'.  It will give you some options on the other page for exiting the game and stuff.  Maybe if you can find that SPELL BOOK I lost you'll have two books and a way to defeat BIG CHUNG.  But don't worry, things like that have a way of turning up.  Even when you don't think you'll find them again they fly right back to you.<quote>"
 <press-any-key>
+"<player>: <quote>Umm, thanks?<quote>"
+<press-any-key>
+<play-sound elevator-open.mp3>
+"MYLEE: <quote>You're welcome.  Now off with you!  I'll open the magic elevator doors for you.  Remember: Don't die.  And... bring me back some GOLD!!!<quote>"
+<press-any-key>
+"It would seem like you're no longer welcome in this elevator.  MYLEE flips a switch and the doors open.  You walk out and find that you are no longer on the cloud..."
+<press-any-key>
+<stop-sound elevator-open.mp3>
 <goto-chapter 1>
 [high scores]
 300   GRE   03-09-2024

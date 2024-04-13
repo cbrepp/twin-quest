@@ -178,20 +178,12 @@ Call DisplaySelectPlayerPage(game)
 game.chapter = "INTRODUCTION"
 game.pageNumber = 1
 game.storyChoices = game.basicStoryChoices
-Dim world(5, 5) As String
-Dim mapInfo(5) As String
-Dim playerSymbol(4) As String
-playerSymbol(1) = "^"
-playerSymbol(2) = ">"
-playerSymbol(3) = "v"
-playerSymbol(4) = "<"
-GoSub InitLevel1
 
 ' Main game loop
 choice$ = ""
 Do
-    Call RefreshStoryPage(game, choice$, world())
-    Call RefreshControlPage(game, world(), mapInfo(), playerSymbol())
+    Call RefreshStoryPage(game, choice$)
+    Call RefreshControlPage(game)
     If game.isOver Then
         _Continue
     End If
@@ -200,7 +192,7 @@ Do
 
     ' TODO - Refactor this to be a re-usable story mode that activates before the story prompt
     If game.chapter = "INTRODUCTION" Then
-        'Call DisplayIntroduction(game, world(), mapInfo(), playerSymbol())
+        'Call DisplayIntroduction(game)
 
         ' TODO - Experimental redirect to the new story engine, DisplayStoryPage()
         ' TODO - Have DisplayScene() do this
@@ -238,71 +230,40 @@ Sleep
 
 System ' Ends the program immediately and closes the application window
 
-InitLevel1:
-game.level = 1
-game.levelSize = 3
-game.doorX = 2
-game.doorY = 0
-game.playerX = game.doorX
-game.playerY = game.doorY
-game.playerDirection = 3
-' TODO - Refactor to make the world a 3 node array, with the first node being the level
-' Future idea is to add a spell for warping to a cell on an unlocked level
-world(1, 1) = "WILDERNESS"
-world(2, 1) = "WILDERNESS"
-world(3, 1) = "MAGIC RING OF TOADSTOOLS"
-world(1, 2) = "GIANNI'S DEN"
-world(2, 2) = "WOODS"
-world(3, 2) = "MOUNT FLUFF"
-world(2, 3) = "CASTLE"
-world(3, 3) = "DRAGON'S DEN"
-If game.player = "ZARA" Then
-    world(1, 3) = "ZARA'S STORE"
-Else
-    If (game.player = "GREYSON") Or (game.player = "GREY") Then
-        game.player = "GREYSON"
-        world(1, 3) = "GREYSON'S GAME ROOM"
-    Else
-        End
-    End If
-End If
-
-Return
-
-InitLevel2:
-game.level = 2
-game.levelSize = 5
-game.doorX = 3
-game.doorY = 0
-game.playerX = game.doorX
-game.playerY = game.doorY
-game.playerDirection = 3
-world(1, 1) = "WILDERNESS"
-world(2, 1) = "WILDERNESS"
-world(3, 1) = "WILDERNESS"
-world(4, 1) = "WILDERNESS"
-world(5, 1) = "WILDERNESS"
-world(1, 2) = "WILDERNESS"
-world(2, 2) = "WILDERNESS"
-world(3, 2) = "WILDERNESS"
-world(4, 2) = "WILDERNESS"
-world(5, 2) = "WILDERNESS"
-world(1, 3) = "WILDERNESS"
-world(2, 3) = "WILDERNESS"
-world(3, 3) = "WILDERNESS"
-world(4, 3) = "WILDERNESS"
-world(5, 3) = "WILDERNESS"
-world(1, 4) = "WILDERNESS"
-world(2, 4) = "WILDERNESS"
-world(3, 4) = "WILDERNESS"
-world(4, 4) = "WILDERNESS"
-world(5, 4) = "WILDERNESS"
-world(1, 5) = "WILDERNESS"
-world(2, 5) = "WILDERNESS"
-world(3, 5) = "WILDERNESS"
-world(4, 5) = "WILDERNESS"
-world(5, 5) = "WILDERNESS"
-Return
+'InitLevel2:
+'game.level = 2
+'game.levelSize = 5
+'game.doorX = 3
+'game.doorY = 0
+'game.playerX = game.doorX
+'game.playerY = game.doorY
+'game.playerDirection = 3
+'world(1, 1) = "WILDERNESS"
+'world(2, 1) = "WILDERNESS"
+'world(3, 1) = "WILDERNESS"
+'world(4, 1) = "WILDERNESS"
+'world(5, 1) = "WILDERNESS"
+'world(1, 2) = "WILDERNESS"
+'world(2, 2) = "WILDERNESS"
+'world(3, 2) = "WILDERNESS"
+'world(4, 2) = "WILDERNESS"
+'world(5, 2) = "WILDERNESS"
+'world(1, 3) = "WILDERNESS"
+'world(2, 3) = "WILDERNESS"
+'world(3, 3) = "WILDERNESS"
+'world(4, 3) = "WILDERNESS"
+'world(5, 3) = "WILDERNESS"
+'world(1, 4) = "WILDERNESS"
+'world(2, 4) = "WILDERNESS"
+'world(3, 4) = "WILDERNESS"
+'world(4, 4) = "WILDERNESS"
+'world(5, 4) = "WILDERNESS"
+'world(1, 5) = "WILDERNESS"
+'world(2, 5) = "WILDERNESS"
+'world(3, 5) = "WILDERNESS"
+'world(4, 5) = "WILDERNESS"
+'world(5, 5) = "WILDERNESS"
+'Return
 
 Sub AllTheThingsAction (game As Book)
     thingDone% = 0
@@ -311,20 +272,17 @@ Sub AllTheThingsAction (game As Book)
             game.isDragonDead = 1
             Call IncreaseScore(game, 100)
             Call PrintPageText(game, "story", CsrLin, "You slew the dragon!")
-            Call PrintPageText(game, "story", CsrLin, "Score +100")
             thingDone% = 1
         End If
         If game.isCatTamed = 0 Then
             game.isCatTamed = 1
             Call IncreaseScore(game, 100)
             Call PrintPageText(game, "story", CsrLin, "You tamed the elusive cat!")
-            Call PrintPageText(game, "story", CsrLin, "Score +100")
             thingDone% = 1
         End If
         If Not Contains%(game.inventory, "RING OF TAMING", ",") Then
             Call IncreaseInventory(game, "RING OF TAMING")
             Call PrintPageText(game, "story", CsrLin, "You obtained the Ring of Taming!")
-            Call PrintPageText(game, "story", CsrLin, "Inventory +RING OF TAMING")
             Call PrintPageText(game, "story", CsrLin, "(Does not work on large creatures.)")
             thingDone% = 1
         End If
@@ -332,20 +290,16 @@ Sub AllTheThingsAction (game As Book)
             Call IncreaseInventory(game, "GOLD")
             Call IncreaseScore(game, 100)
             Call PrintPageText(game, "story", CsrLin, "You obtained the Gold!")
-            Call PrintPageText(game, "story", CsrLin, "Score +100")
-            Call PrintPageText(game, "story", CsrLin, "Inventory +GOLD")
             thingDone% = 1
         End If
         If (game.player = "GREYSON") And (Not Contains%(game.inventory, "UNO REVERSE", ",")) Then
             Call IncreaseInventory(game, "UNO REVERSE")
             Call PrintPageText(game, "story", CsrLin, "You obtained the legendary UNO Reverse card!")
-            Call PrintPageText(game, "story", CsrLin, "Inventory +UNO REVERSE")
             thingDone% = 1
         End If
         If (game.player = "ZARA") And (Not Contains%(game.inventory, "SWORD", ",")) Then
             Call IncreaseInventory(game, "SWORD")
             Call PrintPageText(game, "story", CsrLin, "You obtained the legendary SWORD!")
-            Call PrintPageText(game, "story", CsrLin, "Inventory +SWORD")
             thingDone% = 1
         End If
         If thingDone% = 0 Then
@@ -586,10 +540,7 @@ End Sub
 '
 ' Parameters:
 ' game - Book instance
-' world() - World data
-' mapInfo() - Map data
-' playerSymbol() - Player map symbols
-Sub DisplayIntroduction (game As Book, world() As String, mapInfo() As String, playerSymbol() As String)
+Sub DisplayIntroduction (game As Book)
     ' TODO - Would be nice to add back and forward arrows in the bottom corners of the story page.
 
     If game.pageNumber = 1 Then
@@ -683,9 +634,6 @@ Sub DisplayIntroduction (game As Book, world() As String, mapInfo() As String, p
                                 If choice$ = "NOTHING" Then
                                     Call PrintPageText(game, "story", currentRow% + 8, "MYLEE: " + Chr$(34) + "Nothing else, huh.  Okay.  Well take this then..." + Chr$(34))
                                     Call IncreaseInventory(game, "GAME BOOK")
-                                    currentRow% = CsrLin ' Remember the current row because refreshing the control page will change it
-                                    Call RefreshControlPage(game, world(), mapInfo(), playerSymbol())
-                                    Call PrintPageText(game, "story", currentRow% + 1, "INVENTORY +GAME BOOK")
                                     Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "It's called a 'GAME BOOK'.  It will give you some options on the other page for exiting the game and stuff.  Maybe if you can find that SPELL BOOK I lost you'll have two books and a way to defeat BIG CHUNG.  But don't worry, things like that have a way of turning up eventually.  Even when you don't think you'll find them again they make their way back to you." + Chr$(34))
                                     Call PressAnyKey(game, "story")
                                     Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "Umm, thanks?" + Chr$(34))
@@ -795,6 +743,7 @@ Sub DisplayStoryPage (game As Book, page As String)
             If Left$(remainingDiv$, 2) = "[[" Then
                 subsection$ = Piece$(remainingDiv$, "]]", 1)
                 subsection$ = Piece$(subsection$, "[[", 2)
+                _Continue ' Don't actually print the name of the subsection
             End If
             If subsection$ <> storyChoice$ Then
                 _Continue
@@ -858,6 +807,11 @@ Sub DisplayStoryPage (game As Book, page As String)
                     game.pageNumber = game.pageNumber + 1
                     _Continue
                 End If
+                If tag$ = "goto-chapter" Then
+                    ' The Goto-Chapter tag redirects the player to the designated chapter
+                    game.chapter = "CHAPTER " + tagValue$
+                    _Continue
+                End If
                 If tag$ = "image" Then
                     ' The Image tag prints any accumulated text and displays the image(s) on the next line
                     If storyText$ <> "" Then
@@ -872,6 +826,19 @@ Sub DisplayStoryPage (game As Book, page As String)
                         Locate imageLine%, 1
                         Call DisplayImage(game, "story", image&)
                         _FreeImage image&
+                    Next j%
+                    _Continue
+                End If
+                If tag$ = "inventory-add" Then
+                    ' The Inventory-Add tag prints any accumulated text and adds the item(s) to the player's inventory
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    itemCount% = Length%(tagValue$, "+")
+                    For j% = 1 To itemCount%
+                        item$ = Piece$(tagValue$, "+", j%)
+                        Call IncreaseInventory(game, item$)
                     Next j%
                     _Continue
                 End If
@@ -1344,6 +1311,13 @@ Sub IncreaseInventory (game As Book, item As String)
             game.inventory = game.inventory + "," + item
         End If
         Call ReplaySound(game.inventorySound, 1, 0)
+        storyColor& = _DefaultColor
+        Color _RGB(255, 140, 0)
+        Call PrintPageText(game, "story", CsrLin + 1, "INVENTORY +" + item)
+        storyRow% = CsrLin
+        Call RefreshControlPage(game)
+        Color storyColor&
+        Locate storyRow%, 1
     End If
 End Sub
 
@@ -1354,6 +1328,13 @@ Sub IncreaseScore (game As Book, points As Integer)
     game.score = game.score + points
     game.experiencePoints = game.experiencePoints + points
     Call ReplaySound(game.pointsSound, 1, 0)
+    storyColor& = _DefaultColor
+    Color _RGB(255, 140, 0)
+    Call PrintPageText(game, "story", CsrLin + 1, "SCORE +" + LTrim$(Str$(points)))
+    storyRow% = CsrLin
+    Call RefreshControlPage(game)
+    Color storyColor&
+    Locate storyRow%, 1
 End Sub
 
 ' Get the delimited length of a string
@@ -1386,8 +1367,16 @@ Function Length% (text As String, delimiter As String)
     End If
 End Function
 
-Sub ListenAction (game As Book, world() As String)
-    scene$ = world(game.playerX, game.playerY)
+' Listen action
+'
+' Parameters:
+' game - Book instance
+Sub ListenAction (game As Book)
+    Dim currentScene As Scene
+    Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, currentScene)
+    playerView$ = currentScene.name
+    'scene$ = world(game.playerX, game.playerY)
+
     Call PrintPageText(game, "story", CsrLin, "You are in " + scene$ + ".")
     ' Decribe what the player is hearing, and restart audio if not currently playing
     If game.storySound = 0 Then
@@ -1564,10 +1553,70 @@ Sub LoadStory (game As Book)
     Else
         Call PrintPageText(game, "story", CsrLin, storyFile$ + " does not exist")
     End If
+
+    game.level = 1
+    game.levelSize = 3
+    game.doorX = 2
+    game.doorY = 0
+    game.playerX = game.doorX
+    game.playerY = game.doorY
+    game.playerDirection = 3
+
+    Dim scene As Scene
+    scene.color = _RGB(255, 255, 255)
+    scene.description = "Ye Old Timely World Scene"
+    scene.name = "WILDERNESS"
+    Call WorldScene(CREATE, 1, 1, 1, 1, scene)
+    scene.name = "WILDERNESS"
+    Call WorldScene(CREATE, 1, 1, 2, 1, scene)
+    scene.name = "MAGIC RING OF TOADSTOOLS"
+    Call WorldScene(CREATE, 1, 1, 3, 1, scene)
+
+    scene.name = "GIANNI'S DEN"
+    Call WorldScene(CREATE, 1, 1, 1, 2, scene)
+    scene.name = "WOODS"
+    Call WorldScene(CREATE, 1, 1, 2, 2, scene)
+    scene.name = "MOUNT FLUFF"
+    Call WorldScene(CREATE, 1, 1, 3, 2, scene)
+
+    scene.name = "SPECIAL"
+    Call WorldScene(CREATE, 1, 1, 1, 3, scene)
+    scene.name = "CASTLE"
+    Call WorldScene(CREATE, 1, 1, 2, 3, scene)
+    scene.name = "DRAGON'S DEN"
+    Call WorldScene(CREATE, 1, 1, 3, 3, scene)
+
+    'world(1, 1) = "WILDERNESS"
+    'world(2, 1) = "WILDERNESS"
+    'world(3, 1) = "MAGIC RING OF TOADSTOOLS"
+    'world(1, 2) = "GIANNI'S DEN"
+    'world(2, 2) = "WOODS"
+    'world(3, 2) = "MOUNT FLUFF"
+    'world(2, 3) = "CASTLE"
+    'world(3, 3) = "DRAGON'S DEN"
+    'If game.player = "ZARA" Then
+    '    world(1, 3) = "ZARA'S STORE"
+    'Else
+    '    If (game.player = "GREYSON") Or (game.player = "GREY") Then
+    '        game.player = "GREYSON"
+    '        world(1, 3) = "GREYSON'S GAME ROOM"
+    '    Else
+    '        End
+    '    End If
+    'End If
+
 End Sub
 
-Sub LookAction (game As Book, world() As String)
-    playerView$ = world(game.playerX, game.playerY)
+' Look action
+'
+' Parameters:
+' game - Book instance
+Sub LookAction (game As Book)
+    Dim currentScene As Scene
+    Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, currentScene)
+    playerView$ = currentScene.name
+    'playerView$ = world(game.playerX, game.playerY)
+
     Call PrintPageText(game, "story", CsrLin, "You are in " + playerView$ + ".")
     If playerView$ = "WILDERNESS" Then
         Color _RGB(0, 100, 0) ' dark green
@@ -1633,13 +1682,10 @@ Sub LookAction (game As Book, world() As String)
                 game.isCatTamed = 1
                 Call PrintPageText(game, "story", CsrLin + 1, "You use your ring of taming on him and he jumps into your waiting arms.  You pet him for hours and hours.  As a reward for your petting, he gives you a long-range weapon to aid you in your quest.")
                 Color _RGB(0, 0, 0)
-                Call PrintPageText(game, "story", CsrLin, "Score +100")
                 Call IncreaseScore(game, 100)
                 If game.player = "GREYSON" Then
-                    Call PrintPageText(game, "story", CsrLin, "Inventory +BOW & ARROWS")
                     Call IncreaseInventory(game, "BOW & ARROWS")
                 Else
-                    Call PrintPageText(game, "story", CsrLin, "Inventory +CAT-APULT")
                     Call IncreaseInventory(game, "CAT-APULT")
                 End If
             Else
@@ -1689,7 +1735,6 @@ Sub LookAction (game As Book, world() As String)
                     Call PrintPageText(game, "story", CsrLin, "The townspeople are saved.  And you are today a hero!!!")
                     Call IncreaseScore(game, 100)
                     Color _RGB(0, 0, 0)
-                    Call PrintPageText(game, "story", CsrLin, "Score +100")
                     game.isDragonDead = 1
                 Else
                     If (Contains%(game.inventory, "UNO REVERSE", ",")) And (game.isDragonDead = 0) Then
@@ -1698,7 +1743,6 @@ Sub LookAction (game As Book, world() As String)
                         Call PrintPageText(game, "story", CsrLin, "The townspeople are saved.  And you are today a hero!!!")
                         Call IncreaseScore(game, 100)
                         Color _RGB(0, 0, 0)
-                        Call PrintPageText(game, "story", CsrLin, "Score +100")
                         game.isDragonDead = 1
                     End If
                 End If
@@ -1718,7 +1762,6 @@ Sub LookAction (game As Book, world() As String)
             Call PrintPageText(game, "story", CsrLin, "You deposit some gold coins into the vending machine...")
             Call IncreaseInventory(game, "SWORD")
             Color _RGB(0, 0, 0)
-            Call PrintPageText(game, "story", CsrLin, "Inventory +SWORD")
         Else
             If Contains%(game.inventory, "SWORD", ",") Then
                 Call PrintPageText(game, "story", CsrLin, "That mighty sword is in your hand... perhaps you should")
@@ -1737,7 +1780,6 @@ Sub LookAction (game As Book, world() As String)
             Call PrintPageText(game, "story", CsrLin, "You look at the cards and discover the legendary... UNO REVERSE!!!")
             Call IncreaseInventory(game, "UNO REVERSE")
             Color _RGB(0, 0, 0)
-            Call PrintPageText(game, "story", CsrLin, "Inventory +UNO REVERSE")
         Else
             If Contains%(game.inventory, "UNO REVERSE", ",") Then
                 Call PrintPageText(game, "story", CsrLin, "That mighty deck is in your hand... perhaps you should")
@@ -1777,14 +1819,20 @@ Sub LookAction (game As Book, world() As String)
                 Call PrintPageText(game, "story", CsrLin, "There is nothing ahead.  You are facing the edge of the world.")
             Else
                 Color _RGB(0, 0, 0)
-                Call PrintPageText(game, "story", CsrLin, "Ahead you see " + world(aheadX%, aheadY%) + ".")
+                Dim nextScene As Scene
+                Call WorldScene(RETRIEVE, 1, game.level, aheadX%, aheadY%, nextScene)
+                Call PrintPageText(game, "story", CsrLin, "Ahead you see " + nextScene.name + ".")
             End If
         End If
     End If
     Color _RGB(0, 0, 0)
 End Sub
 
-Sub MoveAheadAction (game As Book, world() As String)
+' Move Ahead action
+'
+' Parameters:
+' game - Book instance
+Sub MoveAheadAction (game As Book)
     aheadX% = game.playerX
     aheadY% = game.playerY
     If game.playerDirection = game.directions.north Then
@@ -1803,7 +1851,7 @@ Sub MoveAheadAction (game As Book, world() As String)
         Call ElevatorAction(game)
         If game.isOver = 0 Then
             Call TurnPage(game, 1)
-            Call LookAction(game, world())
+            Call LookAction(game)
         End If
     Else
         If (aheadX% = 0) Or (aheadX% = (game.levelSize + 1)) Or (aheadY% = 0) Or (aheadY% = (game.levelSize + 1)) Then
@@ -1812,10 +1860,18 @@ Sub MoveAheadAction (game As Book, world() As String)
             Call PrintPageText(game, "story", CsrLin, "Jumping off the edge of the world is NOT allowed in this game.")
         Else
             ' Advance the player to the next scene
-            lastScene$ = world(game.playerX, game.playerY)
+            Dim lastScene As Scene
+            Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, lastScene)
+            lastScene$ = lastScene.name
+            'lastScene$ = world(game.playerX, game.playerY)
+
             game.playerX = aheadX%
             game.playerY = aheadY%
-            scene$ = world(game.playerX, game.playerY)
+
+            Dim newScene As Scene
+            Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, newScene)
+            scene$ = newScene.name
+            'scene$ = world(game.playerX, game.playerY)
 
             ' Update the scene's sound
             If lastScene$ <> scene$ Then
@@ -1883,7 +1939,7 @@ Sub MoveAheadAction (game As Book, world() As String)
             End If
 
             ' Refresh the scene's description
-            Call LookAction(game, world())
+            Call LookAction(game)
         End If
     End If
 End Sub
@@ -2078,10 +2134,7 @@ End Sub
 '
 ' Parameters:
 ' game - Book instance
-' world() - World data
-' mapInfo() - Map data
-' playerSymbol() - Player map symbols
-Sub RefreshControlPage (game As Book, world() As String, mapInfo() As String, playerSymbol() As String)
+Sub RefreshControlPage (game As Book)
     Color _RGB(146, 146, 146) ' darker grey
     firstRow% = game.firstRow + 2
     Call PrintPageText(game, "control", firstRow%, "_" + game.player + String$(62 - Len(game.player), "_"))
@@ -2097,7 +2150,15 @@ Sub RefreshControlPage (game As Book, world() As String, mapInfo() As String, pl
     Color _RGB(0, 0, 0) ' black
     Print
 
+    ' TODO - Refactor this out
+    Dim playerSymbol(4) As String
+    playerSymbol(1) = "^"
+    playerSymbol(2) = ">"
+    playerSymbol(3) = "v"
+    playerSymbol(4) = "<"
+
     ' Display the map
+    Dim mapInfo(5) As String ' TODO - Refactor this out
     directionWord$ = ""
     If game.playerDirection = game.directions.north Then
         directionWord$ = "North"
@@ -2160,8 +2221,7 @@ End Sub
 ' Parameters:
 ' game - Book instance
 ' choice - Player's selected choice
-' world() - World data
-Sub RefreshStoryPage (game As Book, choice As String, world() As String)
+Sub RefreshStoryPage (game As Book, choice As String)
     If (Not Contains%(game.storyChoices, choice, ",")) And (Not Contains%(game.controlChoices, choice, ",")) And (Not Contains%(game.secretChoices, choice, ",")) Then
         Call TurnPage(game, 0)
         If choice <> "" Then
@@ -2176,19 +2236,19 @@ Sub RefreshStoryPage (game As Book, choice As String, world() As String)
             Call ExitAction(game)
         End If
         If choice = "LOOK" Then
-            Call LookAction(game, world())
+            Call LookAction(game)
         End If
         If choice = "CREDITS" Then
             Call DisplayCreditsPage(game)
             choice = "LOOK"
             Call TurnPage(game, 1)
-            Call LookAction(game, world())
+            Call LookAction(game)
         End If
         If choice = "HIGH SCORES" Then
             Call DisplayHighScoresPage(game)
             choice = "LOOK"
             Call TurnPage(game, 1)
-            Call LookAction(game, world())
+            Call LookAction(game)
         End If
         If choice = "FLIP BOOK" Then
             If game.isRightHanded = 0 Then
@@ -2197,28 +2257,28 @@ Sub RefreshStoryPage (game As Book, choice As String, world() As String)
                 game.isRightHanded = 0
             End If
             Call TurnPage(game, 0)
-            Call LookAction(game, world())
+            Call LookAction(game)
         End If
         If choice = "GO RIGHT-HANDED" Then
             game.isRightHanded = 1
             game.controlChoices = "CREDITS,GO LEFT-HANDED,HIGH SCORES,EXIT GAME"
             Call TurnPage(game, 0)
-            Call LookAction(game, world())
+            Call LookAction(game)
         End If
         If choice = "LISTEN" Then
-            Call ListenAction(game, world())
+            Call ListenAction(game)
         End If
         If choice = "MOVE AHEAD" Then
-            Call MoveAheadAction(game, world())
+            Call MoveAheadAction(game)
         End If
         If choice = "MOVE BACKWARDS" Then
             Call MoveBackwardsAction(game)
         End If
         If choice = "TURN LEFT" Then
-            Call TurnLeftAction(game, world())
+            Call TurnLeftAction(game)
         End If
         If choice = "TURN RIGHT" Then
-            Call TurnRightAction(game, world())
+            Call TurnRightAction(game)
         End If
         If (choice = "PLAY GAME") Then
             Call PlayGameAction(game)
@@ -2226,14 +2286,14 @@ Sub RefreshStoryPage (game As Book, choice As String, world() As String)
             Call PressAnyKey(game, "control")
             choice = "LOOK"
             Call TurnPage(game, 1)
-            Call LookAction(game, world())
+            Call LookAction(game)
         End If
         If (choice = "SPEAK NAME") Then
             Call SpeakNameAction(game)
             Call PressAnyKey(game, "control")
             choice = "LOOK"
             Call TurnPage(game, 1)
-            Call LookAction(game, world())
+            Call LookAction(game)
         End If
         If (choice = "CHASE BUNNIES") Then
             Call ChaseBunniesAction(game)
@@ -2243,7 +2303,7 @@ Sub RefreshStoryPage (game As Book, choice As String, world() As String)
             Call PressAnyKey(game, "control")
             choice = "LOOK"
             Call TurnPage(game, 1)
-            Call LookAction(game, world())
+            Call LookAction(game)
         End If
         If (choice = "TAKE GOLD") Then
             Call TakeGoldAction(game)
@@ -2301,7 +2361,6 @@ Sub SpeakNameAction (game As Book)
         Call PrintPageText(game, "story", CsrLin, "Shmebulock?  Shmebulock, Shmebulock.  Shme... bulock!")
         Print
         If Not Contains%(game.inventory, "RING OF TAMING", ",") Then
-            Call PrintPageText(game, "story", CsrLin, "Inventory +RING OF TAMING")
             Call PrintPageText(game, "story", CsrLin, "(Does not work on large creatures.)")
         Else
             Call PrintPageText(game, "story", CsrLin, "You look down at your ring and it glows with power.")
@@ -2375,8 +2434,6 @@ Sub TakeGoldAction (game As Book)
         Call IncreaseScore(game, 100)
         Print
         Call PrintPageText(game, "story", CsrLin, "All the gold now belongs to you!")
-        Call PrintPageText(game, "story", CsrLin, "Score +100")
-        Call PrintPageText(game, "story", CsrLin, "Inventory +GOLD")
         Print
         Call IncreaseInventory(game, "GOLD")
     End If
@@ -2411,12 +2468,16 @@ Sub TameFluffAction (game As Book)
     Call PrintPageText(game, "story", CsrLin, "|  magnifico               \/   \         |")
 End Sub
 
-Sub TurnLeftAction (game As Book, world() As String)
+' Turn Left action
+'
+' Parameters:
+' game - Book instance
+Sub TurnLeftAction (game As Book)
     game.playerDirection = game.playerDirection - 1
     If game.playerDirection = 0 Then
         game.playerDirection = 4
     End If
-    Call LookAction(game, world())
+    Call LookAction(game)
 End Sub
 
 ' Wipe the current screen and redisplay the book image
@@ -2446,12 +2507,16 @@ Sub TurnPage (game As Book, playPageSound As Integer)
     Locate game.firstRow + 2, 1
 End Sub
 
-Sub TurnRightAction (game As Book, world() As String)
+' Turn Right action
+'
+' Parameters:
+' game - Book instance
+Sub TurnRightAction (game As Book)
     game.playerDirection = game.playerDirection + 1
     If game.playerDirection = 5 Then
         game.playerDirection = 1
     End If
-    Call LookAction(game, world())
+    Call LookAction(game)
 End Sub
 
 ' World Scene Class

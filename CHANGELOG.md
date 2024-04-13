@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Added ability to load the story through a file
+
+### Changed
+
+- Cleaned up some of the introduction text
+- Changed inventory and score notification text to a nice, dark orange
+
 ## [0.1.0] - 2024-03-23
 
 ### Added
