@@ -10,7 +10,11 @@ Development: Mylee and Mr. Chris
 Creative Design: Zara and Greyson
 [opening music]
 epic.mp3
-[introduction 1]
+"[scene id=0,0,0]"
+"name=INTRODUCTION"
+"color=255,255,255"
+"sound=suspense.mp3"
+[scene 1]
 <story-sound suspense.mp3>
 "<twin>: <quote>Ahh!!!  <player>!!!  Save me!!!<quote>"
 <press-any-key>
@@ -25,7 +29,7 @@ epic.mp3
 "You cautiously tap the cloud with your hand and discover that it's firm enough to walk on.  You then oh so very carefully put one foot into the closet, lower your head, and step through the doorway so you can get a better look..."
 <press-any-key>
 <turn-page>
-[introduction 2]
+[scene 2]
 <image clouds.png+elevator-doors.png>
 <br>
 "You are now standing on the surface of a cloud floating high up in the sky.  You look around and see nothing but the large poofy white cloud, the blue sky, the bright yellow sun... and... what appears to be elevator doors in the middle of the cloud."
@@ -37,7 +41,7 @@ epic.mp3
 <press-any-key>
 <stop-sound elevator-open.mp3>
 <turn-page>
-[introduction 3]
+[scene 3]
 <story-sound elevator.wav>turn-page
 <image mylee.jpg>
 "MYLEE: <quote>Oh hey kid.<quote>"
@@ -55,7 +59,7 @@ epic.mp3
 "MYLEE: <quote>Enough talk, human.  You look confused.  How about you ask me some questions.<quote>"
 <press-any-key>
 <turn-page>
-[introduction 4]
+[scene 4]
 "MYLEE: <quote>You look like you're new to this so I'll help you out.  See that 'Ask MYLEE' prompt below?  It's giving you some choices.  Pick one.  You can learn about this game before you begin your quest.<quote>"whe
 "<story-prompt Ask MYLEE:WHO ARE YOU,WHERE IS MY TWIN,WHO IS BIG CHUNG,NOTHING>"
 [[WHO ARE YOU]]
@@ -97,6 +101,72 @@ epic.mp3
 <press-any-key>
 <stop-sound elevator-open.mp3>
 <goto-chapter 1>
+"[scene id=1,1,1]"
+"name=WILDERNESS"
+"color=0,100,0"
+"sound=wilderness.mp3"
+"[scene id=1,2,1]"
+"name=WILDERNESS"
+"color=0,100,0"
+"sound=wilderness.mp3"
+[scene 1]
+"Oh the great outdoors!"
+<choices-add CHASE BUNNIES>
+[[LOOK]]
+"You see nothing but tall grass and cute bunnies.  Also, the sun is shining brightly."
+[[LISTEN]]
+"You hear birds singing and perhaps some insects.  There is also a slight breeze.  These are the typical sounds of nature."
+[[CHASE BUNNIES]]
+"Seems like an unimportant thing to do but nevertheless you try to chase some of the bunnies."
+<br>
+"And..."
+<random 3>
+[[RANDOM 1]]
+"You can't catch a single one.  They are too fast!  Oh well, next time maybe.  You need to continue on with your quest."
+[[RANDOM 2]]
+"You can't catch a single one.  But you got close!  Oh well, next time maybe.  You need to continue on with your quest."
+[[RANDOM 3]]
+<image bionic-bunny.jpg>
+<br>
+"The bunnies start chasing you!  What are they, bionic???  You run as fast as you can to get away."
+<br>
+"It would be for the best if you forget this ever happened and continue on with your quest."
+"[scene id=1,3,1]"
+"name=MAGIC RING OF TOADSTOOLS"
+"color=184,115,51"
+"sound="
+[scene 1]
+<play-sound magic.mp3>
+"[scene id=1,1,2]"
+"name=GIANNI'S DEN"
+"color=169,169,169"
+"sound=gianni.mp3"
+"[scene id=1,2,2]"
+"name=WOODS"
+"color=85,85,85"
+"sound=woods.mp3"
+"[scene id=1,3,2]"
+"name=MOUNT FLUFF"
+"color=0,0,0"
+"sound="
+[scene 1]
+<play-sound fluff.wav>
+"[scene id=1,1,3]"
+"name=SPECIAL"
+"color="
+"sound="
+"[scene id=1,2,3]"
+"name=CASTLE"
+"color=255,255,0"
+"sound="
+[scene 1]
+<play-sound castle.mp3>
+"[scene id=1,3,3]"
+"name=DRAGON'S DEN"
+"color=255,0,0"
+"sound="
+[scene 1]
+<play-sound dragon.mp3>
 [high scores]
 300   GRE   03-09-2024
 300   ZRT   03-09-2024

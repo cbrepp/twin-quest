@@ -50,8 +50,8 @@ End Type
 Type Scene
     id As Integer
     color As Long
-    description As String
     name As String
+    sound As String
 End Type
 
 Type MapDirections
@@ -207,6 +207,7 @@ Do
         End If
     Else
         ' Prompt for choice
+        game.pageNumber = 1
         Locate game.cursor.lastStoryRow + 1, 1
         choice$ = StoryPrompt$(game, "Story Choices", game.storyChoices, 1, 1, 40)
     End If
@@ -229,41 +230,6 @@ Call PrintPageText(game, "story", CsrLin + 1, "(Press any key to exit the progra
 Sleep
 
 System ' Ends the program immediately and closes the application window
-
-'InitLevel2:
-'game.level = 2
-'game.levelSize = 5
-'game.doorX = 3
-'game.doorY = 0
-'game.playerX = game.doorX
-'game.playerY = game.doorY
-'game.playerDirection = 3
-'world(1, 1) = "WILDERNESS"
-'world(2, 1) = "WILDERNESS"
-'world(3, 1) = "WILDERNESS"
-'world(4, 1) = "WILDERNESS"
-'world(5, 1) = "WILDERNESS"
-'world(1, 2) = "WILDERNESS"
-'world(2, 2) = "WILDERNESS"
-'world(3, 2) = "WILDERNESS"
-'world(4, 2) = "WILDERNESS"
-'world(5, 2) = "WILDERNESS"
-'world(1, 3) = "WILDERNESS"
-'world(2, 3) = "WILDERNESS"
-'world(3, 3) = "WILDERNESS"
-'world(4, 3) = "WILDERNESS"
-'world(5, 3) = "WILDERNESS"
-'world(1, 4) = "WILDERNESS"
-'world(2, 4) = "WILDERNESS"
-'world(3, 4) = "WILDERNESS"
-'world(4, 4) = "WILDERNESS"
-'world(5, 4) = "WILDERNESS"
-'world(1, 5) = "WILDERNESS"
-'world(2, 5) = "WILDERNESS"
-'world(3, 5) = "WILDERNESS"
-'world(4, 5) = "WILDERNESS"
-'world(5, 5) = "WILDERNESS"
-'Return
 
 Sub AllTheThingsAction (game As Book)
     thingDone% = 0
@@ -1493,19 +1459,25 @@ Sub LoadStory (game As Book)
     If _FileExists(storyFile$) Then
         game.storyFile = storyFile$
 
-        ' TODO - Experimental code
-        Dim introduction As Scene
-        introduction.color = _RGB(255, 255, 255)
-        introduction.description = "Ye Olde Introduction"
-        introduction.name = "INTRODUCTION"
-        Call WorldScene(CREATE, 1, 0, 0, 0, introduction)
-
         Open storyFile$ For Input As #1
         Do Until EOF(1)
             Input #1, fileLine$
             If (Mid$(fileLine$, 1, 1) = "[") And (Mid$(fileLine$, 2, 1) <> "[") Then
                 ' New sections are wrapped in brackets, but not double brackets
                 section$ = Mid$(fileLine$, 2, Len(fileLine$) - 2)
+
+                ' If a new scene is being introduced, instance it as a proper WorldScene
+                If Left$(section$, Len("scene")) = "scene" Then
+                    sceneValue$ = Piece$(section$, " ", 2)
+                    If Left$(sceneValue$, 3) = "id=" Then
+                        sceneCoordinates$ = Piece$(sceneValue$, "id=", 2)
+                        sceneLevel% = Val(Piece$(sceneCoordinates$, ",", 1))
+                        sceneX% = Val(Piece$(sceneCoordinates$, ",", 2))
+                        sceneY% = Val(Piece$(sceneCoordinates$, ",", 3))
+                        Dim scene As Scene
+                        Call WorldScene(CREATE, 1, sceneLevel%, sceneX%, sceneY%, scene)
+                    End If
+                End If
             Else
                 If section$ = "title" Then
                     game.story = fileLine$
@@ -1534,16 +1506,46 @@ Sub LoadStory (game As Book)
                     game.highScores = game.highScores + fileLine$
                     _Continue
                 End If
-                If Left$(section$, Len("introduction")) = "introduction" Then
-                    pageNumber% = Val(Piece$(section$, " ", 2))
-                    Call WorldScenePage(RETRIEVE, introduction.id, pageNumber%, pageContents$)
+                If Left$(section$, Len("scene")) = "scene" Then
+                    Call WorldScene(RETRIEVE, 1, sceneLevel%, sceneX%, sceneY%, scene)
+
+                    sceneValue$ = Piece$(section$, " ", 2)
+
+                    ' Scene header
+                    If Left$(sceneValue$, 3) = "id=" Then
+                        If Left$(fileLine$, 5) = "name=" Then
+                            scene.name = Piece$(fileLine$, "=", 2)
+                            Call WorldScene(UPDATE, 1, sceneLevel%, sceneX%, sceneY%, scene)
+                            _Continue
+                        End If
+                        If Left$(fileLine$, 6) = "color=" Then
+                            color$ = Piece$(fileLine$, "=", 2)
+                            red% = Val(Piece$(color$, ",", 1))
+                            green% = Val(Piece$(color$, ",", 2))
+                            blue% = Val(Piece$(color$, ",", 3))
+                            scene.color = _RGB(red%, green%, blue%)
+                            Call WorldScene(UPDATE, 1, sceneLevel%, sceneX%, sceneY%, scene)
+                            _Continue
+                        End If
+                        If Left$(fileLine$, 6) = "sound=" Then
+                            sound$ = Piece$(fileLine$, "=", 2)
+                            scene.sound = sound$
+                            Call WorldScene(UPDATE, 1, sceneLevel%, sceneX%, sceneY%, scene)
+                            _Continue
+                        End If
+                        _Continue ' Unsupported scene property
+                    End If
+
+                    ' Scene page
+                    pageNumber% = Val(sceneValue$)
+                    Call WorldScenePage(RETRIEVE, scene.id, pageNumber%, pageContents$)
                     If pageContents$ <> "" Then
                         pageContents$ = pageContents$ + "<div>"
                         pageContents$ = pageContents$ + fileLine$
-                        Call WorldScenePage(UPDATE, introduction.id, pageNumber%, pageContents$)
+                        Call WorldScenePage(UPDATE, scene.id, pageNumber%, pageContents$)
                     Else
                         pageContents$ = fileLine$
-                        Call WorldScenePage(CREATE, introduction.id, pageNumber%, pageContents$)
+                        Call WorldScenePage(CREATE, scene.id, pageNumber%, pageContents$)
                     End If
                     _Continue
                 End If
@@ -1562,38 +1564,8 @@ Sub LoadStory (game As Book)
     game.playerY = game.doorY
     game.playerDirection = 3
 
-    Dim scene As Scene
-    scene.color = _RGB(255, 255, 255)
-    scene.description = "Ye Old Timely World Scene"
-    scene.name = "WILDERNESS"
-    Call WorldScene(CREATE, 1, 1, 1, 1, scene)
-    scene.name = "WILDERNESS"
-    Call WorldScene(CREATE, 1, 1, 2, 1, scene)
-    scene.name = "MAGIC RING OF TOADSTOOLS"
-    Call WorldScene(CREATE, 1, 1, 3, 1, scene)
+    ' TODO - LOAD THESE INTO THE STORY FILE!!!
 
-    scene.name = "GIANNI'S DEN"
-    Call WorldScene(CREATE, 1, 1, 1, 2, scene)
-    scene.name = "WOODS"
-    Call WorldScene(CREATE, 1, 1, 2, 2, scene)
-    scene.name = "MOUNT FLUFF"
-    Call WorldScene(CREATE, 1, 1, 3, 2, scene)
-
-    scene.name = "SPECIAL"
-    Call WorldScene(CREATE, 1, 1, 1, 3, scene)
-    scene.name = "CASTLE"
-    Call WorldScene(CREATE, 1, 1, 2, 3, scene)
-    scene.name = "DRAGON'S DEN"
-    Call WorldScene(CREATE, 1, 1, 3, 3, scene)
-
-    'world(1, 1) = "WILDERNESS"
-    'world(2, 1) = "WILDERNESS"
-    'world(3, 1) = "MAGIC RING OF TOADSTOOLS"
-    'world(1, 2) = "GIANNI'S DEN"
-    'world(2, 2) = "WOODS"
-    'world(3, 2) = "MOUNT FLUFF"
-    'world(2, 3) = "CASTLE"
-    'world(3, 3) = "DRAGON'S DEN"
     'If game.player = "ZARA" Then
     '    world(1, 3) = "ZARA'S STORE"
     'Else
@@ -2535,7 +2507,7 @@ Sub WorldScene (event As Integer, world As Integer, level As Integer, x As Integ
         sceneCount = sceneCount + 1
         If sceneCount = 1 Then
             ' One time only array init
-            Dim scenes(10, 10, 10, 10) As Scene
+            Dim scenes(1 To 10, 0 To 10, 0 To 10, 0 To 10) As Scene
         End If
         scene.id = sceneCount
         scenes(world, level, x, y) = scene
@@ -2568,7 +2540,7 @@ Sub WorldScenePage (event As Integer, sceneId As Integer, pageNumber As Integer,
         pageCount = pageCount + 1
         If pageCount = 1 Then
             ' One time only array init
-            Dim pages(1000, 10) As String
+            Dim pages(1 To 1000, 1 To 10) As String
         End If
         pages(sceneId, pageNumber) = contents
     End If
