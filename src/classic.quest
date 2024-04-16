@@ -12,7 +12,7 @@ Creative Design: Zara and Greyson
 epic.mp3
 "[scene id=0,0,0]"
 "name=INTRODUCTION"
-"color=255,255,255"
+"color=0,0,0"
 "sound=suspense.mp3"
 [scene 1]
 <story-sound suspense.mp3>
@@ -42,7 +42,7 @@ epic.mp3
 <stop-sound elevator-open.mp3>
 <turn-page>
 [scene 3]
-<story-sound elevator.wav>turn-page
+<story-sound elevator.wav>
 <image mylee.jpg>
 "MYLEE: <quote>Oh hey kid.<quote>"
 <press-any-key>
@@ -77,7 +77,9 @@ epic.mp3
 "MYLEE: <quote>You'd have to understand my brother to know why that is...<quote>"
 <press-any-key>
 [[WHO IS BIG CHUNG]]
-"MYLEE: <quote>Oh he's quite the cat!  His appetite is as big as they come.  Some day he may eat the whole world.  (He's done it before.)  But for now it seems like he's settled on your twin.<quote>"
+"MYLEE: <quote>Oh he's quite the cat!  His,JOE,BOB,HANK,PETE,
+
+ appetite is as big as they come.  Some day he may eat the whole world.  (He's done it before.)  But for now it seems like he's settled on your twin.<quote>"
 <press-any-key>
 "<player>: <quote>He's going to eat <twin>???<quote>"
 <press-any-key>
@@ -118,7 +120,6 @@ epic.mp3
 "You hear birds singing and perhaps some insects.  There is also a slight breeze.  These are the typical sounds of nature."
 [[CHASE BUNNIES]]
 "Seems like an unimportant thing to do but nevertheless you try to chase some of the bunnies."
-<br>
 "And..."
 <random 3>
 [[RANDOM 1]]
@@ -127,10 +128,8 @@ epic.mp3
 "You can't catch a single one.  But you got close!  Oh well, next time maybe.  You need to continue on with your quest."
 [[RANDOM 3]]
 <image bionic-bunny.jpg>
-<br>
-"The bunnies start chasing you!  What are they, bionic???  You run as fast as you can to get away."
-<br>
-"It would be for the best if you forget this ever happened and continue on with your quest."
+"The bunnies start chasing you!  What are they, bionic???  They shoot at you and you run as fast as you can to get away."
+<hp-remove 10>
 "[scene id=1,3,1]"
 "name=MAGIC RING OF TOADSTOOLS"
 "color=184,115,51"
@@ -139,7 +138,7 @@ epic.mp3
 <play-sound magic.mp3>
 "[scene id=1,1,2]"
 "name=GIANNI'S DEN"
-"color=169,169,169"
+"color=85,85,85"
 "sound=gianni.mp3"
 "[scene id=1,2,2]"
 "name=WOODS"
@@ -147,7 +146,7 @@ epic.mp3
 "sound=woods.mp3"
 "[scene id=1,3,2]"
 "name=MOUNT FLUFF"
-"color=0,0,0"
+"color=255,255,255"
 "sound="
 [scene 1]
 <play-sound fluff.wav>
@@ -157,7 +156,7 @@ epic.mp3
 "sound="
 "[scene id=1,2,3]"
 "name=CASTLE"
-"color=255,255,0"
+"color=171,145,68"
 "sound="
 [scene 1]
 <play-sound castle.mp3>

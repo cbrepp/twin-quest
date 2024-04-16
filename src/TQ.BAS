@@ -3,6 +3,7 @@
 ' book.png - Empty book by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
 ' castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
 ' clouds.png - OpenClipart-Vectors (https://pixabay.com/vectors/sunrise-clouds-rising-sun-sky-sun-153600/)
+' death.mp3 - Dramatic Scene Character Death Separation Melancholy Sadness (https://freesound.org/people/UNIVERSFIELD/sounds/697083/)
 ' dragon.mp3 - The Roar of a 5-Headed Dragon (https://freesound.org/people/bevibeldesign/sounds/366095/)
 ' elevator.wav - music elevator ext (https://freesound.org/people/Jay_You/sounds/467240/)
 ' elevator-doors.png - Krolestwo_Nauki (https://pixabay.com/vectors/elevator-elevator-door-building-6232385/)
@@ -11,10 +12,12 @@
 ' fluff.jpg - Gallant Sir Fluff on a mountain by Mr. Chris
 ' fluff2.jpg - Gallant Sir Fluff looking perplexed by Mr. Chris
 ' fluff.wav - Spanish Lick I, Acoustic- AB split stereo pair (Oktava).wav (https://freesound.org/people/debudding/sounds/44366/)
+' game-over.mp3 - Game Over - low (https://freesound.org/people/MT4000/sounds/664606/)
 ' gianni.mp3 - bonfire flames sizzling (https://freesound.org/people/florianreichelt/sounds/563764/)
 ' gianni.jpg - Son of Fluff climbing a stair railing by Mr. Chris
 ' gianni2.jpg - Son of Fluff curled up on a blanket by Mr. Chris
 ' grey.mp3 - 8-Bit Coin Or Power Up FX For Retro Video Games (https://freesound.org/people/Cloud-10/sounds/647977/)
+' hit.mp3 - Hit with frying pan.mp3 (https://freesound.org/people/Whiprealgood/sounds/529567/)
 ' inventory.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
 ' magic.mp3 - Magic.mp3 (https://freesound.org/people/Bastianhallo/sounds/434050/)
 ' minigames.mp3 - video game menu music (https://freesound.org/people/magmadiverrr/sounds/661248/)
@@ -78,6 +81,7 @@ Type Book
     firstRow As Integer
     highScores As String
     hitPoints As Integer
+    hitSound As Long
     image As Long
     inventory As String
     inventorySound As Long
@@ -119,7 +123,7 @@ game.directions.north = 1
 game.directions.east = 2
 game.directions.south = 3
 game.directions.west = 4
-game.version = "0.1.0"
+game.version = "0.1.1"
 game.chapter = ""
 game.isOver = 0
 game.isRightHanded = 1 ' Are the game controls on the right page? (1/0)
@@ -157,6 +161,7 @@ $Resize:On
 Call DisplaySplashScreen(game)
 
 ' Initialize common sounds
+game.hitSound = _SndOpen("hit.mp3")
 game.inventorySound = _SndOpen("inventory.mp3")
 game.pointsSound = _SndOpen("points.mp3")
 
@@ -184,7 +189,14 @@ choice$ = ""
 Do
     Call RefreshStoryPage(game, choice$)
     Call RefreshControlPage(game)
+
+    If game.hitPoints = 0 Then
+        game.isOver = 1
+    End If
+
     If game.isOver Then
+        Call PressAnyKey(game, "story")
+        Call TurnPage(game, 0)
         _Continue
     End If
 
@@ -199,10 +211,11 @@ Do
         Dim introduction As Scene
         Call WorldScene(RETRIEVE, 1, 0, 0, 0, introduction)
         Call WorldScenePage(RETRIEVE, introduction.id, game.pageNumber, pageContents$)
-        Call DisplayStoryPage(game, pageContents$)
+        Call DisplayStoryPage(game, introduction, pageContents$, "", 1)
 
         If game.chapter = "CHAPTER 1" Then
             ' Every first step in every great adventure is... a first step
+            game.level = 1
             choice$ = "MOVE AHEAD"
         End If
     Else
@@ -213,7 +226,15 @@ Do
     End If
 Loop While game.isOver = 0
 
-' TODO - Play a game over sound
+Call StopSound(game.storySound)
+
+If game.hitPoints = 0 Then
+    Call PrintPageText(game, "story", CsrLin, "You have died.")
+    Print
+    game.storySound = PlaySound&("death.mp3", 1, 1)
+End If
+
+gameOverSound& = PlaySound&("game-over.mp3", 1, 0)
 
 ' Check if the player has earned a spot on the HIGH SCORES list
 If game.score > 0 Then
@@ -285,13 +306,13 @@ Sub ChallengeHighScores (game As Book)
     Next i%
     rank% = 0
     If game.highScores <> "" Then
-        highScoresCount% = Length%(game.highScores, "<br>")
+        highScoresCount% = ListLength%(game.highScores, "<br>")
         index% = 1
         For i% = 1 To highScoresCount%
-            highScore$ = Piece$(game.highScores, "<br>", i%)
-            score% = Val(Piece$(highScore$, "   ", 1))
-            initials$ = Piece$(highScore$, "   ", 2)
-            scoreDate$ = Piece$(highScore$, "   ", 3)
+            highScore$ = ListPiece$(game.highScores, "<br>", i%)
+            score% = Val(ListPiece$(highScore$, "   ", 1))
+            initials$ = ListPiece$(highScore$, "   ", 2)
+            scoreDate$ = ListPiece$(highScore$, "   ", 3)
             If (rank% = 0) And (game.score > score%) Then
                 rank% = index%
                 index% = index% + 1 ' Move Over, Beethoven
@@ -362,6 +383,7 @@ End Sub
 ' Parameters:
 ' game - Book instance
 Sub ChaseBunniesAction (game As Book)
+    Exit Sub
     Color _RGB(0, 100, 0) ' dark green
     Call PrintPageText(game, "story", CsrLin, "Seems like an unimportant thing to do but nonetheless you try to chase some of the bunnies.")
     Call PrintPageText(game, "story", CsrLin + 1, "And...")
@@ -394,6 +416,26 @@ End Sub
 Function Contains% (myString As String, token As String, delimiter As String)
     Contains% = InStr(1, (delimiter + myString + delimiter), (delimiter + token + delimiter)) > 0
 End Function
+
+' Decrease the player's hit points
+'
+' Parameters:
+' game - Book instance
+' points - Number of points by which to decrease the player's hit points
+Sub DecreaseHitPoints (game As Book, points As Integer)
+    game.hitPoints = game.hitPoints - points
+    If game.hitPoints < 0 Then
+        game.hitPoints = 0
+    End If
+    Call ReplaySound(game.hitSound, 1, 0)
+    storyColor& = _DefaultColor
+    Color _RGB(255, 140, 0)
+    Call PrintPageText(game, "story", CsrLin + 1, "HP -" + LTrim$(Str$(points)))
+    storyRow% = CsrLin
+    Call RefreshControlPage(game)
+    Color storyColor&
+    Locate storyRow%, 1
+End Sub
 
 ' Get files in current directory
 '
@@ -442,8 +484,10 @@ End Function
 ' game - Book instance
 Sub DisplayCreditsPage (game As Book)
     Call TurnPage(game, 1)
-    'Call PrintPageText(game, "story", CsrLin, game.credits)
-    Call DisplayStoryPage(game, game.credits)
+    Dim scene As Scene
+    scene.name = "CREDITS"
+    scene.color = _RGB(0, 0, 0)
+    Call DisplayStoryPage(game, scene, game.credits, "", 1)
     Call PressAnyKey(game, "control")
 End Sub
 
@@ -455,8 +499,10 @@ Sub DisplayHighScoresPage (game As Book)
     Call TurnPage(game, 1)
 
     If game.highScores <> "" Then
-        'Call PrintPageText(game, "story", CsrLin, game.highScores)
-        Call DisplayStoryPage(game, game.highScores)
+        Dim scene As Scene
+        scene.name = "HIGH SCORES"
+        scene.color = _RGB(0, 0, 0)
+        Call DisplayStoryPage(game, scene, game.highScores, "", 1)
     Else
         Call PrintPageText(game, "story", CsrLin, "N/A")
     End If
@@ -688,33 +734,107 @@ End Sub
 '
 ' Parameters:
 ' game - Book instance
+' scene - Scene instance
 ' page - Story text and supported tags
-Sub DisplayStoryPage (game As Book, page As String)
+' [action] - Pre-selected action
+' [startAtTop] - Start displaying at the top of the story page? (1/0)
+Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As String, startAtTop As Integer)
     Dim soundsFiles$(1 To 100)
     Dim soundsHandles&(1 To 100)
     soundsCount% = 0
-    storyChoice$ = ""
     subsection$ = ""
+    startingAction$ = action
 
-    Locate game.firstRow + 2, 1
+    If scene.color = _RGB(255, 255, 255) Then
+        Color _RGB(0, 0, 0) ' For readability, never use white text on the book
+    Else
+        Color scene.color
+    End If
+    If startAtTop Then
+        Locate game.firstRow + 2, 1
+    End If
 
-    divCount% = Length%(page, "<div>")
-    For i% = 1 To divCount%
-        div$ = Piece$(page, "<div>", i%)
-        div$ = LTrim$(RTrim$(div$))
-        divLength% = Len(div$)
-        storyText$ = ""
-        remainingDiv$ = div$
-        If storyChoice$ <> "" Then
-            If Left$(remainingDiv$, 2) = "[[" Then
-                subsection$ = Piece$(remainingDiv$, "]]", 1)
-                subsection$ = Piece$(subsection$, "[[", 2)
-                _Continue ' Don't actually print the name of the subsection
-            End If
-            If subsection$ <> storyChoice$ Then
-                _Continue
+    If action = "LOOK" Then
+        ' Let the player know where they are
+        Color _RGB(0, 0, 0)
+        Call PrintPageText(game, "story", CsrLin, "You are in ")
+        If scene.color = _RGB(255, 255, 255) Then
+            Color _RGB(0, 0, 0) ' For readability, never use white text on the book
+        Else
+            Color scene.color
+        End If
+        Locate CsrLin - 1, game.cursor.lastColumn + Len("You are in ")
+        Print scene.name
+        Color _RGB(0, 0, 0)
+        Locate CsrLin - 1, game.cursor.lastColumn + Len("You are in " + scene.name)
+        Print "."
+
+        ' Let the player know what lies ahead
+        aheadX% = game.playerX
+        aheadY% = game.playerY
+        If game.playerDirection = game.directions.north Then
+            aheadY% = aheadY% - 1
+        End If
+        If game.playerDirection = game.directions.east Then
+            aheadX% = aheadX% + 1
+        End If
+        If game.playerDirection = game.directions.south Then
+            aheadY% = aheadY% + 1
+        End If
+        If game.playerDirection = game.directions.west Then
+            aheadX% = aheadX% - 1
+        End If
+        If (aheadX% = game.doorX) And (aheadY% = game.doorY) Then
+            Color _RGB(0, 0, 0) ' TODO - This should be scene 0,0,0's color
+            Call PrintPageText(game, "story", CsrLin, "Ahead you see an elevator.  Perhaps an exit to this world?")
+        Else
+            If (aheadX% = 0) Or (aheadX% = (game.levelSize + 1)) Or (aheadY% = 0) Or (aheadY% = (game.levelSize + 1)) Then
+                Color _RGB(0, 0, 0)
+                Call PrintPageText(game, "story", CsrLin, "There is nothing ahead.  You are facing the edge of the world.")
+            Else
+                Color _RGB(0, 0, 0)
+                Dim nextScene As Scene
+                Call WorldScene(RETRIEVE, 1, game.level, aheadX%, aheadY%, nextScene)
+                Call PrintPageText(game, "story", CsrLin, "Ahead you see ")
+                If nextScene.color = _RGB(255, 255, 255) Then
+                    Color _RGB(0, 0, 0) ' For readability, never use white text on the book
+                Else
+                    Color nextScene.color
+                End If
+                Locate CsrLin - 1, game.cursor.lastColumn + Len("Ahead you see ")
+                Print nextScene.name
+                Color _RGB(0, 0, 0)
+                Locate CsrLin - 1, game.cursor.lastColumn + Len("Ahead you see " + nextScene.name)
+                Print "."
             End If
         End If
+
+        If scene.color = _RGB(255, 255, 255) Then
+            Color _RGB(0, 0, 0) ' For readability, never use white text on the book
+        Else
+            Color scene.color
+        End If
+
+        Print
+    End If
+
+    divCount% = ListLength%(page, "<div>")
+    For i% = 1 To divCount%
+        div$ = ListPiece$(page, "<div>", i%)
+        div$ = LTrim$(RTrim$(div$))
+        divListLength% = Len(div$)
+        storyText$ = ""
+        remainingDiv$ = div$
+        'If action <> "" Then
+        If Left$(remainingDiv$, 2) = "[[" Then
+            subsection$ = ListPiece$(remainingDiv$, "]]", 1)
+            subsection$ = ListPiece$(subsection$, "[[", 2)
+            _Continue ' Don't actually print the name of the subsection
+        End If
+        If subsection$ <> action Then
+            _Continue
+        End If
+        'End If
         ' Process all tags in the division
         Do
             tag$ = GetTag$(remainingDiv$, tagStart%, tagEnd%, tagValue$)
@@ -785,9 +905,9 @@ Sub DisplayStoryPage (game As Book, page As String)
                         storyText$ = ""
                     End If
                     imageLine% = CsrLin
-                    imageCount% = Length%(tagValue$, "+")
+                    imageCount% = ListLength%(tagValue$, "+")
                     For j% = 1 To imageCount%
-                        imageFile$ = Piece$(tagValue$, "+", j%)
+                        imageFile$ = ListPiece$(tagValue$, "+", j%)
                         image& = _LoadImage(imageFile$)
                         Locate imageLine%, 1
                         Call DisplayImage(game, "story", image&)
@@ -801,9 +921,9 @@ Sub DisplayStoryPage (game As Book, page As String)
                         Call PrintPageText(game, "story", CsrLin, storyText$)
                         storyText$ = ""
                     End If
-                    itemCount% = Length%(tagValue$, "+")
+                    itemCount% = ListLength%(tagValue$, "+")
                     For j% = 1 To itemCount%
-                        item$ = Piece$(tagValue$, "+", j%)
+                        item$ = ListPiece$(tagValue$, "+", j%)
                         Call IncreaseInventory(game, item$)
                     Next j%
                     _Continue
@@ -814,9 +934,9 @@ Sub DisplayStoryPage (game As Book, page As String)
                         Call PrintPageText(game, "story", CsrLin, storyText$)
                         storyText$ = ""
                     End If
-                    soundCount% = Length%(tagValue$, "+")
+                    soundCount% = ListLength%(tagValue$, "+")
                     For j% = 1 To soundCount%
-                        soundFile$ = Piece$(tagValue$, "+", j%)
+                        soundFile$ = ListPiece$(tagValue$, "+", j%)
                         soundHandle& = PlaySound&(soundFile$, 1, 0)
                         soundsCount% = soundsCount% + 1
                         soundsFiles$(soundsCount%) = soundFile$
@@ -830,9 +950,9 @@ Sub DisplayStoryPage (game As Book, page As String)
                         Call PrintPageText(game, "story", CsrLin, storyText$)
                         storyText$ = ""
                     End If
-                    soundCount% = Length%(tagValue$, "+")
+                    soundCount% = ListLength%(tagValue$, "+")
                     For j% = 1 To soundCount%
-                        soundFile$ = Piece$(tagValue$, "+", j%)
+                        soundFile$ = ListPiece$(tagValue$, "+", j%)
                         For k% = 1 To soundsCount%
                             If soundsFiles$(k%) = soundFile$ Then
                                 soundHandle& = soundsHandles&(k%)
@@ -842,30 +962,59 @@ Sub DisplayStoryPage (game As Book, page As String)
                     Next j%
                     _Continue
                 End If
+                If tag$ = "choices-add" Then
+                    ' The Choices-Add tag adds the choice(s) to the main story choices list
+                    choiceCount% = ListLength%(tagValue$, "+")
+                    For j% = 1 To choiceCount%
+                        newChoice$ = ListPiece$(tagValue$, "+", j%)
+                        game.storyChoices = ListAdd$(game.storyChoices, ",", newChoice$)
+                    Next j%
+                    _Continue
+                End If
+                If tag$ = "random" Then
+                    ' The Random tag prints any accumulated text and sets the current action to a sub-section matching the random value
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    Randomize Timer
+                    randomNumber% = Int(Rnd * Val(tagValue$)) + 1
+                    action = "RANDOM " + LTrim$(Str$(randomNumber%))
+                    _Continue
+                End If
+                If tag$ = "hp-remove" Then
+                    ' The HP-Remove tag prints any accumulated text decreases the player's hit points
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    Call DecreaseHitPoints(game, Val(tagValue$))
+                    _Continue
+                End If
                 If tag$ = "story-prompt" Then
                     ' The Story-Prompt tag prints any accumulated text and prompts the user with a list of choices
                     If storyText$ <> "" Then
                         Call PrintPageText(game, "story", CsrLin, storyText$)
                         storyText$ = ""
                     End If
-                    promptLabel$ = Piece$(tagValue$, ":", 1)
-                    promptChoices$ = Piece$(tagValue$, ":", 2)
-                    promptChoicesCount% = Length%(promptChoices$, ",")
-                    maxChoiceLength% = 0
+                    promptLabel$ = ListPiece$(tagValue$, ":", 1)
+                    promptChoices$ = ListPiece$(tagValue$, ":", 2)
+                    promptChoicesCount% = ListLength%(promptChoices$, ",")
+                    maxChoiceListLength% = 0
                     For j% = 1 To promptChoicesCount%
-                        choice$ = Piece$(promptChoices$, ",", j%)
-                        choiceLength% = Len(choice$)
-                        If choiceLength% > maxChoiceLength% Then
-                            maxChoiceLength% = choiceLength%
+                        choice$ = ListPiece$(promptChoices$, ",", j%)
+                        choiceListLength% = Len(choice$)
+                        If choiceListLength% > maxChoiceListLength% Then
+                            maxChoiceListLength% = choiceListLength%
                         End If
                     Next j%
-                    If maxChoiceLength% > 40 Then
+                    If maxChoiceListLength% > 40 Then
                         ' TODO - Hopefully this never happens!
-                        maxChoiceLength% = 40
+                        maxChoiceListLength% = 40
                     End If
                     Locate CsrLin + 1, 1
                     ' TODO - Enable arrow keys if normal level chapter.  This is being passed as 0.
-                    storyChoice$ = StoryPrompt$(game, promptLabel$, promptChoices$, 0, 1, maxChoiceLength%)
+                    action = StoryPrompt$(game, promptLabel$, promptChoices$, 0, 1, maxChoiceListLength%)
                     Locate CsrLin + 2, 1
 
                     ' The remaining page text should now only be the sub-section for the selected choice, headed by [[choice]], and
@@ -888,6 +1037,14 @@ Sub DisplayStoryPage (game As Book, page As String)
     If storyText$ <> "" Then
         Call PrintPageText(game, "story", CsrLin, storyText$)
         storyText$ = ""
+    End If
+
+    ' Reset the default font color
+    Color _RGB(0, 0, 0)
+
+    If startingAction$ = "LOOK" Then
+        Print
+        Call DisplayStoryPage(game, scene, page, "", 0)
     End If
 
     ' Stop all current play-once sounds
@@ -1261,11 +1418,13 @@ Function GetTag$ (text As String, tagStart As Integer, tagEnd As Integer, tagVal
         Exit Function
     End If
     tagContents$ = Mid$(text, tagStart + 1, tagEnd - tagStart - 1)
-    tag$ = LCase$(Piece$(tagContents$, " ", 1))
+    tag$ = LCase$(ListPiece$(tagContents$, " ", 1))
     GetTag$ = tag$
     tagValue = Mid$(tagContents$, Len(tag$) + 2, Len(tagContents$))
 End Function
 
+' Increase the player's inventory
+'
 ' Parameters:
 ' game - Book instance
 ' item - Item to add to the inventory
@@ -1287,6 +1446,8 @@ Sub IncreaseInventory (game As Book, item As String)
     End If
 End Sub
 
+' Increase the player's score
+'
 ' Parameters:
 ' game - Book instance
 ' points - Number of points by which to increase the score
@@ -1302,36 +1463,6 @@ Sub IncreaseScore (game As Book, points As Integer)
     Color storyColor&
     Locate storyRow%, 1
 End Sub
-
-' Get the delimited length of a string
-'
-' Parameters:
-' text - Full string of text
-' delimiter - Text that delimits substrings within the full string of text
-'
-' Returns:
-' Number of delimited substrings
-Function Length% (text As String, delimiter As String)
-    currentPiece% = 1
-    delimiterPos% = InStr(1, text, delimiter)
-    If (delimiter = "") Or (delimiterPos% = 0) Then
-        Length% = currentPiece%
-    Else
-        position% = 1
-        atEnd% = 0
-        delimiterLen% = Len(delimiter)
-        While atEnd% = 0
-            position% = delimiterPos% + delimiterLen%
-            delimiterPos% = InStr(position%, text, delimiter)
-            currentPiece% = currentPiece% + 1
-            If delimiterPos% = 0 Then
-                delimiterPos% = Len(text) + 1
-                atEnd% = 1
-            End If
-        Wend
-        Length% = currentPiece%
-    End If
-End Function
 
 ' Listen action
 '
@@ -1409,6 +1540,134 @@ Sub ListenAction (game As Book)
     Color _RGB(0, 0, 0)
 End Sub
 
+' Add a value to a delimited string
+'
+' Parameters:
+' text - Full string of text
+' delimiter - Text that delimits substrings within the full string of text
+' value - Delimited value to add to the string
+'
+' Returns:
+' Delimited string with new value
+Function ListAdd$ (text As String, delimiter As String, value As String)
+    If ListContains%(text, delimiter, value) = 1 Then
+        ListAdd$ = text
+        Exit Function
+    End If
+    tempText$ = text
+    If Right$(text, 1) <> delimiter Then
+        tempText$ = tempText$ + delimiter
+    End If
+    tempText$ = tempText$ + value
+    ListAdd$ = tempText$
+End Function
+
+' Is a given value in a delimited string? (1/0)
+'
+' Parameters:
+' text - Full string of text
+' delimiter - Text that delimits substrings within the full string of text
+' value - Delimited value to find in the string
+'
+' Returns:
+' Contains value? (1/0)
+Function ListContains% (text As String, delimiter As String, value As String)
+    If InStr(1, delimiter + text + delimiter, delimiter + value + delimiter) > 0 Then
+        ListContains% = 1
+    Else
+        ListContains% = 0
+    End If
+End Function
+
+' Get the delimited length of a string
+'
+' Parameters:
+' text - Full string of text
+' delimiter - Text that delimits substrings within the full string of text
+'
+' Returns:
+' Number of delimited substrings
+Function ListLength% (text As String, delimiter As String)
+    currentPiece% = 1
+    delimiterPos% = InStr(1, text, delimiter)
+    If (delimiter = "") Or (delimiterPos% = 0) Then
+        ListLength% = currentPiece%
+    Else
+        position% = 1
+        atEnd% = 0
+        delimiterLen% = Len(delimiter)
+        While atEnd% = 0
+            position% = delimiterPos% + delimiterLen%
+            delimiterPos% = InStr(position%, text, delimiter)
+            currentPiece% = currentPiece% + 1
+            If delimiterPos% = 0 Then
+                delimiterPos% = Len(text) + 1
+                atEnd% = 1
+            End If
+        Wend
+        ListLength% = currentPiece%
+    End If
+End Function
+
+' Extract a substring for a given delimiter and index position
+'
+' Parameters:
+' text - Full string of text to search
+' delimiter - Text that delimits the subpieces in the full string
+' index - Delimited position of substring
+'
+' Returns:
+' Delimited substring
+Function ListPiece$ (text As String, delimiter As String, index As Integer)
+    delimiterPos% = InStr(1, text, delimiter)
+    If (delimiter = "") Or (delimiterPos% = 0) Then
+        ListPiece$ = text
+    Else
+        currentPiece% = 1
+        position% = 1
+        atEnd% = 0
+        delimiterLen% = Len(delimiter)
+        While (currentPiece% < index) And (atEnd% = 0)
+            position% = delimiterPos% + delimiterLen%
+            delimiterPos% = InStr(position%, text, delimiter)
+            currentPiece% = currentPiece% + 1
+            If delimiterPos% = 0 Then
+                delimiterPos% = Len(text) + 1
+                atEnd% = 1
+            End If
+        Wend
+        ListPiece$ = Mid$(text, position%, delimiterPos% - position%)
+    End If
+End Function
+
+' Remove a value from a delimited string
+'
+' Parameters:
+' text - Full string of text
+' delimiter - Text that delimits substrings within the full string of text
+' value - Delimited value to remove from the string
+'
+' Returns:
+' Delimited string without given value
+Function ListRemove$ (text As String, delimiter As String, value As String)
+    If ListContains%(text, delimiter, value) = 0 Then
+        ListRemove$ = text
+        Exit Function
+    End If
+    tempText$ = ""
+    startPosition% = InStr(1, delimiter + text + delimiter, delimiter + value + delimiter)
+    If startPosition% > 1 Then
+        tempText$ = tempText$ + Mid$(text, 1, startPosition% - 1)
+    End If
+    If (startPosition% + Len(value) - 1) < Len(text) Then
+        tempText$ = tempText$ + Mid$(text, startPosition% + Len(value) + 1, Len(text) - (Len(value) + 1))
+    End If
+    If Right$(tempText$, 1) = delimiter Then
+        tempText$ = Mid$(tempText$, 1, Len(tempText$) - 1)
+    End If
+    ListRemove$ = tempText$
+End Function
+
 ' Load the game story
 '
 ' Parameters:
@@ -1426,17 +1685,17 @@ Sub LoadStory (game As Book)
             storyFile$ = file$
         Else
             ' There are multiple story files, so build a comma-delimited list of stories
-            stories$ = Piece$(file$, ".quest", 1) ' Remove the file extension for readability
-            maxLength% = Len(file$)
+            stories$ = ListPiece$(file$, ".quest", 1) ' Remove the file extension for readability
+            maxListLength% = Len(file$)
             Do
                 file$ = DIR$("", fileCount%) 'use an empty string parameter to return a list of files!
                 If file$ <> "" Then
                     If stories$ <> "" Then
                         stories$ = stories$ + ","
                     End If
-                    stories$ = stories$ + Piece$(file$, ".quest", 1) ' Remove the file extension for readability
-                    If Len(file$) > maxLength% Then
-                        maxLength% = Len(file$)
+                    stories$ = stories$ + ListPiece$(file$, ".quest", 1) ' Remove the file extension for readability
+                    If Len(file$) > maxListLength% Then
+                        maxListLength% = Len(file$)
                     End If
                 End If
             Loop Until Len(file$) = 0 'file list ends with an empty string
@@ -1447,7 +1706,7 @@ Sub LoadStory (game As Book)
                 Call TurnPage(game, turnPageSound%)
                 Call DisplayImage(game, "story", oldBooks&)
                 Locate CsrLin + 1, 1
-                storyFile$ = StoryPrompt$(game, "Choose Quest", stories$, 0, 1, maxLength%)
+                storyFile$ = StoryPrompt$(game, "Choose Quest", stories$, 0, 1, maxListLength%)
                 turnPageSound% = 0 ' If the player enters an incorrect choice and the page is turned to reset the screen, be silent
             Loop While Not Contains%(game.storyChoices, storyFile$, ",")
             storyFile$ = storyFile$ + ".quest" ' Re-add the file extension
@@ -1468,12 +1727,12 @@ Sub LoadStory (game As Book)
 
                 ' If a new scene is being introduced, instance it as a proper WorldScene
                 If Left$(section$, Len("scene")) = "scene" Then
-                    sceneValue$ = Piece$(section$, " ", 2)
+                    sceneValue$ = ListPiece$(section$, " ", 2)
                     If Left$(sceneValue$, 3) = "id=" Then
-                        sceneCoordinates$ = Piece$(sceneValue$, "id=", 2)
-                        sceneLevel% = Val(Piece$(sceneCoordinates$, ",", 1))
-                        sceneX% = Val(Piece$(sceneCoordinates$, ",", 2))
-                        sceneY% = Val(Piece$(sceneCoordinates$, ",", 3))
+                        sceneCoordinates$ = ListPiece$(sceneValue$, "id=", 2)
+                        sceneLevel% = Val(ListPiece$(sceneCoordinates$, ",", 1))
+                        sceneX% = Val(ListPiece$(sceneCoordinates$, ",", 2))
+                        sceneY% = Val(ListPiece$(sceneCoordinates$, ",", 3))
                         Dim scene As Scene
                         Call WorldScene(CREATE, 1, sceneLevel%, sceneX%, sceneY%, scene)
                     End If
@@ -1509,26 +1768,26 @@ Sub LoadStory (game As Book)
                 If Left$(section$, Len("scene")) = "scene" Then
                     Call WorldScene(RETRIEVE, 1, sceneLevel%, sceneX%, sceneY%, scene)
 
-                    sceneValue$ = Piece$(section$, " ", 2)
+                    sceneValue$ = ListPiece$(section$, " ", 2)
 
                     ' Scene header
                     If Left$(sceneValue$, 3) = "id=" Then
                         If Left$(fileLine$, 5) = "name=" Then
-                            scene.name = Piece$(fileLine$, "=", 2)
+                            scene.name = ListPiece$(fileLine$, "=", 2)
                             Call WorldScene(UPDATE, 1, sceneLevel%, sceneX%, sceneY%, scene)
                             _Continue
                         End If
                         If Left$(fileLine$, 6) = "color=" Then
-                            color$ = Piece$(fileLine$, "=", 2)
-                            red% = Val(Piece$(color$, ",", 1))
-                            green% = Val(Piece$(color$, ",", 2))
-                            blue% = Val(Piece$(color$, ",", 3))
+                            color$ = ListPiece$(fileLine$, "=", 2)
+                            red% = Val(ListPiece$(color$, ",", 1))
+                            green% = Val(ListPiece$(color$, ",", 2))
+                            blue% = Val(ListPiece$(color$, ",", 3))
                             scene.color = _RGB(red%, green%, blue%)
                             Call WorldScene(UPDATE, 1, sceneLevel%, sceneX%, sceneY%, scene)
                             _Continue
                         End If
                         If Left$(fileLine$, 6) = "sound=" Then
-                            sound$ = Piece$(fileLine$, "=", 2)
+                            sound$ = ListPiece$(fileLine$, "=", 2)
                             scene.sound = sound$
                             Call WorldScene(UPDATE, 1, sceneLevel%, sceneX%, sceneY%, scene)
                             _Continue
@@ -1556,7 +1815,7 @@ Sub LoadStory (game As Book)
         Call PrintPageText(game, "story", CsrLin, storyFile$ + " does not exist")
     End If
 
-    game.level = 1
+    game.level = 0
     game.levelSize = 3
     game.doorX = 2
     game.doorY = 0
@@ -1584,19 +1843,20 @@ End Sub
 ' Parameters:
 ' game - Book instance
 Sub LookAction (game As Book)
-    Dim currentScene As Scene
-    Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, currentScene)
-    playerView$ = currentScene.name
-    'playerView$ = world(game.playerX, game.playerY)
+    Dim scene As Scene
+    Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, scene)
+    playerView$ = scene.name
 
-    Call PrintPageText(game, "story", CsrLin, "You are in " + playerView$ + ".")
-    If playerView$ = "WILDERNESS" Then
-        Color _RGB(0, 100, 0) ' dark green
-        Call PrintPageText(game, "story", CsrLin, "You see nothing but tall grass and cute bunnies.")
-        Call PrintPageText(game, "story", CsrLin, "The sun is shining brightly.")
+    ' Execute the LOOK action, followed by displaying the story for the scene
+    Call WorldScenePage(RETRIEVE, scene.id, 1, pageContents$)
+    Call DisplayStoryPage(game, scene, pageContents$, "LOOK", 1)
+
+    ' TODO - Execute LOOK action (to display the LOOK sub-section of the scene) then Call DisplayStoryPage(game)
+    If scene.name = "WILDERNESS" Then
+        'Call PrintPageText(game, "story", CsrLin, "You see nothing but tall grass and cute bunnies.")
+        'Call PrintPageText(game, "story", CsrLin, "The sun is shining brightly.")
     End If
-    If playerView$ = "WOODS" Then
-        Color _RGB(192, 192, 192)
+    If scene.name = "WOODS" Then
         Randomize Timer
         nightOwlChance% = Int(Rnd * 3) + 1
         If nightOwlChance% = 3 Then
@@ -1624,8 +1884,7 @@ Sub LookAction (game As Book)
             End If
         End If
     End If
-    If playerView$ = "MAGIC RING OF TOADSTOOLS" Then
-        Color _RGB(184, 115, 51)
+    If scene.name = "MAGIC RING OF TOADSTOOLS" Then
         Call PrintPageText(game, "story", CsrLin, "A magical place of faeries and giant mushrooms!")
         Call PrintPageText(game, "story", CsrLin, "A simple wooden sign sits in the center of this place.  On")
         Call PrintPageText(game, "story", CsrLin, "this sign reads a simple message...")
@@ -1633,16 +1892,14 @@ Sub LookAction (game As Book)
         Call PrintPageText(game, "story", CsrLin, "'Speak the name of the spirit that dwells in this place and")
         Call PrintPageText(game, "story", CsrLin, "be gifted with a magical item.'")
     End If
-    If playerView$ = "MOUNT FLUFF" Then
+    If scene.name = "MOUNT FLUFF" Then
         fluffImage& = _LoadImage("fluff.jpg")
         Call DisplayImage(game, "story", fluffImage&)
-        Color _RGB(0, 0, 0)
         Call PrintPageText(game, "story", CsrLin + 1, "You come upon the base of a mountain and see a gallant white tom cat wearing boots and playing a spanish guitar.  His melody hypnotizes you.  And my... he is so fluffy!")
         Call PrintPageText(game, "story", CsrLin + 1, "You are astonished to learn that this cat can speak.  He enjoys challenging others to a guessing game.  If you solve his riddle, he might just give you a prize.")
         _FreeImage fluffImage&
     End If
-    If playerView$ = "GIANNI'S DEN" Then
-        Color _RGB(169, 169, 169)
+    If scene.name = "GIANNI'S DEN" Then
         Call PrintPageText(game, "story", CsrLin, "You find yourself in a dark cave.  A fire burns deep inside.  You explore the cave and find yourself face to face with an adorable black cat curled up on a Pittsburgh Steelers blanket.")
         Call PrintPageText(game, "story", CsrLin + 1, "He's so cuuuuuuute!")
         Print
@@ -1670,8 +1927,7 @@ Sub LookAction (game As Book)
             Call PrintPageText(game, "story", CsrLin + 1, "You attempt to pet him but he climbs a stair railing to get away.  If only you could tame him.  But such a feat would require strong magic...")
         End If
     End If
-    If playerView$ = "DRAGON'S DEN" Then
-        Color _RGB(255, 0, 0)
+    If scene.name = "DRAGON'S DEN" Then
         If game.isDragonDead = 0 Then
             Call PrintPageText(game, "story", CsrLin, "You find yourself in a dark cave.  A fire burns deep inside.")
             Call PrintPageText(game, "story", CsrLin, "You explore the cave and find yourself face to face with a")
@@ -1721,12 +1977,11 @@ Sub LookAction (game As Book)
             End If
         End If
     End If
-    If playerView$ = "CASTLE" Then
-        Color _RGB(255, 255, 0)
+    If scene.name = "CASTLE" Then
         Call PrintPageText(game, "story", CsrLin, "What a magnificent castle!  But no one is home.")
         Call PrintPageText(game, "story", CsrLin, "Perhaps the royal court fled because of BIG CHUNG?")
     End If
-    If playerView$ = "ZARA'S STORE" Then
+    If scene.name = "ZARA'S STORE" Then
         Color _RGB(255, 0, 255)
         Call PrintPageText(game, "story", CsrLin, "There are a lot of fun things to buy. Of particular note you")
         Call PrintPageText(game, "story", CsrLin, "see a mighty silver sword, fit for slaying a dragon.")
@@ -1743,7 +1998,7 @@ Sub LookAction (game As Book)
             End If
         End If
     End If
-    If playerView$ = "GREYSON'S GAME ROOM" Then
+    If scene.name = "GREYSON'S GAME ROOM" Then
         Color _RGB(0, 0, 255)
         Call PrintPageText(game, "story", CsrLin, "Oh my!  Every game known to mankind can be found for sale in")
         Call PrintPageText(game, "story", CsrLin, "this room.  A particular game catches your eye... UNO.")
@@ -1762,42 +2017,12 @@ Sub LookAction (game As Book)
         End If
     End If
     Print
-    If (playerView$ = "CASTLE") And (Not Contains%(game.inventory, "GOLD", ",")) Then
-        Color _RGB(255, 255, 0)
+    If (scene.name = "CASTLE") And (Not Contains%(game.inventory, "GOLD", ",")) Then
         Call PrintPageText(game, "story", CsrLin, "Beautiful gold coins are scattered around.  Will you take them?")
         Print
     End If
-    aheadX% = game.playerX
-    aheadY% = game.playerY
-    If game.playerDirection = game.directions.north Then
-        aheadY% = aheadY% - 1
-    End If
-    If game.playerDirection = game.directions.east Then
-        aheadX% = aheadX% + 1
-    End If
-    If game.playerDirection = game.directions.south Then
-        aheadY% = aheadY% + 1
-    End If
-    If game.playerDirection = game.directions.west Then
-        aheadX% = aheadX% - 1
-    End If
-    If (aheadX% = game.doorX) And (aheadY% = game.doorY) Then
-        Color _RGB(184, 115, 51)
-        Call PrintPageText(game, "story", CsrLin, "Ahead you see an elevator.  Perhaps an exit to this world?")
-    Else
-        If game.isOver = 0 Then
-            If (aheadX% = 0) Or (aheadX% = (game.levelSize + 1)) Or (aheadY% = 0) Or (aheadY% = (game.levelSize + 1)) Then
-                Color _RGB(0, 0, 0)
-                Call PrintPageText(game, "story", CsrLin, "There is nothing ahead.  You are facing the edge of the world.")
-            Else
-                Color _RGB(0, 0, 0)
-                Dim nextScene As Scene
-                Call WorldScene(RETRIEVE, 1, game.level, aheadX%, aheadY%, nextScene)
-                Call PrintPageText(game, "story", CsrLin, "Ahead you see " + nextScene.name + ".")
-            End If
-        End If
-    End If
-    Color _RGB(0, 0, 0)
+
+    Color _RGB(0, 0, 0) ' Restore the default color
 End Sub
 
 ' Move Ahead action
@@ -1903,9 +2128,9 @@ Sub MoveAheadAction (game As Book)
                     If scene$ = "MAGIC RING OF TOADSTOOLS" Then
                         game.storyChoices = game.storyChoices + ",SPEAK NAME"
                     Else
-                        If scene$ = "WILDERNESS" Then
-                            game.storyChoices = game.storyChoices + ",CHASE BUNNIES"
-                        End If
+                        'If scene$ = "WILDERNESS" Then
+                        '    game.storyChoices = game.storyChoices + ",CHASE BUNNIES"
+                        'End If
                     End If
                 End If
             End If
@@ -1919,37 +2144,6 @@ End Sub
 Sub MoveBackwardsAction (game As Book)
     Call PrintPageText(game, "story", CsrLin, "Please don't try walking backwards.  You might trip.")
 End Sub
-
-' Extract a substring for a given delimiter and index position
-'
-' Parameters:
-' text - Full string of text to search
-' delimiter - Text that delimits the subpieces in the full string
-' index - Delimited position of substring
-'
-' Returns:
-' Delimited substring
-Function Piece$ (text As String, delimiter As String, index As Integer)
-    delimiterPos% = InStr(1, text, delimiter)
-    If (delimiter = "") Or (delimiterPos% = 0) Then
-        Piece$ = text
-    Else
-        currentPiece% = 1
-        position% = 1
-        atEnd% = 0
-        delimiterLen% = Len(delimiter)
-        While (currentPiece% < index) And (atEnd% = 0)
-            position% = delimiterPos% + delimiterLen%
-            delimiterPos% = InStr(position%, text, delimiter)
-            currentPiece% = currentPiece% + 1
-            If delimiterPos% = 0 Then
-                delimiterPos% = Len(text) + 1
-                atEnd% = 1
-            End If
-        Wend
-        Piece$ = Mid$(text, position%, delimiterPos% - position%)
-    End If
-End Function
 
 ' Play fluffy game action
 '
@@ -2155,15 +2349,39 @@ Sub RefreshControlPage (game As Book)
     Call PrintPageText(game, "control", CsrLin, String$((game.levelSize - 1) / 2, " ") + "Map")
     curRow% = CsrLin
     Call PrintPageText(game, "control", CsrLin, String$(game.levelSize + 2, "-")) ' Top border
-    For y% = 1 To game.levelSize Step 1
-        Call PrintPageText(game, "control", CsrLin, "|" + String$(game.levelSize, " ") + "|" + "   " + mapInfo(y%))
-    Next
+
+    Dim scene As Scene
+    For y% = 1 To game.levelSize
+        'Call PrintPageText(game, "control", CsrLin, "|" + String$(game.levelSize, " ") + "|" + "   " + mapInfo(y%))
+        Call PrintPageText(game, "control", CsrLin, "|")
+        If game.level > 0 Then
+            _PrintMode _FillBackground
+            For x% = 1 To game.levelSize
+                Call WorldScene(RETRIEVE, 1, game.level, x%, y%, scene)
+                Color , scene.color
+                Locate CsrLin - 1, game.cursor.lastColumn + x%
+                Print " "
+            Next x%
+            _PrintMode _KeepBackground
+        End If
+        Locate CsrLin - 1, game.cursor.lastColumn + game.levelSize + 1
+        Color _RGB(0, 0, 0)
+        Print "|" + "   " + mapInfo(y%)
+    Next y%
+
     Call PrintPageText(game, "control", CsrLin, String$(game.levelSize + 2, "-")) ' Bottom border
+
     nextRow% = CsrLin
     Locate curRow% + game.doorY, game.doorX + game.cursor.lastColumn
     Print "*"
     If (game.isOver = 0) And (game.playerX > 0) And (game.playerY > 0) Then
         symbol$ = playerSymbol(game.playerDirection)
+        Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, scene)
+        If scene.color = _RGB(255, 255, 255) Then
+            Color _RGB(0, 0, 0) ' For readability, don't print white text on a white background
+        Else
+            Color _RGB(255, 255, 255)
+        End If
         Locate curRow% + game.playerY, game.playerX + game.cursor.lastColumn
         Print symbol$
     End If
@@ -2268,7 +2486,10 @@ Sub RefreshStoryPage (game As Book, choice As String)
             Call LookAction(game)
         End If
         If (choice = "CHASE BUNNIES") Then
-            Call ChaseBunniesAction(game)
+            Dim scene As Scene
+            Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, scene)
+            Call WorldScenePage(RETRIEVE, scene.id, 1, pageContents$)
+            Call DisplayStoryPage(game, scene, pageContents$, choice, 1)
         End If
         If (choice = "TAME FLUFF") Then
             Call TameFluffAction(game)

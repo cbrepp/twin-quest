@@ -4,14 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Added
-
-- Added ability to load the story through a file
-
 ### Changed
 
+- Added ability to load the story through a file
 - Cleaned up some of the introduction text
 - Changed inventory and score notification text to a nice, dark orange
+- Added HP reduction notification and fun frying pan hit sound
+- Added game over sound, automatic end of game when HP runs out, and haunting death music
 
 ## [0.1.0] - 2024-03-23
 
