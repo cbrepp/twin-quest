@@ -1,5 +1,6 @@
 ' Resources:
 ' bionic-bunny.jpg - Bionic Bunny Soldier by Zara
+' bionic-bunny-commander.jpg - Bionic Bunny Commander by Zara
 ' book.png - Empty book by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
 ' castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
 ' clouds.png - OpenClipart-Vectors (https://pixabay.com/vectors/sunrise-clouds-rising-sun-sky-sun-153600/)
@@ -9,6 +10,7 @@
 ' elevator-doors.png - Krolestwo_Nauki (https://pixabay.com/vectors/elevator-elevator-door-building-6232385/)
 ' elevator-open.mp3 - Elevator ding door open close, noisy, 10.mp3 (https://freesound.org/people/TRP/sounds/576359/)
 ' epic.mp3 - Epic Trailer Background Music (https://freesound.org/people/Migfus20/sounds/560454/)
+' fireball.mp3 - 8 Bit Fireball (https://freesound.org/people/Jofae/sounds/368511/)
 ' fluff.jpg - Gallant Sir Fluff on a mountain by Mr. Chris
 ' fluff2.jpg - Gallant Sir Fluff looking perplexed by Mr. Chris
 ' fluff.wav - Spanish Lick I, Acoustic- AB split stereo pair (Oktava).wav (https://freesound.org/people/debudding/sounds/44366/)
@@ -18,6 +20,7 @@
 ' gianni2.jpg - Son of Fluff curled up on a blanket by Mr. Chris
 ' grey.mp3 - 8-Bit Coin Or Power Up FX For Retro Video Games (https://freesound.org/people/Cloud-10/sounds/647977/)
 ' hit.mp3 - Hit with frying pan.mp3 (https://freesound.org/people/Whiprealgood/sounds/529567/)
+' hit-harder.mp3 - frying pan.mp3 (https://freesound.org/people/Taira%20Komori/sounds/215017/)
 ' inventory.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
 ' magic.mp3 - Magic.mp3 (https://freesound.org/people/Bastianhallo/sounds/434050/)
 ' minigames.mp3 - video game menu music (https://freesound.org/people/magmadiverrr/sounds/661248/)
@@ -1471,10 +1474,10 @@ End Sub
 Sub ListenAction (game As Book)
     Dim currentScene As Scene
     Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, currentScene)
-    playerView$ = currentScene.name
+    scene$ = currentScene.name
     'scene$ = world(game.playerX, game.playerY)
 
-    Call PrintPageText(game, "story", CsrLin, "You are in " + scene$ + ".")
+    'Call PrintPageText(game, "story", CsrLin, "You are in " + scene$ + ".")
     ' Decribe what the player is hearing, and restart audio if not currently playing
     If game.storySound = 0 Then
         Call PrintPageText(game, "story", CsrLin, "You hear nothing.")
@@ -1483,10 +1486,14 @@ Sub ListenAction (game As Book)
             ReplaySound game.storySound, 1, 0
         End If
         If scene$ = "WILDERNESS" Then
-            Color _RGB(0, 100, 0) ' dark green
-            Call PrintPageText(game, "story", CsrLin, "You hear birds singing and perhaps some insects.")
-            Call PrintPageText(game, "story", CsrLin, "There is also a slight breeze.  These are the typical")
-            Call PrintPageText(game, "story", CsrLin, "sounds of nature.")
+            ' Execute the LISTEN action, followed by displaying the story for the scene
+            Call WorldScenePage(RETRIEVE, currentScene.id, 1, pageContents$)
+            Call DisplayStoryPage(game, currentScene, pageContents$, "LISTEN", 1)
+
+            'Color _RGB(0, 100, 0) ' dark green
+            'Call PrintPageText(game, "story", CsrLin, "You hear birds singing and perhaps some insects.")
+            'Call PrintPageText(game, "story", CsrLin, "There is also a slight breeze.  These are the typical")
+            'Call PrintPageText(game, "story", CsrLin, "sounds of nature.")
         End If
         If scene$ = "MAGIC RING OF TOADSTOOLS" Then
             Color _RGB(184, 115, 51)
@@ -2079,7 +2086,7 @@ Sub MoveAheadAction (game As Book)
 
                 ' Start playing the new scene's sound, if any
                 If scene$ = "WILDERNESS" Then
-                    game.storySound = PlaySound&("wilderness.mp3", 1, 1)
+                    game.storySound = PlaySound&(newScene.sound, 1, 1)
                 End If
                 If scene$ = "MAGIC RING OF TOADSTOOLS" Then
                     game.storySound = PlaySound&("magic.mp3", 1, 0)

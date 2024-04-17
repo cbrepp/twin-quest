@@ -1,12 +1,29 @@
 [title]
 "Minigames"
 [author]
-"Wayne Chung Enterprises"
+Wayne Chung Enterprises
 [credits]
-"Business Manager: Wayne Chung"
-"Executive Producer: Wayne Chung"
-"Power of Attorney: Wayne Chung"
-"Development: Mylee and Mr. Chris"
-"Creative Design: Zara and Greyson"
+Business Manager: Wayne Chung
+Executive Producer: Wayne Chung
+Power of Attorney: Wayne Chung
+Development: Mylee and Mr. Chris
+Creative Design: Zara and Greyson
 [opening music]
-"minigames.mp3"
+minigames.mp3
+"[scene id=0,0,0]"
+"name=INTRODUCTION"
+"color=0,0,0"
+"sound=minigames.mp3"
+[scene 1]
+"The minigames of TWIN QUEST.  No story but lots of games!!!"
+<press-any-key>
+<goto-chapter 1>
+"[scene id=1,2,1]"
+"name=GAME MENU"
+"color=255,140,0"
+"sound=minigames.mp3"
+[scene 1]
+"Coming 2024...."
+<press-any-key>
+[high scores]
+
