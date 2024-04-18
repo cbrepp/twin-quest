@@ -157,14 +157,33 @@ epic.mp3
 "sound="
 [scene 1]
 <play-sound magic.mp3>
-"[scene id=1,1,2]"
-"name=GIANNI'S DEN"
+"[scene id=1,1,2]"<press-any-key>
+"name=GIANNI'S DEN"[scene 1]
+"Oh the grea
 "color=85,85,85"
 "sound=gianni.mp3"
 "[scene id=1,2,2]"
 "name=WOODS"
 "color=85,85,85"
 "sound=woods.mp3"
+[scene 1]
+[[LISTEN]]
+"You hear the typical sounds of the woods at night.  There are birds.  Definitely crows.  Maybe a There are birds.  Definitely crows.  Maybe a woodpecker.  And... the hooting of an owl?"
+[[LOOK]]
+<random 3>
+[[RANDOM 1]]
+"The sky is dark and NIGHT OWL is hiding somewhere.  You must take care to tread lightly lest a noise alert NIGHT OWL to your whereabouts.  Be very, very quiet."
+[[RANDOM 2]]
+"What was that???"
+<play-sound scream.mp3>
+"The sky is dark and you hear the sound of flapping wings.  By the time you look up there's already a scream close by as NIGHT OWL has claimed one of the townspeople as his prey."
+<br>
+"You have escaped death.  But... for how long?  That could have been you.  Be very, very quiet."
+<press-any-key>
+[[RANDOM 3]]
+<image night-owl.jpg>
+"The sky is dark and you hear the sound of flapping wings.  By the time you look up it's too late.  NIGHT OWL has claimed you as his prey!  What an unfortunate way to end your journey."
+<hp-remove 100>
 "[scene id=1,3,2]"
 "name=MOUNT FLUFF"
 "color=255,255,255"
@@ -173,7 +192,7 @@ epic.mp3
 <play-sound fluff.wav>
 "[scene id=1,1,3]"
 "name=MYSTERY ROOM"
-"color=255,140,0"
+"color=255,140,0"scream
 "sound="
 [scene 1]
 <game-state player>
@@ -185,7 +204,8 @@ epic.mp3
 [[NO GOLD]]
 "Maybe some day you'll return when you have some money so you can buy it."
 [[HAS UNO REVERSE]]
-"That mighty desk is in your hand... perhaps you should use it for some heroic deed?"
+"That mighty desk is in your hand... perhaps you should us[scene 1]
+"Oh the greae it for some heroic deed?"
 [[NO UNO REVERSE]]
 "You leave some GOLD coins on the table in exchange for the UNO deck.  You look at the cards and discover the legendary... UNO REVERSE!!!"
 <inventory-add UNO REVERSE>

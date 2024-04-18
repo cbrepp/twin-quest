@@ -24,9 +24,12 @@
 ' inventory.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
 ' magic.mp3 - Magic.mp3 (https://freesound.org/people/Bastianhallo/sounds/434050/)
 ' minigames.mp3 - video game menu music (https://freesound.org/people/magmadiverrr/sounds/661248/)
+' mushroom.jpg - Crystal, Mushroom, Purple mushroom image. Free for use. by Fractals99 (https://pixabay.com/photos/crystal-mushroom-purple-mushroom-7428278/)
 ' mylee.jpg - Mylee Marie by Mr. Chris
+' night-owl.jpg - Scary, Owl, Eyes image. Free for use. by Skitterphoto (https://pixabay.com/photos/scary-owl-eyes-spooky-halloween-3595742/)
 ' old-books.jpg - Old books, Book, Old image. Free for use. by jarmoluk (https://pixabay.com/photos/old-books-book-old-library-436498/)
 ' points.mp3 - 320655__rhodesmas__level-up-01.mp3 (https://freesound.org/people/shinephoenixstormcrow/sounds/337049/)
+' scream.mp3 - Human Death Scream.mp3 (https://freesound.org/people/DjCHAOS/sounds/77148/)
 ' select-player.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
 ' select-player-grey.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
 ' select-player-zara.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
@@ -77,11 +80,13 @@ Type Book
     controlChoicesRow As Integer
     credits As String
     cursor As TextCursor
+    deathHitSound As Long
     directions As MapDirections
     doorX As Integer
     doorY As Integer
     experiencePoints As Integer
     firstRow As Integer
+    heavyHitSound As Long
     highScores As String
     hitPoints As Integer
     hitSound As Long
@@ -165,6 +170,8 @@ Call DisplaySplashScreen(game)
 
 ' Initialize common sounds
 game.hitSound = _SndOpen("hit.mp3")
+game.heavyHitSound = _SndOpen("hit-harder.mp3")
+game.deathHitSound = _SndOpen("fireball.mp3")
 game.inventorySound = _SndOpen("inventory.mp3")
 game.pointsSound = _SndOpen("points.mp3")
 
@@ -430,7 +437,15 @@ Sub DecreaseHitPoints (game As Book, points As Integer)
     If game.hitPoints < 0 Then
         game.hitPoints = 0
     End If
-    Call ReplaySound(game.hitSound, 1, 0)
+    If points <= 10 Then
+        Call ReplaySound(game.hitSound, 1, 0)
+    Else
+        If points <= 25 Then
+            Call ReplaySound(game.heavyHitSound, 1, 0)
+        Else
+            Call ReplaySound(game.deathHitSound, 1, 0)
+        End If
+    End If
     storyColor& = _DefaultColor
     Color _RGB(255, 140, 0)
     Call PrintPageText(game, "story", CsrLin + 1, "HP -" + LTrim$(Str$(points)))
@@ -1507,10 +1522,14 @@ Sub ListenAction (game As Book)
             Call PrintPageText(game, "story", CsrLin, "This is a peaceful place.")
         End If
         If scene$ = "WOODS" Then
-            Color _RGB(92, 64, 51)
-            Call PrintPageText(game, "story", CsrLin, "You hear the typical sounds of the woods at night.")
-            Call PrintPageText(game, "story", CsrLin, "There are birds.  Definitely crows.  Maybe a")
-            Call PrintPageText(game, "story", CsrLin, "woodpecker.  And... the hooting of an owl?")
+            ' Execute the LISTEN action, followed by displaying the story for the scene
+            Call WorldScenePage(RETRIEVE, currentScene.id, 1, pageContents$)
+            Call DisplayStoryPage(game, currentScene, pageContents$, "LISTEN", 1)
+
+            'Color _RGB(92, 64, 51)
+            'Call PrintPageText(game, "story", CsrLin, "You hear the typical sounds of the woods at night.")
+            'Call PrintPageText(game, "story", CsrLin, "There are birds.  Definitely crows.  Maybe a")
+            'Call PrintPageText(game, "story", CsrLin, "woodpecker.  And... the hooting of an owl?")
         End If
         If scene$ = "MOUNT FLUFF" Then
             Color _RGB(0, 0, 0)
@@ -1864,32 +1883,32 @@ Sub LookAction (game As Book)
         'Call PrintPageText(game, "story", CsrLin, "The sun is shining brightly.")
     End If
     If scene.name = "WOODS" Then
-        Randomize Timer
-        nightOwlChance% = Int(Rnd * 3) + 1
-        If nightOwlChance% = 3 Then
-            Call PrintPageText(game, "story", CsrLin, "The sky is dark and you hear the sound of flapping wings.")
-            Call PrintPageText(game, "story", CsrLin, "By the time you look up it's too late.  NIGHT OWL has claimed")
-            Call PrintPageText(game, "story", CsrLin, "you as his prey!  What an unfortunate way to end your journey.")
-            Print
-            Color _RGB(0, 0, 0)
-            Call PrintPageText(game, "story", CsrLin, "You have died.")
-            If game.score > 0 Then
-                Call PrintPageText(game, "story", CsrLin, "Score -" + LTrim$(Str$(game.score)))
-                game.score = 0
-            End If
-            game.isOver = 1
-        Else
-            If nightOwlChance% = 2 Then
-                Call PrintPageText(game, "story", CsrLin, "The sky is dark and you hear the sound of flapping wings.")
-                Call PrintPageText(game, "story", CsrLin, "By the time you look up there's already a scream close by")
-                Call PrintPageText(game, "story", CsrLin, "as NIGHT OWL has claimed a poor creature as his prey.  You")
-                Call PrintPageText(game, "story", CsrLin, "have escaped death.  But... for how long?")
-            Else
-                Call PrintPageText(game, "story", CsrLin, "The sky is dark and NIGHT OWL is hiding somewhere.  You must")
-                Call PrintPageText(game, "story", CsrLin, "take care to tread lightly lest a noise alert NIGHT OWL to")
-                Call PrintPageText(game, "story", CsrLin, "your whereabouts.  Be very, very quiet.")
-            End If
-        End If
+        'Randomize Timer
+        'nightOwlChance% = Int(Rnd * 3) + 1
+        'If nightOwlChance% = 3 Then
+        '    Call PrintPageText(game, "story", CsrLin, "The sky is dark and you hear the sound of flapping wings.")
+        'Call PrintPageText(game, "story", CsrLin, "By the time you look up it's too late.  NIGHT OWL has claimed")
+        'Call PrintPageText(game, "story", CsrLin, "you as his prey!  What an unfortunate way to end your journey.")
+        'Print
+        'Color _RGB(0, 0, 0)
+        'Call PrintPageText(game, "story", CsrLin, "You have died.")
+        'If game.score > 0 Then
+        '    Call PrintPageText(game, "story", CsrLin, "Score -" + LTrim$(Str$(game.score)))
+        '    game.score = 0
+        'End If
+        'game.isOver = 1
+        'Else
+        '    If nightOwlChance% = 2 Then
+        '        Call PrintPageText(game, "story", CsrLin, "The sky is dark and you hear the sound of flapping wings.")
+        '        Call PrintPageText(game, "story", CsrLin, "By the time you look up there's already a scream close by")
+        '        Call PrintPageText(game, "story", CsrLin, "as NIGHT OWL has claimed a poor creature as his prey.  You")
+        '        Call PrintPageText(game, "story", CsrLin, "have escaped death.  But... for how long?")
+        '    Else
+        '        Call PrintPageText(game, "story", CsrLin, "The sky is dark and NIGHT OWL is hiding somewhere.  You must")
+        '        Call PrintPageText(game, "story", CsrLin, "take care to tread lightly lest a noise alert NIGHT OWL to")
+        '        Call PrintPageText(game, "story", CsrLin, "your whereabouts.  Be very, very quiet.")
+        '    End If
+        'End If
     End If
     If scene.name = "MAGIC RING OF TOADSTOOLS" Then
         Call PrintPageText(game, "story", CsrLin, "A magical place of faeries and giant mushrooms!")
@@ -2195,7 +2214,7 @@ End Sub
 ' soundHandle&
 Function PlaySound& (file As String, volume As Single, loopSound As Integer)
     soundHandle& = _SndOpen(file)
-    ' TODO - ReplaceSound() should be called, but you can't call a sub/function from another sub/function
+    ' TODO - ReplaySound() should be called
     If soundHandle& = 0 Then
         Beep
     Else
