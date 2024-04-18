@@ -2,6 +2,8 @@
 ' bionic-bunny.jpg - Bionic Bunny Soldier by Zara
 ' bionic-bunny-commander.jpg - Bionic Bunny Commander by Zara
 ' book.png - Empty book by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
+' bunny.jpg -  Rabbit, Field, Animal image. Free for use. by SvenZiegler (https://pixabay.com/photos/rabbit-field-animal-field-hare-6063733/)
+' bunny2.jpg - Hare, Animal, Mammal image. Free for use. by apnear40 (https://pixabay.com/photos/hare-animal-mammal-wildlife-fauna-8585802/)
 ' castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
 ' clouds.png - OpenClipart-Vectors (https://pixabay.com/vectors/sunrise-clouds-rising-sun-sky-sun-153600/)
 ' death.mp3 - Dramatic Scene Character Death Separation Melancholy Sadness (https://freesound.org/people/UNIVERSFIELD/sounds/697083/)
@@ -37,7 +39,11 @@
 ' turn-page.mp3 - page turn (https://freesound.org/people/partheeban/sounds/457767/)
 ' wayne-chung.jpg - Image of Wayne Chung wondering what's going on
 ' wayne-chung.mp3 - Wang Chung "Everybody Have Fun Tonight" snippet
+' wilderness.jpg - Nature, Fog, Travel image. Free for use. by jameswheeler (https://pixabay.com/photos/nature-fog-travel-foggy-haze-mist-3787200/)
+' wilderness2.jpg - Flow, Forest, Landscape image. Free for use. by jggrz (https://pixabay.com/photos/flow-forest-landscape-nature-4689820/)
 ' wilderness.mp3 - birds_210513_0088.mp3 (https://freesound.org/people/titi2/sounds/571247/)
+' woods.jpg - Secret, Forest, Darkness image. Free for use. by jplenio (https://pixabay.com/photos/secret-forest-darkness-nature-3120483/)
+' woods2.jpg - Forest, Darkness, Trees image. Free for use. by Tomegos (https://pixabay.com/photos/forest-darkness-trees-dark-nature-7543646/)
 ' woods.mp3 - forestsurroundings.mp3 (https://freesound.org/people/Luftrum/sounds/48411/)
 ' zara.mp3 - 050816 a crowded grocery store Sapporo.mp3 (https://freesound.org/people/pflanigan/sounds/390254/)
 
