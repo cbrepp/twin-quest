@@ -56,6 +56,13 @@ Const CREATE = 1, RETRIEVE = 2, UPDATE = 3, DELETE = 4
 ' Define player names as shared, constant values
 Const GREYSON = "GREYSON", GREY = "GREY", ZARA = "ZARA"
 
+Type Variable
+    id As Integer
+    name As String
+    type As String
+    value As String
+End Type
+
 Type TextCursor
     lastColumn As Integer
     lastControlRow As Integer
@@ -99,8 +106,6 @@ Type Book
     image As Long
     inventory As String
     inventorySound As Long
-    isCatTamed As Integer
-    isDragonDead As Integer
     isOver As Integer
     isRightHanded As Integer
     lastRow As Integer
@@ -158,8 +163,6 @@ game.basicStoryChoices = "LOOK,LISTEN"
 game.secretChoices = "MOVE AHEAD,MOVE BACKWARDS,TURN LEFT,TURN RIGHT,ALL THE THINGS"
 game.score = 0
 game.inventory = ""
-game.isDragonDead = 0
-game.isCatTamed = 0
 game.storySound = 0
 game.hitPoints = 100
 game.magicPoints = 0
@@ -270,15 +273,23 @@ System ' Ends the program immediately and closes the application window
 
 Sub AllTheThingsAction (game As Book)
     thingDone% = 0
+    Dim variable As Variable
+
     If game.level = 1 Then
-        If game.isDragonDead = 0 Then
-            game.isDragonDead = 1
+        variable.name = "isDragonDead"
+        Call StoryVariable(RETRIEVE, variable)
+        If variable.value = "0" Then
+            variable.value = "1"
+            Call StoryVariable(UPDATE, variable)
             Call IncreaseScore(game, 100)
             Call PrintPageText(game, "story", CsrLin, "You slew the dragon!")
             thingDone% = 1
         End If
-        If game.isCatTamed = 0 Then
-            game.isCatTamed = 1
+        variable.name = "isDragonDead"
+        Call StoryVariable(RETRIEVE, variable)
+        If variable.value = "0" Then
+            variable.value = "1"
+            Call StoryVariable(UPDATE, variable)
             Call IncreaseScore(game, 100)
             Call PrintPageText(game, "story", CsrLin, "You tamed the elusive cat!")
             thingDone% = 1
@@ -570,126 +581,6 @@ Sub DisplayImage (game As Book, page As String, image As Long)
     ' Move the cursor to the next row after the image
     nextRow% = imageRow% + _Ceil(imageHeight% / _FontHeight) + 1
     Locate nextRow%, leftColumn%
-End Sub
-
-' Display the introduction
-'
-' Parameters:
-' game - Book instance
-Sub DisplayIntroduction (game As Book)
-    ' TODO - Would be nice to add back and forward arrows in the bottom corners of the story page.
-
-    If game.pageNumber = 1 Then
-        Call StopSound(game.storySound)
-        game.storySound = PlaySound&("suspense.mp3", 1, 1)
-        Call PrintPageText(game, "story", game.firstRow + 2, game.twin + ": " + Chr$(34) + "Ahh!!!  " + game.player + "!!!  Save me!!!" + Chr$(34))
-        Call PressAnyKey(game, "story")
-        Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "I don't know if I can, but I will try!!!" + Chr$(34))
-        Call PressAnyKey(game, "story")
-        Call PrintPageText(game, "story", CsrLin + 1, game.twin + ": " + Chr$(34) + game.player + " he got me!!!  A big black cat got me!!!" + Chr$(34))
-        Call PressAnyKey(game, "story")
-        Call PrintPageText(game, "story", CsrLin + 1, "You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your twin's voice just in time to see the door to the leprechaun closet in the back bedroom slam shut.  You run to the closet door, open it, and what you see next takes your breath away...")
-        Call PressAnyKey(game, "story")
-        Call PrintPageText(game, "story", CsrLin + 1, "Sticking your head into what was supposed to be a small closet you look around at what appears to be the surface of a cloud floating high above Pendleton, Indiana.  You wonder if this is perhaps a magic portal.")
-        Call PressAnyKey(game, "story")
-        Call PrintPageText(game, "story", CsrLin + 1, "You cautiously tap the cloud with your hand and discover that it's firm enough to walk on.  You then oh so very carefully put one foot into the closet, lower your head, and step through the doorway so you can get a better look...")
-        Call PressAnyKey(game, "story")
-        game.pageNumber = 2
-    Else
-        If game.pageNumber = 2 Then
-            cloudsImage& = _LoadImage("clouds.png")
-            elevatorDoorsImage& = _LoadImage("elevator-doors.png")
-            Locate game.firstRow + 2, 1
-            Call DisplayImage(game, "story", cloudsImage&)
-            Locate game.firstRow + 2, 1
-            Call DisplayImage(game, "story", elevatorDoorsImage&)
-            Call PrintPageText(game, "story", CsrLin + 2, "You are now standing on the surface of a cloud floating high up in the sky.  You look around and see nothing but the large poofy white cloud, the blue sky, the bright yellow sun... and... what appears to be elevator doors in the middle of the cloud.")
-            Call PressAnyKey(game, "story")
-            Call PrintPageText(game, "story", CsrLin + 1, "Anxiety and fear grip you.  But you have no choice.  You must save " + game.twin + ".  And so...")
-            Call PressAnyKey(game, "story")
-            elevator& = PlaySound&("elevator-open.mp3", 1, 1)
-            Call PrintPageText(game, "story", CsrLin + 1, "You press the elevator button to open the door.  And... you step inside...")
-            Call PressAnyKey(game, "story")
-            Call StopSound(elevator&)
-            game.pageNumber = 3
-
-            _FreeImage elevatorDoorsImage&
-            _FreeImage cloudsImage&
-        Else
-            If game.pageNumber = 3 Then
-                Call StopSound(game.storySound)
-                game.storySound = PlaySound&("elevator.wav", 1, 1)
-                Locate game.firstRow + 2, 1
-                myleeImage& = _LoadImage("mylee.jpg")
-                Call DisplayImage(game, "story", myleeImage&)
-                Call PrintPageText(game, "story", CsrLin + 2, "MYLEE: " + Chr$(34) + "Oh hey kid." + Chr$(34))
-                Call PressAnyKey(game, "story")
-                Call PrintPageText(game, "story", CsrLin + 1, "You're confused for a moment.  Inside the elevator there's a cat perched up on a shelf by the main elevator switch.  Is a cat operating this elevator?  And... did that cat just talk???")
-                Call PressAnyKey(game, "story")
-                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "You're wondering if I just talked even though I'm a cat.  And the answer is 'yes'.  Yes I did." + Chr$(34))
-                Call PressAnyKey(game, "story")
-                Call PrintPageText(game, "story", CsrLin + 1, "Wait, what?  Can this talking cat read your mind?")
-                Call PressAnyKey(game, "story")
-                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "And you're probably wondering now if I can read your mind.  The answer to that is... no.  And I definitely wouldn't want to if I could.  You humans are just too weird." + Chr$(34))
-                Call PressAnyKey(game, "story")
-                Call PrintPageText(game, "story", CsrLin + 1, "Weird is right.")
-                Call PressAnyKey(game, "story")
-                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Enough talk, human.  You look confused.  How about you ask me some questions." + Chr$(34))
-                Call PressAnyKey(game, "story")
-                game.pageNumber = 4
-
-                _FreeImage myleeImage&
-            Else
-                If game.pageNumber = 4 Then
-                    Call PrintPageText(game, "story", game.firstRow + 2, "MYLEE: " + Chr$(34) + "You look like you're new to this so I'll help you out.  See that 'Ask MYLEE' prompt below?  It's giving you some choices.  Pick one.  You can learn about this game before you begin your quest." + Chr$(34))
-                    currentRow% = CsrLin
-                    Locate currentRow% + 2, 1
-                    choice$ = StoryPrompt$(game, "Ask MYLEE", "WHO ARE YOU,WHERE IS MY TWIN,WHO IS BIG CHUNG,NOTHING", 0, 1, 16)
-                    If choice$ = "WHO ARE YOU" Then
-                        Call PrintPageText(game, "story", currentRow% + 8, "MYLEE: " + Chr$(34) + "I'm Mylee Marie!" + Chr$(34))
-                        Call PressAnyKey(game, "story")
-                        Call PrintPageText(game, "story", CsrLin + 1, "You wait a moment for MYLEE to say more but she doesn't.  Okay... at least you got her name.")
-                        Call PressAnyKey(game, "story")
-                    Else
-                        If choice$ = "WHERE IS MY TWIN" Then
-                            Call PrintPageText(game, "story", currentRow% + 8, "MYLEE: " + Chr$(34) + "Oh you poor kid.  I'm afraid your twin was captured by my younger brother, BIG CHUNG.  It is a shame." + Chr$(34))
-                            Call PressAnyKey(game, "story")
-                        Else
-                            If choice$ = "WHO IS BIG CHUNG" Then
-                                Call PrintPageText(game, "story", currentRow% + 8, "MYLEE: " + Chr$(34) + "Oh he's quite the cat!  His appetite is as big as they come.  Some day he may eat the whole world.  But for now it seems like he's settled on your twin." + Chr$(34))
-                                Call PressAnyKey(game, "story")
-                                Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "He's going to eat " + game.twin + "???" + Chr$(34))
-                                Call PressAnyKey(game, "story")
-                                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Perhaps.  But you might have some time.  He just ate an entire Red Lobster restaurant for breakfast this morning so he might be full.  I bet your twin is an appetizer for later." + Chr$(34))
-                                Call PressAnyKey(game, "story")
-                                Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "That's horrible!!!" + Chr$(34))
-                                Call PressAnyKey(game, "story")
-                                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Don't I know it, kid.  But hey, tell you what... these elevator doors can take you to a magical world.  If you want to save your twin, gain some experience out there and then come back.  If you bring me some GOLD I'll take you to the level that BIG CHUNG hangs out on.  But be careful, NIGHT OWL and a Dragon like gold and if you remove any from their level they might come after you.  Best slay that dragon if you can and ask my friend Gianni for help with that NIGHT OWL problem.  Don't you dare try to fight NIGHT OWL in a dark place.  He'll swoop down on you before you have a chance to defend yourself." + Chr$(34))
-                                Call PressAnyKey(game, "story")
-                            Else
-                                If choice$ = "NOTHING" Then
-                                    Call PrintPageText(game, "story", currentRow% + 8, "MYLEE: " + Chr$(34) + "Nothing else, huh.  Okay.  Well take this then..." + Chr$(34))
-                                    Call IncreaseInventory(game, "GAME BOOK")
-                                    Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "It's called a 'GAME BOOK'.  It will give you some options on the other page for exiting the game and stuff.  Maybe if you can find that SPELL BOOK I lost you'll have two books and a way to defeat BIG CHUNG.  But don't worry, things like that have a way of turning up eventually.  Even when you don't think you'll find them again they make their way back to you." + Chr$(34))
-                                    Call PressAnyKey(game, "story")
-                                    Call PrintPageText(game, "story", CsrLin + 1, game.player + ": " + Chr$(34) + "Umm, thanks?" + Chr$(34))
-                                    Call PressAnyKey(game, "story")
-                                    Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "You're welcome.  Now off with you!  I'll open the magic elevator doors for you.  Remember: Don't die.  And... bring me back some gold!!!" + Chr$(34))
-                                    Call PressAnyKey(game, "story")
-                                    elevator& = PlaySound&("elevator-open.mp3", 1, 1)
-                                    Call PrintPageText(game, "story", CsrLin + 1, "It would seem like you're no longer welcome in this elevator.  MYLEE flips a switch and the doors open.  You walk out and find that you are no longer on the cloud...")
-                                    Call PressAnyKey(game, "story")
-                                    Call StopSound(elevator&)
-                                    game.chapter = "CHAPTER 1"
-                                End If
-                            End If
-                        End If
-                    End If
-                Else
-                End If
-            End If
-        End If
-    End If
 End Sub
 
 Sub DisplayScene (game As Book, scene As Scene)
@@ -1142,13 +1033,18 @@ Sub ElevatorAction (game As Book)
         Call ReplaySound(game.storySound, 1, 1)
         Call StopSound(elevator&)
     Else
-        If game.isDragonDead = 0 Then
+        Dim variable As Variable
+        variable.name = "isDragonDead"
+        Call StoryVariable(RETRIEVE, variable)
+        If variable.value = "0" Then
             Call StopSound(elevatorMusic&)
             Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Oh no you didn't!!!  Did you come back here with GOLD without first slaying the DRAGON???" + Chr$(34))
             Call PrintPageText(game, "story", CsrLin + 1, "You hear a thunderous sound behind you and turn to see the elevator doors burst open as a fearsome DRAGON sticks his head in and gobbles you up.  You'd like to say that at least you got the GOLD but that doesn't matter much when you're dead.")
             game.isOver = 1
         Else
-            If game.isCatTamed = 0 Then
+            variable.name = "isCatTamed"
+            Call StoryVariable(RETRIEVE, variable)
+            If variable.value = "0" Then
                 Call StopSound(elevatorMusic&)
                 Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Oh no you didn't!!!  Did you come back here with GOLD without first getting a long-range weapon from GIANNI???" + Chr$(34))
                 Call PrintPageText(game, "story", CsrLin + 1, "You hear a thunderous sound behind you and turn to see the elevator doors burst open as NIGHT OWL sticks his head in and gobbles you up.  You'd like to say that at least you got the GOLD but that doesn't matter much when you're dead.")
@@ -1493,9 +1389,11 @@ End Sub
 ' Parameters:
 ' game - Book instance
 Sub ListenAction (game As Book)
+    Dim variable As Variable
     Dim currentScene As Scene
     Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, currentScene)
     scene$ = currentScene.name
+
     'scene$ = world(game.playerX, game.playerY)
 
     'Call PrintPageText(game, "story", CsrLin, "You are in " + scene$ + ".")
@@ -1552,7 +1450,9 @@ Sub ListenAction (game As Book)
         End If
         If scene$ = "DRAGON'S DEN" Then
             Color _RGB(255, 0, 0)
-            If game.isDragonDead = 0 Then
+            variable.name = "isDragonDead"
+            Call StoryVariable(RETRIEVE, variable)
+            If variable.value = "0" Then
                 Call PrintPageText(game, "story", CsrLin, "You hear the fearsome roar of a dragon!")
                 Call PrintPageText(game, "story", CsrLin, "There is no time to stop and listen to it!")
             End If
@@ -1797,6 +1697,16 @@ Sub LoadStory (game As Book)
                     game.highScores = game.highScores + fileLine$
                     _Continue
                 End If
+                If section$ = "variables" Then
+                    name$ = ListPiece$(fileLine$, "=", 1)
+                    type$ = "Boolean" ' Only supported variable type at this time
+                    value$ = ListPiece$(fileLine$, "=", 2)
+                    Dim tempVariable As Variable
+                    tempVariable.name = name$
+                    tempVariable.type = type$
+                    tempVariable.value = value$
+                    Call StoryVariable(CREATE, tempVariable)
+                End If
                 If Left$(section$, Len("scene")) = "scene" Then
                     Call WorldScene(RETRIEVE, 1, sceneLevel%, sceneX%, sceneY%, scene)
 
@@ -1875,6 +1785,7 @@ End Sub
 ' Parameters:
 ' game - Book instance
 Sub LookAction (game As Book)
+    Dim variable As Variable
     Dim scene As Scene
     Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, scene)
     playerView$ = scene.name
@@ -1939,8 +1850,11 @@ Sub LookAction (game As Book)
             gianniImage& = _LoadImage("gianni.jpg")
             Call DisplayImage(game, "story", gianniImage&)
             _FreeImage gianniImage&
-            If game.isCatTamed = 0 Then
-                game.isCatTamed = 1
+            variable.name = "isCatTamed"
+            Call StoryVariable(RETRIEVE, variable)
+            If variable.value = "0" Then
+                variable.value = "1"
+                Call StoryVariable(UPDATE, variable)
                 Call PrintPageText(game, "story", CsrLin + 1, "You use your ring of taming on him and he jumps into your waiting arms.  You pet him for hours and hours.  As a reward for your petting, he gives you a long-range weapon to aid you in your quest.")
                 Color _RGB(0, 0, 0)
                 Call IncreaseScore(game, 100)
@@ -1960,7 +1874,9 @@ Sub LookAction (game As Book)
         End If
     End If
     If scene.name = "DRAGON'S DEN" Then
-        If game.isDragonDead = 0 Then
+        variable.name = "isDragonDead"
+        Call StoryVariable(RETRIEVE, variable)
+        If variable.value = "0" Then
             Call PrintPageText(game, "story", CsrLin, "You find yourself in a dark cave.  A fire burns deep inside.")
             Call PrintPageText(game, "story", CsrLin, "You explore the cave and find yourself face to face with a")
             Call PrintPageText(game, "story", CsrLin, "ferocious dragon!")
@@ -1990,20 +1906,22 @@ Sub LookAction (game As Book)
             Else
                 StopSound game.storySound
                 game.storySound = 0
-                If (Contains%(game.inventory, "SWORD", ",")) And (game.isDragonDead = 0) Then
+                If (Contains%(game.inventory, "SWORD", ",")) And (variable.value = "0") Then
                     Call PrintPageText(game, "story", CsrLin, "With quick reflexes you use your mighty sword to slay the dragon.")
                     Call PrintPageText(game, "story", CsrLin, "The townspeople are saved.  And you are today a hero!!!")
                     Call IncreaseScore(game, 100)
                     Color _RGB(0, 0, 0)
-                    game.isDragonDead = 1
+                    variable.value = "1"
+                    Call StoryVariable(UPDATE, variable)
                 Else
-                    If (Contains%(game.inventory, "UNO REVERSE", ",")) And (game.isDragonDead = 0) Then
+                    If (Contains%(game.inventory, "UNO REVERSE", ",")) And (variable.value = "0") Then
                         Call PrintPageText(game, "story", CsrLin, "With quick reflexes you use your UNO REVERSE card to send the dragon's")
                         Call PrintPageText(game, "story", CsrLin, "flames back at it.  With each fiery burst, the dragon destroys itself.")
                         Call PrintPageText(game, "story", CsrLin, "The townspeople are saved.  And you are today a hero!!!")
                         Call IncreaseScore(game, 100)
                         Color _RGB(0, 0, 0)
-                        game.isDragonDead = 1
+                        variable.value = "1"
+                        Call StoryVariable(UPDATE, variable)
                     End If
                 End If
             End If
@@ -2062,6 +1980,7 @@ End Sub
 ' Parameters:
 ' game - Book instance
 Sub MoveAheadAction (game As Book)
+    Dim variable As Variable
     aheadX% = game.playerX
     aheadY% = game.playerY
     If game.playerDirection = game.directions.north Then
@@ -2129,7 +2048,9 @@ Sub MoveAheadAction (game As Book)
                     game.storySound = PlaySound&("castle.mp3", 1, 0)
                 End If
                 If scene$ = "DRAGON'S DEN" Then
-                    If game.isDragonDead = 0 Then
+                    variable.name = "isDragonDead"
+                    Call StoryVariable(RETRIEVE, variable)
+                    If variable.value = "0" Then
                         game.storySound = PlaySound&("dragon.mp3", 1, 0)
                     Else
                         If game.storySound <> 0 Then
@@ -2653,6 +2574,62 @@ Function StoryPrompt$ (game As Book, prompt As String, choices As String, enable
     StoryPrompt$ = GetInput$(game, "Enter Choice", enableArrowKeys, enableMouse, inputLength)
 End Function
 
+' Story Variable Class
+'
+' Parameters:
+' event - Collection event integer (CREATE, RETRIEVE, UPDATE, DELETE, EXISTS)
+' *variable - Variable instance
+Sub StoryVariable (event As Integer, variable As Variable)
+    Static variableCount As Integer, variables() As Variable
+
+    If event <> RETRIEVE Then
+        Dim currentVariable As Variable
+        currentVariable.name = variable.name
+        Call StoryVariable(RETRIEVE, currentVariable)
+    End If
+
+    If event = CREATE Then
+        If currentVariable.id > 0 Then
+            ' The variable already exists so handle this as an UPDATE event
+            variable.id = currentVariable.id
+            Call StoryVariable(UPDATE, variable)
+        Else
+            variableCount = variableCount + 1
+            If variableCount = 1 Then
+                ' One time only array init
+                Dim variables(1 To 100) As Variable
+            End If
+            variable.id = variableCount
+            variables(variable.id) = variable
+        End If
+    End If
+    If event = RETRIEVE Then
+        found = 0
+        For i = 1 To variableCount
+            currentVariable = variables(i)
+            If variable.name = currentVariable.name Then
+                found = 1
+                Exit For
+            End If
+        Next i
+        If found = 1 Then
+            variable = currentVariable
+        End If
+    End If
+    If event = UPDATE Then
+        If currentVariable.id > 0 Then
+            variable.id = currentVariable.id
+            variables(variable.id) = variable
+        Else
+            ' The variable does not already exist so handle this as a CREATE event
+            Call StoryVariable(CREATE, variable)
+        End If
+    End If
+    If event = DELETE Then
+        ' Unsupported at this time
+    End If
+End Sub
+
 Sub TakeGoldAction (game As Book)
     game.storyChoices = game.basicStoryChoices
     If Not Contains%(game.inventory, "GOLD", ",") Then
@@ -2752,7 +2729,7 @@ End Sub
 ' Level - Level number
 ' x - x-coordinate
 ' y - y-coordinate
-' scene - Scene instance
+' *scene - Scene instance
 Sub WorldScene (event As Integer, world As Integer, level As Integer, x As Integer, y As Integer, scene As Scene)
     Static sceneCount As Integer, scenes() As Scene
 
@@ -2785,7 +2762,7 @@ End Sub
 ' Parameters:
 ' sceneId - Scene Id
 ' pageNumber - Page number
-' contents - Full text and tags of page contents
+' *contents - Full text and tags of page contents
 Sub WorldScenePage (event As Integer, sceneId As Integer, pageNumber As Integer, contents As String)
     Static pageCount As Integer, pages() As String
 

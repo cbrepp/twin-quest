@@ -14,6 +14,10 @@ epic.mp3
 "name=INTRODUCTION"
 "color=0,0,0"
 "sound=suspense.mp3"
+[variables]
+isCatTamed=0
+isDragonDead=0
+isNightOwlDefeated=0
 [scene 1]
 <story-sound suspense.mp3>
 "<twin>: <quote>Ahh!!!  <player>!!!  Save me!!!<quote>"
@@ -164,7 +168,7 @@ epic.mp3
 [scene 1]
 <play-sound magic.mp3>
 "[scene id=1,1,2]"<press-any-key>
-"name=GIANNI'S DEN"[scene 1]
+"name=GIANNI'S DEN"[scene 1]variables
 "Oh the grea
 "color=85,85,85"
 "sound=gianni.mp3"
@@ -191,7 +195,7 @@ epic.mp3
 [[RANDOM 3]]
 <story-sound>
 <image night-owl.jpg>
-"The sky is dark and you hear the sound of flapping wings.  By the time you look up it's too late."
+"The sky is dark and you hear the variablessound of flapping wings.  By the time you look up it's too late."
 <br>
 "NIGHT OWL has claimed you as his prey!  What an unfortunate way to end your journey."
 <hp-remove 100>
