@@ -656,6 +656,7 @@ End Sub
 Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As String, startAtTop As Integer)
     Dim soundsFiles$(1 To 100)
     Dim soundsHandles&(1 To 100)
+    Dim variable As Variable
     soundsCount% = 0
     subsection$ = ""
     startingAction$ = action
@@ -898,12 +899,41 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     _Continue
                 End If
                 If tag$ = "hp-remove" Then
-                    ' The HP-Remove tag prints any accumulated text decreases the player's hit points
+                    ' The HP-Remove tag prints any accumulated text and decreases the player's hit points
                     If storyText$ <> "" Then
                         Call PrintPageText(game, "story", CsrLin, storyText$)
                         storyText$ = ""
                     End If
                     Call DecreaseHitPoints(game, Val(tagValue$))
+                    _Continue
+                End If
+                If tag$ = "story-variable" Then
+                    ' The Story-Variable tag prints any accumulated text and then prints the value of the variable
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    variable.name = tagValue$
+                    Call StoryVariable(RETRIEVE, variable)
+                    Call PrintPageText(game, "story", CsrLin, variable.value)
+                    _Continue
+                End If
+                If tag$ = "if-story-variable" Then
+                    ' The If-Story-Variable tag prints any accumulated text and then sets the current action to the sub-section that matches <VARIABLE> <VALUE>
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    variable.name = tagValue$
+                    Call StoryVariable(RETRIEVE, variable)
+                    action = (variable.name + " " + variable.value)
+                    _Continue
+                End If
+                If tag$ = "set-story-variable" Then
+                    ' The Set-Story-Variable tag sets the target variable to the designated value
+                    variable.name = ListPiece$(tagValue$, "=", 1)
+                    variable.value = ListPiece$(tagValue$, "=", 2)
+                    Call StoryVariable(UPDATE, variable)
                     _Continue
                 End If
                 If tag$ = "story-prompt" Then
@@ -2163,17 +2193,41 @@ Sub PressAnyKey (game As Book, page As String)
     ' Display the prompt text
     Color _RGB(0, 139, 139) ' dark cyan
     curRow% = CsrLin
+    ' TODO - Would be nicer to replace "page" with whether this game delay is meant to interrupt a story page or to pause before flipping the page.
+    ' TODO - If just a pause before flipping the page, could add forward and backwards buttons to the bottom of the story page to more effectively communicate
+    ' TODO - the next step for the user.
     page = UCase$(page)
     If page = "STORY" Then
         prompt$ = "Press any key to continue"
     Else
         prompt$ = "Press any key to turn the page -->"
     End If
-    Call PrintPageText(game, page, game.lastRow - 1, prompt$)
+    promptLength% = Len(prompt$)
+
+    ' TODO - Then, capture that area of the screen BEFORE drawing the box using _PUTIMAGE()
+    ' TODO - Then, replace the text with the captured area.
+
+    If page = "STORY" Then
+        Call PrintPageText(game, page, curRow% + 1, prompt$)
+        x1% = (game.cursor.lastColumn - 1) * _FontWidth
+        x2% = x1% + (promptLength% * _FontWidth)
+        y1% = (curRow%) * _FontHeight
+        y2% = y1% + (_FontHeight)
+        'Print "Capturing " + Str$(x2% - x1%) + " by " + Str$(y2% - y1%)
+        background& = _NewImage(x2% - x1%, y2% - y1%, 32)
+
+        _PutImage (0, 0), game.image, background&, (x1%, y1%)-(x2%, y2%)
+    Else
+        Call PrintPageText(game, page, game.lastRow - 1, prompt$)
+    End If
     ' Suspend program execution until the any key is pressed
     ' TODO - Refactor this so the mouse can be used to click the text
     Sleep
     _KeyClear
+    If page = "STORY" Then
+        _PutImage (x1%, y1%), background&, 0
+        _FreeImage background&
+    End If
     ' Reposition the cursor
     Color _RGB(0, 0, 0) ' black
     Locate curRow%, 1
@@ -2192,10 +2246,15 @@ Sub PrintPageText (game As Book, page As String, row As Integer, text As String)
     ' Determine the starting position for the text based on the designated page
     page = UCase$(page)
     If ((page = "STORY") And (game.isRightHanded = 1)) Or ((page = "CONTROL") And (game.isRightHanded = 0)) Then
-        column% = game.leftPageStartingColumn
+        If (text = "Press any key to continue") Then
+            ' TODO - The text should really be something like a constant
+            column% = (game.leftPageStartingColumn + game.maxPageLength) - Len(text) - 4
+        Else
+            column% = game.leftPageStartingColumn
+        End If
     Else
         If ((page = "STORY") And (game.isRightHanded = 0)) Or ((page = "CONTROL") And (game.isRightHanded = 1)) Then
-            If (row = game.firstRow) Or (row = (game.lastRow - 1)) Then
+            If (row = game.firstRow) Or (text = "Press any key to continue") Then
                 ' By convention, right-align text on the first row of the right-hand page
                 column% = (game.rightPageStartingColumn + game.maxPageLength) - Len(text)
             Else
