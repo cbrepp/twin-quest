@@ -21,8 +21,10 @@
 ' gianni.jpg - Son of Fluff climbing a stair railing by Mr. Chris
 ' gianni2.jpg - Son of Fluff curled up on a blanket by Mr. Chris
 ' grey.mp3 - 8-Bit Coin Or Power Up FX For Retro Video Games (https://freesound.org/people/Cloud-10/sounds/647977/)
+' heavy-wings.mp3 - Wing Flap Heavy (prototype).mp3 (https://freesound.org/people/GearArcanaNo37/sounds/561364/)
 ' hit.mp3 - Hit with frying pan.mp3 (https://freesound.org/people/Whiprealgood/sounds/529567/)
 ' hit-harder.mp3 - frying pan.mp3 (https://freesound.org/people/Taira%20Komori/sounds/215017/)
+' hooting.mp3 - Desert Owl (https://freesound.org/people/claytron3000/sounds/384186/)
 ' inventory.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
 ' magic.mp3 - Magic.mp3 (https://freesound.org/people/Bastianhallo/sounds/434050/)
 ' minigames.mp3 - video game menu music (https://freesound.org/people/magmadiverrr/sounds/661248/)
@@ -214,7 +216,7 @@ Do
     End If
 
     If game.isOver Then
-        Call PressAnyKey(game, "story")
+        Call PressAnyKey(game, 0)
         Call TurnPage(game, 0)
         _Continue
     End If
@@ -463,6 +465,17 @@ Sub DecreaseHitPoints (game As Book, points As Integer)
             Call ReplaySound(game.deathHitSound, 1, 0)
         End If
     End If
+
+    ' TODO - use CLS 0, _RGB(128, 0, 0) as an alternate _DEST to flash the screen read, combine with SLEEP
+    ' No workee so great.  Maybe dump the whole screen using _PUTIMAGE to a backup, cls momentarily, then restore using the backup
+
+    'Cls , _RGB(128, 0, 0) ' Clear screen with black as the background color
+    'Sleep 1
+    'Cls , _RGB(0, 0, 0) ' Clear screen with black as the background color
+    '_PutImage , game.image ' Display the main book image
+    '_PrintMode _KeepBackground ' Preserve the image background when printing text
+    'Color _RGB(0, 0, 0) ' black
+
     storyColor& = _DefaultColor
     Color _RGB(255, 140, 0)
     Call PrintPageText(game, "story", CsrLin + 1, "HP -" + LTrim$(Str$(points)))
@@ -523,7 +536,7 @@ Sub DisplayCreditsPage (game As Book)
     scene.name = "CREDITS"
     scene.color = _RGB(0, 0, 0)
     Call DisplayStoryPage(game, scene, game.credits, "", 1)
-    Call PressAnyKey(game, "control")
+    Call PressAnyKey(game, 0)
 End Sub
 
 ' Display the high scores page
@@ -543,7 +556,7 @@ Sub DisplayHighScoresPage (game As Book)
     End If
 
     If game.isOver = 0 Then
-        Call PressAnyKey(game, "control")
+        Call PressAnyKey(game, 0)
     End If
 End Sub
 
@@ -791,7 +804,7 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                         Call PrintPageText(game, "story", CsrLin, storyText$)
                         storyText$ = ""
                     End If
-                    Call PressAnyKey(game, "story")
+                    Call PressAnyKey(game, 1)
                     _Continue
                 End If
                 If tag$ = "br" Then
@@ -1032,7 +1045,7 @@ Sub DisplayTitlePage (game As Book)
     Call PrintPageText(game, "story", CsrLin + 1, "        " + String$(22 - halfAuthorLen%, " ") + game.author)
     Print
     Print
-    Call PressAnyKey(game, "control")
+    Call PressAnyKey(game, 0)
 End Sub
 
 Sub DumbAction (game As Book)
@@ -1052,13 +1065,13 @@ Sub ElevatorAction (game As Book)
     myleeImage& = _LoadImage("mylee.jpg")
     Call DisplayImage(game, "story", myleeImage&)
     Call PrintPageText(game, "story", CsrLin + 2, "MYLEE: " + Chr$(34) + "Oh hey kid, welcome back." + Chr$(34))
-    Call PressAnyKey(game, "story")
+    Call PressAnyKey(game, 1)
     Call StopSound(elevator&)
     If Not Contains%(game.inventory, "GOLD", ",") Then
         Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "So... I noticed you don't have any GOLD.  You're not very good at following directions are you?  Off with you, human.  I have very important work to do and you're wasting my time." + Chr$(34))
         Call PrintPageText(game, "story", CsrLin + 1, "With that MYLEE flips a switch and the elevator doors open.  Hmm... seems like you're still not welcome in this elevator.  Maybe you should get some GOLD.")
         Call ReplaySound(elevator&, 1, 1) ' Elevator doors are on a loop because if the player waits to leave they should open and close multiple times
-        Call PressAnyKey(game, "story")
+        Call PressAnyKey(game, 1)
         Call StopSound(elevatorMusic&)
         Call ReplaySound(game.storySound, 1, 1)
         Call StopSound(elevator&)
@@ -1090,7 +1103,7 @@ Sub ElevatorAction (game As Book)
                 Call PrintPageText(game, "story", CsrLin + 1, "You hear a thunderous sound behind you and turn to see the elevator doors burst open as NIGHT OWL sticks his head in.  Before he can gobble you up, you hit him on the head with your trusty " + weapon$ + " and he lets out a painful, shrieking hoot.  NIGHT OWL backs away into the bright light of the WILDERNESS where you can finally fight him in a fair battle.  You march after him with your " + weapon$ + " and decide to end his reign of terror once and for all.")
                 Call PrintPageText(game, "story", CsrLin + 1, "[INSERT NIGHT OWL MINI-GAME]")
                 game.isOver = 1
-                Call PressAnyKey(game, "story")
+                Call PressAnyKey(game, 1)
                 Call PrintPageText(game, "story", CsrLin + 1, "You have won the game!!!")
                 Call PrintPageText(game, "story", CsrLin + 1, "MAXIMUM SCORE!!!")
             End If
@@ -2188,44 +2201,36 @@ End Function
 '
 ' Parameters:
 ' game - Book instance
-' page - (STORY/CONTROL) Which page of the book to use
-Sub PressAnyKey (game As Book, page As String)
+' isPageBreak - Is this intended to interrupt (meaning, not end) a page? (1/0)
+Sub PressAnyKey (game As Book, isPageBreak As Integer)
     ' Display the prompt text
     Color _RGB(0, 139, 139) ' dark cyan
     curRow% = CsrLin
-    ' TODO - Would be nicer to replace "page" with whether this game delay is meant to interrupt a story page or to pause before flipping the page.
-    ' TODO - If just a pause before flipping the page, could add forward and backwards buttons to the bottom of the story page to more effectively communicate
-    ' TODO - the next step for the user.
-    page = UCase$(page)
-    If page = "STORY" Then
+    ' TODO - If just a pause before flipping the page, could add forward and backwards buttons to the bottom of the story page to more effectively communicate the next step for the user
+    If isPageBreak <> 0 Then
         prompt$ = "Press any key to continue"
     Else
         prompt$ = "Press any key to turn the page -->"
     End If
     promptLength% = Len(prompt$)
 
-    ' TODO - Then, capture that area of the screen BEFORE drawing the box using _PUTIMAGE()
-    ' TODO - Then, replace the text with the captured area.
-
-    If page = "STORY" Then
-        Call PrintPageText(game, page, curRow% + 1, prompt$)
+    If isPageBreak <> 0 Then
+        Call PrintPageText(game, "STORY", curRow% + 1, prompt$)
         x1% = (game.cursor.lastColumn - 1) * _FontWidth
         x2% = x1% + (promptLength% * _FontWidth)
         y1% = (curRow%) * _FontHeight
         y2% = y1% + (_FontHeight)
-        'Print "Capturing " + Str$(x2% - x1%) + " by " + Str$(y2% - y1%)
-        background& = _NewImage(x2% - x1%, y2% - y1%, 32)
-
-        _PutImage (0, 0), game.image, background&, (x1%, y1%)-(x2%, y2%)
+        background& = _NewImage(x2% - x1%, y2% - y1%, 32) ' Init the text cover by matching the size of the printed text area
+        _PutImage (0, 0), game.image, background&, (x1%, y1%)-(x2%, y2%) ' Copy the exact coordinates from the book image to the text cover
     Else
-        Call PrintPageText(game, page, game.lastRow - 1, prompt$)
+        Call PrintPageText(game, "STORY", game.lastRow - 1, prompt$)
     End If
-    ' Suspend program execution until the any key is pressed
     ' TODO - Refactor this so the mouse can be used to click the text
+    ' Suspend program execution until the any key is pressed
     Sleep
     _KeyClear
-    If page = "STORY" Then
-        _PutImage (x1%, y1%), background&, 0
+    If isPageBreak <> 0 Then
+        _PutImage (x1%, y1%), background&, 0 ' Copy the full contents of the text cover to the screen using the exact coordinates of the printed text area
         _FreeImage background&
     End If
     ' Reposition the cursor
@@ -2246,7 +2251,7 @@ Sub PrintPageText (game As Book, page As String, row As Integer, text As String)
     ' Determine the starting position for the text based on the designated page
     page = UCase$(page)
     If ((page = "STORY") And (game.isRightHanded = 1)) Or ((page = "CONTROL") And (game.isRightHanded = 0)) Then
-        If (text = "Press any key to continue") Then
+        If (text = "Press any key to continue") Or (text = "Press any key to turn the page -->") Then
             ' TODO - The text should really be something like a constant
             column% = (game.leftPageStartingColumn + game.maxPageLength) - Len(text) - 4
         Else
@@ -2485,14 +2490,14 @@ Sub RefreshStoryPage (game As Book, choice As String)
         If (choice = "PLAY GAME") Then
             Call PlayGameAction(game)
             ' Refresh the scene's description
-            Call PressAnyKey(game, "control")
+            Call PressAnyKey(game, 0)
             choice = "LOOK"
             Call TurnPage(game, 1)
             Call LookAction(game)
         End If
         If (choice = "SPEAK NAME") Then
             Call SpeakNameAction(game)
-            Call PressAnyKey(game, "control")
+            Call PressAnyKey(game, 0)
             choice = "LOOK"
             Call TurnPage(game, 1)
             Call LookAction(game)
@@ -2505,7 +2510,7 @@ Sub RefreshStoryPage (game As Book, choice As String)
         End If
         If (choice = "TAME FLUFF") Then
             Call TameFluffAction(game)
-            Call PressAnyKey(game, "control")
+            Call PressAnyKey(game, 0)
             choice = "LOOK"
             Call TurnPage(game, 1)
             Call LookAction(game)

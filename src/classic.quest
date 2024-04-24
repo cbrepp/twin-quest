@@ -64,7 +64,7 @@ isNightOwlDefeated=0
 <press-any-key>
 <turn-page>
 [scene 4]
-"MYLEE: <quote>You look like you're new to this so I'll help you out.  See that 'Ask MYLEE' prompt below?  It's giving you some choices.  Pick one.  You can learn about this game before you begin your quest.<quote>"whe
+"MYLEE: <quote>You look like you're new to this so I'll help you out.  See that 'Ask MYLEE' prompt below?  It's giving you some choices.  Pick one.  You can learn about this game before you begin your quest.<quote>"
 "<story-prompt Ask MYLEE:WHO ARE YOU,WHERE IS MY TWIN,WHO IS BIG CHUNG,NOTHING>"
 [[WHO ARE YOU]]
 "MYLEE: <quote>I'm Mylee Marie!<quote>"
@@ -94,6 +94,7 @@ isNightOwlDefeated=0
 [[NOTHING]]
 "MYLEE: <quote>Nothing else, huh.  Okay.  Well take this then...<quote>"
 <inventory-add GAME BOOK>
+<press-any-key>
 "MYLEE: <quote>It's called a 'GAME BOOK'.  It will give you some options on the other page for exiting the game and stuff.  Maybe if you can find that SPELL BOOK I lost you'll have two books and a way to defeat BIG CHUNG.  But don't worry, things like that have a way of turning up.  Even when you don't think you'll find them again they fly right back to you.<quote>"
 <press-any-key>
 "<player>: <quote>Umm, thanks?<quote>"
@@ -121,6 +122,7 @@ isNightOwlDefeated=0
 "Seems like an unimportant thing to do but nevertheless you try to chase some of the bunnies."
 <br>
 "And..."
+<press-any-key>
 <random 3>
 [[RANDOM 1]]
 <image bunny2.jpg>
@@ -128,7 +130,7 @@ isNightOwlDefeated=0
 [[RANDOM 2]]
 <image bunny2.jpg>
 "You can't catch a single one.  But you got close!  Oh well, next time maybe.  You need to continue on with your quest."
-[[RANDOM 3]]
+[[RANDOM 3]]variables
 <image bionic-bunny-commander.jpg>
 "The bunnies start chasing you!  A very large commander of the bunnies shoots at you as you run as fast as you can to get away.  You definitely don't want to do that again!!!"
 <hp-remove 25>
@@ -148,6 +150,7 @@ isNightOwlDefeated=0
 "Seems like an unimportant thing to do but nevertheless you try to chase some of the bunnies."
 <br>
 "And..."
+<press-any-key>
 <random 3>
 [[RANDOM 1]]
 <image bunny.jpg>
@@ -166,7 +169,7 @@ isNightOwlDefeated=0
 [scene 1]
 <play-sound magic.mp3>
 "[scene id=1,1,2]"<press-any-key>
-"name=GIANNI'S DEN"[scene 1]variables
+"name=GIANNI'S DEN"[scene 1]
 "Oh the grea
 "color=85,85,85"
 "sound=gianni.mp3"
@@ -178,6 +181,8 @@ isNightOwlDefeated=0
 [[LISTEN]]
 "You hear the typical sounds of the woods at night.  There are birds.  Definitely crows.  Maybe a There are birds.  Definitely crows.  Maybe a woodpecker.  And... the hooting of an owl?"
 [[LOOK]]
+"You cautiously look around..."
+<press-any-key>
 <random 3>
 [[RANDOM 1]]
 <image woods.jpg>
@@ -185,16 +190,18 @@ isNightOwlDefeated=0
 [[RANDOM 2]]
 <image woods2.jpg>
 "What was that???"
-<play-sound scream.mp3>
-"The sky is dark and you hear the sound of flapping wings.  By the time you look up there's already a scream close by as NIGHT OWL has claimed one of the townspeople as his prey."
+<play-sound heavy-wings.mp3><play-sound scream.mp3><press-any-key>
+<play-sound heavy-wings.mp3>
+"The sky is dark and you hear the sound of flapping wings.  NIGHT OWL has claimed one of the townspeople as his prey."
 <br>
 "You have escaped death.  But... for how long?  That could have been you.  Be very, very quiet."
 <press-any-key>
 [[RANDOM 3]]
-<story-sound>
+<story-sound><play-sound heavy-wings.mp3><play-sound hooting.mp3>
+"The sky is dark and you hear the sound of flapping wings.  By the time you look up it's too late."
+<press-any-key>
+<play-sound heavy-wings.mp3><play-sound hooting.mp3>
 <image night-owl.jpg>
-"The sky is dark and you hear the variablessound of flapping wings.  By the time you look up it's too late."
-<br>
 "NIGHT OWL has claimed you as his prey!  What an unfortunate way to end your journey."
 <hp-remove 100>
 "[scene id=1,3,2]"
@@ -224,7 +231,7 @@ isNightOwlDefeated=0
 <inventory-add UNO REVERSE>
 [[PLAYER ZARA]]
 "You've stumbled into Zara's Store!!!  There are a lot of fun things to buy.  Of particular note you see a mighty silver SWORD, fit for slaying a DRAGON."
-<inventory-contains GOLD>
+<inventory-contains GOLD>""
 [[HAS GOLD]]
 <inventory-contains SWORD>
 [[NO GOLD]]
