@@ -22,24 +22,31 @@ isNightOwlDefeated=0
 <story-sound suspense.mp3>
 "<twin>: <quote>Ahh!!!  <player>!!!  Save me!!!<quote>"
 <press-any-key>
+<br>
 "<player>: <quote>I don't know if I can, but I will try!!!<quote>"
 <press-any-key>
+<br>
 "<twin>: <quote><player> he got me!!!  A big black cat got me!!!<quote>"
 <press-any-key>
+<br>
 "You set down the game controller you were holding (and what a shame, you were about to beat the Ender Dragon) and run toward the sound of your twin's voice just in time to see the door to the leprechaun closet in the back bedroom slam shut.  You run to the closet door, open it, and what you see next takes your breath away..."
 <press-any-key>
+<br>
 "Sticking your head into what was supposed to be a small closet you look around at what appears to be the surface of a cloud floating high above Pendleton, Indiana.  You wonder if this is perhaps a magic portal."
 <press-any-key>
+<br>
 "You cautiously tap the cloud with your hand and discover that it's firm enough to walk on.  You then oh so very carefully put one foot into the closet, lower your head, and step through the doorway so you can get a better look..."
 <press-any-key>
 <turn-page>
 [scene 2]
 <image clouds.png+elevator-doors.png>
-<br>
+<br><br>
 "You are now standing on the surface of a cloud floating high up in the sky.  You look around and see nothing but the large poofy white cloud, the blue sky, the bright yellow sun... and... what appears to be elevator doors in the middle of the cloud."
 <press-any-key>
+<br>
 "Anxiety and fear grip you.  But you have no choice.  You must save <twin>.  And so..."
 <press-any-key>
+<br>
 <play-sound elevator-open.mp3>
 "You press the elevator button to open the door.  And... you step inside..."
 <press-any-key>
@@ -48,18 +55,25 @@ isNightOwlDefeated=0
 [scene 3]
 <story-sound elevator.wav>
 <image mylee.jpg>
+<br>
 "MYLEE: <quote>Oh hey kid.<quote>"
 <press-any-key>
+<br>
 "You're confused for a moment.  Inside the elevator there's a cat perched up on a shelf by the main elevator switch.  Is a cat operating this elevator?  And... did that cat just talk???"
 <press-any-key>
+<br>
 "MYLEE: <quote>You're wondering if I just talked even though I'm a cat.  And the answer is 'yes'.  Yes I did.<quote>"
 <press-any-key>
+<br>
 "Wait, what?  Can this talking cat read your mind?"
 <press-any-key>
+<br>
 "MYLEE: <quote>And you're probably wondering now if I can read your mind.  The answer to that is... no.  And I definitely wouldn't want to if I could.  You humans are just too weird.<quote>"
 <press-any-key>
+<br>
 "Weird is right."
 <press-any-key>
+<br>
 "MYLEE: <quote>Enough talk, human.  You look confused.  How about you ask me some questions.<quote>"
 <press-any-key>
 <turn-page>
@@ -67,41 +81,57 @@ isNightOwlDefeated=0
 "MYLEE: <quote>You look like you're new to this so I'll help you out.  See that 'Ask MYLEE' prompt below?  It's giving you some choices.  Pick one.  You can learn about this game before you begin your quest.<quote>"
 "<story-prompt Ask MYLEE:WHO ARE YOU,WHERE IS MY TWIN,WHO IS BIG CHUNG,NOTHING>"
 [[WHO ARE YOU]]
+<br>
 "MYLEE: <quote>I'm Mylee Marie!<quote>"
 <press-any-key>
+<br>
 "..."
 <press-any-key>
+<br>
 "You wait a moment for MYLEE to say more but she doesn't.  Okay... at least you got her name.  Perhaps it's time to ask another question?"
 <press-any-key>
 [[WHERE IS MY TWIN]]
+<br>
 "MYLEE: <quote>Oh you poor kid.  I'm afraid your twin was captured by my younger brother, BIG CHUNG.  It is a shame.<quote>"
 <press-any-key>
+<br>
 "<player>: <quote>Why is that?<quote>"
 <press-any-key>
+<br>
 "MYLEE: <quote>You'd have to understand my brother to know why that is...<quote>"
 <press-any-key>
 [[WHO IS BIG CHUNG]]
+<br>
 "MYLEE: <quote>Oh he's quite the cat!  His appetite is as big as they come.  Some day he may eat the whole world.  (He's done it before.)  But for now it seems like he's settled on your twin.<quote>"
 <press-any-key>
+<br>
 "<player>: <quote>He's going to eat <twin>???<quote>"
 <press-any-key>
+<br>
 "MYLEE: <quote>Perhaps.  But you might have some time.  He just ate an entire Red Lobster restaurant for breakfast this morning so he might be full.  I bet your twin is an appetizer for later.<quote>"
 <press-any-key>
+<br>
 "<player>: <quote>That's horrible!!!<quote>"
 <press-any-key>
+<br>
 "MYLEE: <quote>Don't I know it, kid.  But hey, tell you what... these elevator doors can take you to a magical world.  If you want to save your twin, gain some experience out there and then come back.  If you bring me some GOLD I'll take you to the level that BIG CHUNG hangs out on.  But be careful, NIGHT OWL and a DRAGON like GOLD and if you remove any from their level they might come after you.  You better slay that dragon if you can and ask my friend GIANNI for help with that NIGHT OWL problem.  Don't you dare try to fight NIGHT OWL in a dark place.  He'll swoop down on you before you have a chance to defend yourself.<quote>"
 <press-any-key>
 [[NOTHING]]
+<br>
 "MYLEE: <quote>Nothing else, huh.  Okay.  Well take this then...<quote>"
 <inventory-add GAME BOOK>
 <press-any-key>
+<br>
 "MYLEE: <quote>It's called a 'GAME BOOK'.  It will give you some options on the other page for exiting the game and stuff.  Maybe if you can find that SPELL BOOK I lost you'll have two books and a way to defeat BIG CHUNG.  But don't worry, things like that have a way of turning up.  Even when you don't think you'll find them again they fly right back to you.<quote>"
 <press-any-key>
+<br>
 "<player>: <quote>Umm, thanks?<quote>"
 <press-any-key>
+<br>
 <play-sound elevator-open.mp3>
 "MYLEE: <quote>You're welcome.  Now off with you!  I'll open the magic elevator doors for you.  Remember: Don't die.  And... bring me back some GOLD!!!<quote>"
 <press-any-key>
+<br>
 "It would seem like you're no longer welcome in this elevator.  MYLEE flips a switch and the doors open.  You walk out and find that you are no longer on the cloud..."
 <press-any-key>
 <stop-sound elevator-open.mp3>
@@ -115,9 +145,9 @@ isNightOwlDefeated=0
 <choices-add CHASE BUNNIES>
 [[LOOK]]
 <image wilderness2.jpg>
-"You see nothing but tall grass and cute bunnies.  Also, the sun is shining brightly."
+"You see a babbling brook, trees, and cute bunnies."
 [[LISTEN]]
-"You hear birds singing and perhaps some insects.  There is also a slight breeze.  These are the typical sounds of nature."
+"You hear birds singing and perhaps some insects.  The brook is flowing peacefully.  These are the typical sounds of nature."
 [[CHASE BUNNIES]]
 "Seems like an unimportant thing to do but nevertheless you try to chase some of the bunnies."
 <br>
@@ -132,6 +162,7 @@ isNightOwlDefeated=0
 "You can't catch a single one.  But you got close!  Oh well, next time maybe.  You need to continue on with your quest."
 [[RANDOM 3]]variables
 <image bionic-bunny-commander.jpg>
+<br>
 "The bunnies start chasing you!  A very large commander of the bunnies shoots at you as you run as fast as you can to get away.  You definitely don't want to do that again!!!"
 <hp-remove 25>
 "[scene id=1,2,1]"
@@ -143,7 +174,7 @@ isNightOwlDefeated=0
 <choices-add CHASE BUNNIES>
 [[LOOK]]
 <image wilderness.jpg>
-"You see nothing but tall grass and cute bunnies.  Also, the sun is shining brightly."
+"You see tall grass, a few trees, a misty stream, hills in the distance, and cute bunnies.  Also, the sun is shining brightly."
 [[LISTEN]]
 "You hear birds singing and perhaps some insects.  There is also a slight breeze.  These are the typical sounds of nature."
 [[CHASE BUNNIES]]
@@ -160,6 +191,7 @@ isNightOwlDefeated=0
 "You can't catch a single one.  But you got close!  Oh well, next time maybe.  You need to continue on with your quest."
 [[RANDOM 3]]
 <image bionic-bunny.jpg>
+<br>
 "The bunnies start chasing you!  What are they, bionic???  They shoot at you and you run as fast as you can to get away.  What were you thinking trying to chase bunnies???"
 <hp-remove 10>
 "[scene id=1,3,1]"
@@ -189,20 +221,24 @@ isNightOwlDefeated=0
 "The sky is dark and NIGHT OWL is hiding somewhere.  You must take care to tread lightly lest a noise alert NIGHT OWL to your whereabouts.  Be very, very quiet."
 [[RANDOM 2]]
 <image woods2.jpg>
+<br>
 "What was that???"
-<play-sound heavy-wings.mp3><play-sound scream.mp3><press-any-key>
+<play-sound heavy-wings.mp3+scream.mp3><press-any-key>
+<br>
 <play-sound heavy-wings.mp3>
 "The sky is dark and you hear the sound of flapping wings.  NIGHT OWL has claimed one of the townspeople as his prey."
 <br>
 "You have escaped death.  But... for how long?  That could have been you.  Be very, very quiet."
 <press-any-key>
 [[RANDOM 3]]
-<story-sound><play-sound heavy-wings.mp3><play-sound hooting.mp3>
+<story-sound><play-sound heavy-wings.mp3+hooting.mp3>
+<br>
 "The sky is dark and you hear the sound of flapping wings.  By the time you look up it's too late."
 <press-any-key>
-<play-sound heavy-wings.mp3><play-sound hooting.mp3>
+<play-sound heavy-wings.mp3+hooting.mp3>
 <image night-owl.jpg>
 "NIGHT OWL has claimed you as his prey!  What an unfortunate way to end your journey."
+<press-any-key>
 <hp-remove 100>
 "[scene id=1,3,2]"
 "name=MOUNT FLUFF"
@@ -212,35 +248,59 @@ isNightOwlDefeated=0
 <play-sound fluff.wav>
 "[scene id=1,1,3]"
 "name=MYSTERY ROOM"
-"color=255,140,0"scream
+"color=255,140,0"
 "sound="
 [scene 1]
-<game-state player>
+<if-game-variable PLAYER>
 [[PLAYER GREYSON]]
+<story-sound grey.mp3>
+<image arcade.jpg>
 "You've stumbled into Greyson's Arcade!!!  Oh my!  Every game known to mankind can be found for sale in this room.  A particular game catches your eye... UNO."
-<inventory-contains GOLD>
+<if-inventory-contains GOLD>
 [[HAS GOLD]]
-<inventory-contains UNO REVERSE>
+<if-inventory-contains UNO REVERSE>
 [[NO GOLD]]
+<br>
 "Maybe some day you'll return when you have some money so you can buy it."
+<end-page>
 [[HAS UNO REVERSE]]
-"That mighty desk is in your hand... perhaps you should us[scene 1]
-"Oh the greae it for some heroic deed?"
+<br>
+"That mighty deck is in your hand... perhaps you should use it for some heroic deed?"
+<end-page>
 [[NO UNO REVERSE]]
+<br>
 "You leave some GOLD coins on the table in exchange for the UNO deck.  You look at the cards and discover the legendary... UNO REVERSE!!!"
 <inventory-add UNO REVERSE>
+<end-page>
 [[PLAYER ZARA]]
+<story-sound zara.mp3>
+<image store.jpg>
 "You've stumbled into Zara's Store!!!  There are a lot of fun things to buy.  Of particular note you see a mighty silver SWORD, fit for slaying a DRAGON."
-<inventory-contains GOLD>""
+<if-inventory-contains GOLD>
 [[HAS GOLD]]
-<inventory-contains SWORD>
+<if-inventory-contains SWORD>
 [[NO GOLD]]
+<br>
 "Maybe some day you'll return when you have some money so you can buy it."
+<end-page>
 [[HAS SWORD]]
+<br>
 "That mighty weapon is in your hand... perhaps you should use it for some heroic deed?"
+<end-page>
 [[NO SWORD]]
+<br>
 "You put some GOLD coins on the counter..."
 <inventory-add SWORD>
+<end-page>
+[[LISTEN]]
+Everything sounds a little magical.
+<if-game-variable PLAYER>
+[[PLAYER GREYSON]]
+<br>
+"You hear the typical sounds of an arcade."
+[[PLAYER ZARA]]
+<br>
+"You hear the hustling and bustling sounds of a successful store."
 "[scene id=1,2,3]"
 "name=CASTLE"
 "color=171,145,68"
