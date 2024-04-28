@@ -274,11 +274,39 @@ Think carefully.  What could the magic name be?
 "You wait... and wait some more.  But... nothing happens!  Perhaps you spoke the wrong name?"
 <br>
 "Better luck next time."
-"[scene id=1,1,2]"<press-any-key>
-"name=GIANNI'S DEN"[scene 1]
-"Oh the grea
-"color=85,85,85"
+"[scene id=1,1,2]"
+"name=GIANNI'S DEN"
+"color=0,0,0"
 "sound=gianni.mp3"
+[scene 1]
+[[LISTEN]]
+"You hear the crackle of a campfire in a vacuous space.  The sounds of the outside world are muted."
+<br>
+"This is a peaceful place."
+[[LOOK]]
+"You find yourself in a dark cave.  A fire burns deep inside.  You explore the cave and find yourself face to face with an adorable black cat curled up on a Pittsburgh Steelers blanket."
+<br>
+"He's so cuuuuuuute!"
+<if-inventory-contains RING OF TAMING>
+[[HAS RING OF TAMING]]
+<play-sound cat-meowing.mp3>
+<image gianni.jpg>
+<press-any-key>
+<if-story-variable isCatTamed>
+[[isCatTamed 1]]
+"He meows with delight when he sees you and jumps into your waiting arms.  Oh what a wonderful cat he is!"
+[[isCatTamed 0]]
+<set-story-variable isCatTamed=1>
+"You use your RING OF TAMING on him and he jumps into your waiting arms.  You pet him for hours and hours.  As a reward for your petting, he gives you a long-range weapon to aid you in your quest."
+<score-add 100>
+<if-game-variable PLAYER>
+[[PLAYER GREYSON]]
+<inventory-add BOW & ARROWS>
+[[PLAYER ZARA]]
+<inventory-add CAT-APULT>
+[[NO RING OF TAMING]]
+<image gianni2.jpg>
+"You attempt to pet him but he climbs a stair railing to get away.  If only you could tame him.  But such a feat would require strong magic..."
 "[scene id=1,2,2]"
 "name=WOODS"
 "color=85,85,85"

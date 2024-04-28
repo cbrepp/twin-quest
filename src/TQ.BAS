@@ -6,6 +6,7 @@
 ' bunny.jpg -  Rabbit, Field, Animal image. Free for use. by SvenZiegler (https://pixabay.com/photos/rabbit-field-animal-field-hare-6063733/)
 ' bunny2.jpg - Hare, Animal, Mammal image. Free for use. by apnear40 (https://pixabay.com/photos/hare-animal-mammal-wildlife-fauna-8585802/)
 ' castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
+' cat-meowing.mp3 - meow of a cat (https://freesound.org/people/lextrack/sounds/333916/)
 ' clouds.png - OpenClipart-Vectors (https://pixabay.com/vectors/sunrise-clouds-rising-sun-sky-sun-153600/)
 ' death.mp3 - Dramatic Scene Character Death Separation Melancholy Sadness (https://freesound.org/people/UNIVERSFIELD/sounds/697083/)
 ' dragon.mp3 - The Roar of a 5-Headed Dragon (https://freesound.org/people/bevibeldesign/sounds/366095/)
@@ -795,6 +796,7 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                 ' <press-any-key>
                 ' <quote>
                 ' <random COUNT>
+                ' <score-add POINTS>
                 ' <set-story-variable VARIABLE=VALUE>
                 ' <stop-sound SOUND1+SOUND2+SOUND3...>
                 ' <story-prompt LABEL:CHOICE1+CHOICE2+CHOICE3...>
@@ -885,6 +887,11 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                         storyText$ = ""
                     End If
                     Call DecreaseHitPoints(game, Val(tagValue$))
+                    If scene.color = _RGB(255, 255, 255) Then
+                        Color _RGB(0, 0, 0) ' For readability, never use white text on the book
+                    Else
+                        Color scene.color
+                    End If
                     _Continue
                 End If
                 If tag$ = "if-game-variable" Then
@@ -954,6 +961,11 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                         item$ = ListPiece$(tagValue$, "+", j%)
                         Call IncreaseInventory(game, item$)
                     Next j%
+                    If scene.color = _RGB(255, 255, 255) Then
+                        Color _RGB(0, 0, 0) ' For readability, never use white text on the book
+                    Else
+                        Color scene.color
+                    End If
                     _Continue
                 End If
                 If tag$ = "play-sound" Then
@@ -1000,6 +1012,20 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     Randomize Timer
                     randomNumber% = Int(Rnd * Val(tagValue$)) + 1
                     action = "RANDOM " + LTrim$(Str$(randomNumber%))
+                    _Continue
+                End If
+                If tag$ = "score-add" Then
+                    ' The Score-Add tag prints any accumulated text and increases the player's score
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    Call IncreaseScore(game, Val(tagValue$))
+                    If scene.color = _RGB(255, 255, 255) Then
+                        Color _RGB(0, 0, 0) ' For readability, never use white text on the book
+                    Else
+                        Color scene.color
+                    End If
                     _Continue
                 End If
                 If tag$ = "set-story-variable" Then
@@ -1574,16 +1600,10 @@ Sub ListenAction (game As Book)
         If _SndPlaying(game.storySound) = 0 Then
             ReplaySound game.storySound, 1, 0
         End If
-        If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Then
+        If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Or (scene$ = "GIANNI'S DEN") Then
             ' Execute the LISTEN action
             Call WorldScenePage(RETRIEVE, currentScene.id, 1, pageContents$)
             Call DisplayStoryPage(game, currentScene, pageContents$, "LISTEN", 1)
-        End If
-        If scene$ = "GIANNI'S DEN" Then
-            Color _RGB(169, 169, 169)
-            Call PrintPageText(game, "story", CsrLin, "You hear the crackle of a campfire in a vacuous")
-            Call PrintPageText(game, "story", CsrLin, "space.  The sounds of the outside world are muted.")
-            Call PrintPageText(game, "story", CsrLin, "This is a peaceful place.")
         End If
         If scene$ = "MOUNT FLUFF" Then
             Color _RGB(0, 0, 0)
@@ -1940,7 +1960,7 @@ Sub LookAction (game As Book)
         Call PrintPageText(game, "story", CsrLin + 1, "You are astonished to learn that this cat can speak.  He enjoys challenging others to a guessing game.  If you solve his riddle, he might just give you a prize.")
         _FreeImage fluffImage&
     End If
-    If scene.name = "GIANNI'S DEN" Then
+    If scene.name = "GIANNI'S DEN OLD" Then
         Call PrintPageText(game, "story", CsrLin, "You find yourself in a dark cave.  A fire burns deep inside.  You explore the cave and find yourself face to face with an adorable black cat curled up on a Pittsburgh Steelers blanket.")
         Call PrintPageText(game, "story", CsrLin + 1, "He's so cuuuuuuute!")
         Print
@@ -2029,42 +2049,6 @@ Sub LookAction (game As Book)
         Call PrintPageText(game, "story", CsrLin, "What a magnificent castle!  But no one is home.")
         Call PrintPageText(game, "story", CsrLin, "Perhaps the royal court fled because of BIG CHUNG?")
     End If
-    If scene.name = "ZARA'S STORE" Then
-        '    Color _RGB(255, 0, 255)
-        '   Call PrintPageText(game, "story", CsrLin, "There are a lot of fun things to buy. Of particular note you")
-        '  Call PrintPageText(game, "story", CsrLin, "see a mighty silver sword, fit for slaying a dragon.")
-        '        If (Contains%(game.inventory, "GOLD", ",")) And (Not Contains%(game.inventory, "SWORD", ",")) Then
-        '           Call PrintPageText(game, "story", CsrLin, "You deposit some gold coins into the vending machine...")
-        '          Call IncreaseInventory(game, "SWORD")
-        '         Color _RGB(0, 0, 0)
-        '    Else
-        '       If Contains%(game.inventory, "SWORD", ",") Then
-        '          Call PrintPageText(game, "story", CsrLin, "That mighty sword is in your hand... perhaps you should")
-        '         Call PrintPageText(game, "story", CsrLin, "use it for some heroic deed?")
-        '    Else
-        '       Call PrintPageText(game, "story", CsrLin, "Maybe some day you'll return when you have some money.")
-        '  End If
-        '    End If
-    End If
-    If scene.name = "GREYSON'S GAME ROOM" Then
-        '        Color _RGB(0, 0, 255)
-        '       Call PrintPageText(game, "story", CsrLin, "Oh my!  Every game known to mankind can be found for sale in")
-        '      Call PrintPageText(game, "story", CsrLin, "this room.  A particular game catches your eye... UNO.")
-        '     If (Contains%(game.inventory, "GOLD", ",")) And (Not Contains%(game.inventory, "UNO REVERSE", ",")) Then
-        '        Call PrintPageText(game, "story", CsrLin, "You leave some gold coins on the table in exchange for the UNO deck.")
-        '       Call PrintPageText(game, "story", CsrLin, "You look at the cards and discover the legendary... UNO REVERSE!!!")
-        '      Call IncreaseInventory(game, "UNO REVERSE")
-        '     Color _RGB(0, 0, 0)
-        'Else
-        '      If Contains%(game.inventory, "UNO REVERSE", ",") Then
-        '         Call PrintPageText(game, "story", CsrLin, "That mighty deck is in your hand... perhaps you should")
-        '        Call PrintPageText(game, "story", CsrLin, "use it for some heroic deed?")
-        '   Else
-        '      Call PrintPageText(game, "story", CsrLin, "Maybe some day you'll return when you have some money.")
-        ' End If
-        ' End If
-    End If
-    Print
     If (scene.name = "CASTLE") And (Not Contains%(game.inventory, "GOLD", ",")) Then
         Call PrintPageText(game, "story", CsrLin, "Beautiful gold coins are scattered around.  Will you take them?")
         Print
@@ -2127,11 +2111,8 @@ Sub MoveAheadAction (game As Book)
                 End If
 
                 ' Start playing the new scene's sound, if any
-                If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Then
+                If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Or (scene$ = "GIANNI'S DEN") Then
                     game.storySound = PlaySound&(newScene.sound, 1, 1)
-                End If
-                If scene$ = "GIANNI'S DEN" Then
-                    game.storySound = PlaySound&("gianni.mp3", 1, 1)
                 End If
                 If scene$ = "MOUNT FLUFF" Then
                     game.storySound = PlaySound&("fluff.wav", 1, 0)
@@ -2569,59 +2550,6 @@ Sub ReplaySound (soundHandle As Long, volume As Single, loopSound As Integer)
         _SndPlay soundHandle&
         If loopSound Then
             _SndLoop soundHandle&
-        End If
-    End If
-End Sub
-
-Sub SpeakNameAction (game As Book)
-    Call TurnPage(game, 1)
-    Color _RGB(184, 115, 51)
-    Print
-    nameGuess$ = GetInput$(game, "You", 0, 0, 10)
-    Print
-    If (nameGuess$ = "SHMEBULOCK") Then
-        Call PrintPageText(game, "story", CsrLin, "           ,")
-        Call PrintPageText(game, "story", CsrLin, "          / \")
-        Call PrintPageText(game, "story", CsrLin, "         /   \")
-        Call PrintPageText(game, "story", CsrLin, "        /     \")
-        Call PrintPageText(game, "story", CsrLin, "       /_______\")
-        Call PrintPageText(game, "story", CsrLin, "       // . . \\")
-        Call PrintPageText(game, "story", CsrLin, "      (/(__7__)\)")
-        Call PrintPageText(game, "story", CsrLin, "      |'-' = `-'|")
-        Call PrintPageText(game, "story", CsrLin, "      |         |")
-        Call PrintPageText(game, "story", CsrLin, "      /\       /\")
-        Call PrintPageText(game, "story", CsrLin, "     /  '.   .'  \")
-        Call PrintPageText(game, "story", CsrLin, "    / /|  `v`  |\ \")
-        Call PrintPageText(game, "story", CsrLin, "    \ \|===[]==|/ /")
-        Call PrintPageText(game, "story", CsrLin, "     '-|_______|-'")
-        Call PrintPageText(game, "story", CsrLin, "        |__|__|")
-        Call PrintPageText(game, "story", CsrLin, "        |--|--|")
-        Call PrintPageText(game, "story", CsrLin, "       (__)`(__)")
-        Print
-        Call PrintPageText(game, "story", CsrLin, "Magic Gnome: Shmebulock!  Shmebulock... Shmebulock.")
-        Call PrintPageText(game, "story", CsrLin, "Shmebulock?  Shmebulock, Shmebulock.  Shme... bulock!")
-        Print
-        If Not Contains%(game.inventory, "RING OF TAMING", ",") Then
-            Call PrintPageText(game, "story", CsrLin, "(Does not work on large creatures.)")
-        Else
-            Call PrintPageText(game, "story", CsrLin, "You look down at your ring and it glows with power.")
-        End If
-        Call IncreaseInventory(game, "RING OF TAMING")
-    Else
-        If nameGuess$ = "EXIT GAME" Then
-            Call ExitAction(game)
-        Else
-            If (nameGuess$ = "MAGNIFICO") Or (nameGuess$ = "DRACO") Then
-                Call PrintPageText(game, "story", CsrLin, "You wait... and wait some more.  But... nothing happens!")
-                Call PrintPageText(game, "story", CsrLin, "Perhaps you spoke the wrong name?")
-                Print
-                Call PrintPageText(game, "story", CsrLin, "Good guess though!")
-            Else
-                Call PrintPageText(game, "story", CsrLin, "You wait... and wait some more.  But... nothing happens!")
-                Call PrintPageText(game, "story", CsrLin, "Perhaps you spoke the wrong name?")
-                Print
-                Call PrintPageText(game, "story", CsrLin, "Better luck next time.")
-            End If
         End If
     End If
 End Sub
