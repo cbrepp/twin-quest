@@ -49,6 +49,7 @@
 ' wilderness.jpg - Nature, Fog, Travel image. Free for use. by jameswheeler (https://pixabay.com/photos/nature-fog-travel-foggy-haze-mist-3787200/)
 ' wilderness2.jpg - Flow, Forest, Landscape image. Free for use. by jggrz (https://pixabay.com/photos/flow-forest-landscape-nature-4689820/)
 ' wilderness.mp3 - birds_210513_0088.mp3 (https://freesound.org/people/titi2/sounds/571247/)
+' wind.mp3 - A 1 min. 25 sec. raw audio mp3 recording of a rather strong-sounding wind blowing through pine trees. The wind eventually gets a little lighter toward the end of the recording. Includes a bit of breeze on the microphone but only enough to add to the effect. Recorded with a black Sony IC digital voice recorder. (https://freesound.org/people/FunWithSound/sounds/390740/)
 ' wooden-sign.png - Sign Wood Wooden royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/sign-wood-wooden-brown-rustic-576261/)
 ' woods.jpg - Secret, Forest, Darkness image. Free for use. by jplenio (https://pixabay.com/photos/secret-forest-darkness-nature-3120483/)
 ' woods2.jpg - Forest, Darkness, Trees image. Free for use. by Tomegos (https://pixabay.com/photos/forest-darkness-trees-dark-nature-7543646/)
@@ -1600,16 +1601,10 @@ Sub ListenAction (game As Book)
         If _SndPlaying(game.storySound) = 0 Then
             ReplaySound game.storySound, 1, 0
         End If
-        If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Or (scene$ = "GIANNI'S DEN") Then
+        If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Or (scene$ = "GIANNI'S DEN") Or (scene$ = "MOUNT FLUFF") Then
             ' Execute the LISTEN action
             Call WorldScenePage(RETRIEVE, currentScene.id, 1, pageContents$)
             Call DisplayStoryPage(game, currentScene, pageContents$, "LISTEN", 1)
-        End If
-        If scene$ = "MOUNT FLUFF" Then
-            Color _RGB(0, 0, 0)
-            Call PrintPageText(game, "story", CsrLin, "Oh my!  What magnificent guitar strumming!  The")
-            Call PrintPageText(game, "story", CsrLin, "styling is firm and decisive and yet also...")
-            Call PrintPageText(game, "story", CsrLin, "romantic.")
         End If
         If scene$ = "CASTLE" Then
             Color _RGB(255, 255, 0)
@@ -1953,44 +1948,6 @@ Sub LookAction (game As Book)
     Call WorldScenePage(RETRIEVE, scene.id, 1, pageContents$)
     Call DisplayStoryPage(game, scene, pageContents$, "LOOK", 1)
 
-    If scene.name = "MOUNT FLUFF" Then
-        fluffImage& = _LoadImage("fluff.jpg")
-        Call DisplayImage(game, "story", fluffImage&)
-        Call PrintPageText(game, "story", CsrLin + 1, "You come upon the base of a mountain and see a gallant white tom cat wearing boots and playing a spanish guitar.  His melody hypnotizes you.  And my... he is so fluffy!")
-        Call PrintPageText(game, "story", CsrLin + 1, "You are astonished to learn that this cat can speak.  He enjoys challenging others to a guessing game.  If you solve his riddle, he might just give you a prize.")
-        _FreeImage fluffImage&
-    End If
-    If scene.name = "GIANNI'S DEN OLD" Then
-        Call PrintPageText(game, "story", CsrLin, "You find yourself in a dark cave.  A fire burns deep inside.  You explore the cave and find yourself face to face with an adorable black cat curled up on a Pittsburgh Steelers blanket.")
-        Call PrintPageText(game, "story", CsrLin + 1, "He's so cuuuuuuute!")
-        Print
-        If Contains%(game.inventory, "RING OF TAMING", ",") Then
-            gianniImage& = _LoadImage("gianni.jpg")
-            Call DisplayImage(game, "story", gianniImage&)
-            _FreeImage gianniImage&
-            variable.name = "isCatTamed"
-            Call StoryVariable(RETRIEVE, variable)
-            If variable.value = "0" Then
-                variable.value = "1"
-                Call StoryVariable(UPDATE, variable)
-                Call PrintPageText(game, "story", CsrLin + 1, "You use your ring of taming on him and he jumps into your waiting arms.  You pet him for hours and hours.  As a reward for your petting, he gives you a long-range weapon to aid you in your quest.")
-                Color _RGB(0, 0, 0)
-                Call IncreaseScore(game, 100)
-                If game.player = "GREYSON" Then
-                    Call IncreaseInventory(game, "BOW & ARROWS")
-                Else
-                    Call IncreaseInventory(game, "CAT-APULT")
-                End If
-            Else
-                Call PrintPageText(game, "story", CsrLin + 1, "He meows with delight when he sees you and jumps into your waiting arms.  Oh what a wonderful cat he is!")
-            End If
-        Else
-            gianniImage& = _LoadImage("gianni2.jpg")
-            Call DisplayImage(game, "story", gianniImage&)
-            _FreeImage gianniImage&
-            Call PrintPageText(game, "story", CsrLin + 1, "You attempt to pet him but he climbs a stair railing to get away.  If only you could tame him.  But such a feat would require strong magic...")
-        End If
-    End If
     If scene.name = "DRAGON'S DEN" Then
         variable.name = "isDragonDead"
         Call StoryVariable(RETRIEVE, variable)
@@ -2111,11 +2068,8 @@ Sub MoveAheadAction (game As Book)
                 End If
 
                 ' Start playing the new scene's sound, if any
-                If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Or (scene$ = "GIANNI'S DEN") Then
+                If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Or (scene$ = "GIANNI'S DEN") Or (scene$ = "MOUNT FLUFF") Then
                     game.storySound = PlaySound&(newScene.sound, 1, 1)
-                End If
-                If scene$ = "MOUNT FLUFF" Then
-                    game.storySound = PlaySound&("fluff.wav", 1, 0)
                 End If
                 If scene$ = "CASTLE" Then
                     game.storySound = PlaySound&("castle.mp3", 1, 0)
@@ -2138,13 +2092,6 @@ Sub MoveAheadAction (game As Book)
             game.storyChoices = game.basicStoryChoices
             If (scene$ = "CASTLE") And (Not Contains%(game.inventory, "GOLD", ",")) Then
                 game.storyChoices = game.storyChoices + ",TAKE GOLD"
-            Else
-                If scene$ = "MOUNT FLUFF" Then
-                    game.storyChoices = game.storyChoices + ",PLAY GAME"
-                    If Contains%(game.inventory, "RING OF TAMING", ",") Then
-                        game.storyChoices = game.storyChoices + ",TAME FLUFF"
-                    End If
-                End If
             End If
 
             ' Refresh the scene's description
@@ -2153,40 +2100,12 @@ Sub MoveAheadAction (game As Book)
     End If
 End Sub
 
-Sub MoveBackwardsAction (game As Book)
-    Call PrintPageText(game, "story", CsrLin, "Please don't try walking backwards.  You might trip.")
-End Sub
-
-' Play fluffy game action
+' Move Backwards action
 '
 ' Parameters:
 ' game - Book instance
-Sub PlayGameAction (game As Book)
-    Call TurnPage(game, 1)
-    Call PrintPageText(game, "story", CsrLin, "FLUFFY CAT: " + Chr$(34) + "Answer me this, and a magical name I will give to you." + Chr$(34))
-    Call PrintPageText(game, "story", CsrLin + 1, Chr$(34) + "What is blue... and is also the sky?" + Chr$(34))
-    Print
-    riddle$ = GetInput$(game, "You", 0, 0, 40)
-    If (riddle$ = "THE SKY") Or (riddle$ = "THE BLUE SKY") Or (riddle$ = "BLUE SKY") Then
-        riddle$ = "SKY"
-    End If
-    Print
-    If riddle$ = "SKY" Then
-        fluffImage& = _LoadImage("fluff2.jpg")
-        Call DisplayImage(game, "story", fluffImage&)
-        Call PrintPageText(game, "story", CsrLin + 1, "FLUFFY CAT: " + Chr$(34) + "Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK." + Chr$(34))
-        _FreeImage fluffImage&
-    Else
-        If riddle$ = "EXIT GAME" Then
-            Call ExitAction(game)
-        Else
-            fluffImage& = _LoadImage("fluff3.jpg")
-            Call DisplayImage(game, "story", fluffImage&)
-            Call PrintPageText(game, "story", CsrLin, "FLUFFY CAT: " + Chr$(34) + "Aha!  It appears that I have bested you!  That answer is INCORRECT.  No one is as clever as I!" + Chr$(34))
-            Call PrintPageText(game, "story", CsrLin + 1, "Better luck next time.")
-            _FreeImage fluffImage&
-        End If
-    End If
+Sub MoveBackwardsAction (game As Book)
+    Call PrintPageText(game, "story", CsrLin, "Please don't try walking backwards.  You might trip.")
 End Sub
 
 ' Play a sound file
@@ -2505,27 +2424,12 @@ Sub RefreshStoryPage (game As Book, choice As String)
         If choice = "TURN RIGHT" Then
             Call TurnRightAction(game)
         End If
-        If (choice = "PLAY GAME") Then
-            Call PlayGameAction(game)
-            ' Refresh the scene's description
-            Call PressAnyKey(game, 0)
-            choice = "LOOK"
-            Call TurnPage(game, 1)
-            Call LookAction(game)
-        End If
-        If (choice = "CHASE BUNNIES") Or (choice = "SPEAK NAME") Then
+        If (choice = "CHASE BUNNIES") Or (choice = "SPEAK NAME") Or (choice = "PLAY GAME") Or (choice = "TAME FLUFF") Then
             Dim scene As Scene
             Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, scene)
             Call WorldScenePage(RETRIEVE, scene.id, 1, pageContents$)
             Color scene.color
             Call DisplayStoryPage(game, scene, pageContents$, choice, 1)
-        End If
-        If (choice = "TAME FLUFF") Then
-            Call TameFluffAction(game)
-            Call PressAnyKey(game, 0)
-            choice = "LOOK"
-            Call TurnPage(game, 1)
-            Call LookAction(game)
         End If
         If (choice = "TAKE GOLD") Then
             Call TakeGoldAction(game)
@@ -2662,35 +2566,6 @@ Sub TakeGoldAction (game As Book)
         Print
         Call IncreaseInventory(game, "GOLD")
     End If
-End Sub
-
-Sub TameFluffAction (game As Book)
-    Call TurnPage(game, 1)
-    Call PrintPageText(game, "story", CsrLin, "                ____")
-    Call PrintPageText(game, "story", CsrLin, "                \ _ `\ ")
-    Call PrintPageText(game, "story", CsrLin, "                 | \  `\._")
-    Call PrintPageText(game, "story", CsrLin, "                 |  |  _/ `-.._")
-    Call PrintPageText(game, "story", CsrLin, "                 |  /-'  // /.'`-. .--.__")
-    Call PrintPageText(game, "story", CsrLin, "                 /-'    || // //  |    __\")
-    Call PrintPageText(game, "story", CsrLin, "               ./   .` |\///_//   \  /'   |")
-    Call PrintPageText(game, "story", CsrLin, "             .'.-.__.` \ |/'-' .'  \|    /")
-    Call PrintPageText(game, "story", CsrLin, "            / ( ____`.\ |/ .' '.'   |\  /")
-    Call PrintPageText(game, "story", CsrLin, "           /  -//   \     /- _  '     `'|")
-    Call PrintPageText(game, "story", CsrLin, "           |  ||o    ;       __`--      |")
-    Call PrintPageText(game, "story", CsrLin, "           |   \\   /      //  `.  \    |")
-    Call PrintPageText(game, "story", CsrLin, "           \    `---'     |/o    \_ )   \")
-    Call PrintPageText(game, "story", CsrLin, "         _ _\_    /       |      /       |")
-    Call PrintPageText(game, "story", CsrLin, "       _-_`-__-_.-'|__    \`-..-'       /")
-    Call PrintPageText(game, "story", CsrLin, "      '  .--_--_-.. \_\/_              /")
-    Call PrintPageText(game, "story", CsrLin, "        ' /    \... / .. \_-___       / \")
-    Call PrintPageText(game, "story", CsrLin, "         /      `-._| ..-._--___     /   \")
-    Call PrintPageText(game, "story", CsrLin, "        /    .---.|  `-.__/`--.__---'     |")
-    Call PrintPageText(game, "story", CsrLin, "       /_.--/ . . \__/   _   `--._-.      |")
-    Call PrintPageText(game, "story", CsrLin, "    .-'    | || | |   .-' `-.     \ `\    |")
-    Call PrintPageText(game, "story", CsrLin, "  .'       `-\/\|-'  |  / /  \     `\ \   |")
-    Call PrintPageText(game, "story", CsrLin, " /                    \/ | .  |           |")
-    Call PrintPageText(game, "story", CsrLin, "/                      \_/_/ / \          |")
-    Call PrintPageText(game, "story", CsrLin, "|  magnifico               \/   \         |")
 End Sub
 
 ' Turn Left action

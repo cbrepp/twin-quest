@@ -213,7 +213,7 @@ isNightOwlDefeated=0
 <br>
 "This is a magical place of faeries and giant mushrooms!  A simple wooden sign sits in the center of this place.  On this sign reads a simple message..."
 <br>
-"'Speak the name of the spirit that dwells in this place and be gifted with a magical item.'"
+"<quote>Speak the name of the spirit that dwells in this place and be gifted with a magical item.<quote>"
 [[SPEAK NAME]]
 Think carefully.  What could the magic name be?
 <br>
@@ -330,7 +330,7 @@ Think carefully.  What could the magic name be?
 <play-sound heavy-wings.mp3>
 "The sky is dark and you hear the sound of flapping wings.  NIGHT OWL has claimed one of the townspeople as his prey."
 <br>
-"You have escaped death.  But... for how long?  That could have been you.  Be very, very quiet."
+"You have escaped death.  But... for how long?  That could have been you.  Be very, very quiet."|
 <press-any-key>
 [[RANDOM 3]]
 <story-sound><play-sound heavy-wings.mp3+hooting.mp3>
@@ -347,9 +347,78 @@ Think carefully.  What could the magic name be?
 "[scene id=1,3,2]"
 "name=MOUNT FLUFF"
 "color=255,255,255"
-"sound="
+"sound=wind.mp3"
 [scene 1]
+<choices-add PLAY GAME>
+<if-inventory-contains RING OF TAMING>
+[[HAS RING OF TAMING]]
+<choices-add TAME FLUFF>
+[[LISTEN]]
 <play-sound fluff.wav>
+"Oh my!  What magnificent guitar strumming!  The styling is firm and decisive and yet also... romantic."
+<press-any-key>
+<br>
+"You also hear a steady, blowing wind.  The sound swirls all around you.  This mountain must indeed be fluffy!"
+[[LOOK]]
+<play-sound fluff.wav>
+<image fluff.jpg>
+"You come upon the base of a mountain and see a gallant white tom cat wearing boots and playing a spanish guitar.  His melody hypnotizes you.  And my... he is so fluffy!"
+<press-any-key>
+<br>
+"You are astonished to learn that this cat can speak.  He enjoys challenging others to a guessing game.  If you solve his riddle, he might just give you a prize."
+[[TAME FLUFF]]
+"|                ____"
+"|                \ _ `\ "
+"|                 | \  `\._"
+"|                 |  |  _/ `-.._"
+"|                 |  /-'  // /.'`-. .--.__"
+"|                 /-'    || // //  |    __\"
+"|               ./   .` |\///_//   \  /'   |"
+"|             .'.-.__.` \ |/'-' .'  \|    /"
+"|            / ( ____`.\ |/ .' '.'   |\  /"
+"|           /  -//   \     /- _  '     `'|"
+"|           |  ||o    ;       __`--      |"
+"|           |   \\   /      //  `.  \    |"
+"|           \    `---'     |/o    \_ )   \"
+"|         _ _\_    /       |      /       |"
+"|       _-_`-__-_.-'|__    \`-..-'       /"
+"|      '  .--_--_-.. \_\/_              /"
+"|        ' /    \... / .. \_-___       / \"
+"|         /      `-._| ..-._--___     /   \"
+"|        /    .---.|  `-.__/`--.__---'     |"
+"|       /_.--/ . . \__/   _   `--._-.      |"
+"|    .-'    | || | |   .-' `-.     \ `\    |"
+"|  .'       `-\/\|-'  |  / /  \     `\ \   |"
+"| /                    \/ | .  |           |"
+"|/                      \_/_/ / \          |"
+"|  magnifico               \/   \         |"
+[[PLAY GAME]]
+"FLUFFY CAT: <quote>Answer me this, and a magical name I will give to you.<quote>"
+<br>
+"<quote>What is blue... and is also the sky?<quote>"
+<br>
+<get-input You:THE SKY+THE BLUE SKY+BLUE SKY+SKY>
+[[INPUT THE SKY]]
+<br>
+<image fluff2.jpg>
+"FLUFFY CAT: <quote>Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK.<quote>"
+[[INPUT THE BLUE SKY]]
+<br>
+<image fluff2.jpg>
+"FLUFFY CAT: <quote>Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK.<quote>"
+[[INPUT BLUE SKY]]
+<br>
+<image fluff2.jpg>
+"FLUFFY CAT: <quote>Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK.<quote>"
+[[INPUT SKY]]
+<br>
+<image fluff2.jpg>
+"FLUFFY CAT: <quote>Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK.<quote>"
+[[INPUT ELSE]]
+<br>
+"FLUFFY CAT: <quote>Aha!  It appears that I have bested you!  That answer is INCORRECT.  No one is as clever as I!<quote>"
+<br>
+"Better luck next time."
 "[scene id=1,1,3]"
 "name=MYSTERY ROOM"
 "color=184,115,51"
