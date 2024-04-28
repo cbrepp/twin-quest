@@ -79,7 +79,7 @@ isNightOwlDefeated=0
 <turn-page>
 [scene 4]
 "MYLEE: <quote>You look like you're new to this so I'll help you out.  See that 'Ask MYLEE' prompt below?  It's giving you some choices.  Pick one.  You can learn about this game before you begin your quest.<quote>"
-"<story-prompt Ask MYLEE:WHO ARE YOU,WHERE IS MY TWIN,WHO IS BIG CHUNG,NOTHING>"
+"<story-prompt Ask MYLEE:WHO ARE YOU+WHERE IS MY TWIN+WHO IS BIG CHUNG+NOTHING>"
 [[WHO ARE YOU]]
 <br>
 "MYLEE: <quote>I'm Mylee Marie!<quote>"
@@ -197,9 +197,83 @@ isNightOwlDefeated=0
 "[scene id=1,3,1]"
 "name=MAGIC RING OF TOADSTOOLS"
 "color=184,115,51"
-"sound="
+"sound=magic-chimes.mp3"
 [scene 1]
+<choices-add SPEAK NAME>
+[[LISTEN]]
 <play-sound magic.mp3>
+"You hear... magic, perhaps?  You attempt to focus on the sound..."
+<press-any-key>
+<br>
+"...but it disappears from your mind."
+[[LOOK]]
+<image mushroom.jpg>
+<unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak>
+<image wooden-sign.png>
+<br>
+"This is a magical place of faeries and giant mushrooms!  A simple wooden sign sits in the center of this place.  On this sign reads a simple message..."
+<br>
+"'Speak the name of the spirit that dwells in this place and be gifted with a magical item.'"
+[[SPEAK NAME]]
+Think carefully.  What could the magic name be?
+<br>
+<get-input You:SHMEBULOCK+DRACO+MAGNIFICO+DRACO MAGNIFICO>
+[[INPUT SHMEBULOCK]]
+<play-sound magic.mp3>
+<br>
+"A purplish mist rises off the ground..."
+<br>
+"Perhaps some magical creature is manifesting?"
+<press-any-key>
+<br>
+<color 160+32+240>
+"|           ,"
+"|          / \"
+"|         /   \"
+"|        /     \"
+"|       /_______\"
+"|       // . . \\"
+"|      (/(__7__)\)"
+"|      |'-' = `-'|"
+"|      |         |"
+"|      /\       /\"
+"|     /  '.   .'  \"
+"|    / /|  `v`  |\ \"
+"|    \ \|===[]==|/ /"
+"|     '-|_______|-'"
+"|        |__|__|"
+"|        |--|--|"
+"|       (__)`(__)"
+<color STORY>
+<br>
+"MAGIC GNOME: <quote>Shmebulock!  Shmebulock... Shmebulock.  Shmebulock?  Shmebulock, Shmebulock.  Shme... bu... lock!<quote>"
+<if-inventory-contains RING OF TAMING>
+[[HAS RING OF TAMING]]
+<br>
+"You look down at your ring and it glows with power."
+[[NO RING OF TAMING]]
+<inventory-add RING OF TAMING>
+"(Does not work on large creatures.)"
+[[INPUT DRACO]]
+<br>
+"You wait... and wait some more.  But... nothing happens!  Perhaps you spoke the wrong name?"
+<br>
+"Good guess though.  A fluffy guess... but a good guess!"
+[[INPUT MAGNIFICO]]
+<br>
+"You wait... and wait some more.  But... nothing happens!  Perhaps you spoke the wrong name?"
+<br>
+"Good guess though.  A fluffy guess... but a good guess!"
+[[INPUT DRACO MAGNIFICO]]
+<br>
+"You wait... and wait some more.  But... nothing happens!  Perhaps you spoke the wrong name?"
+<br>
+"Good guess though.  A fluffy guess... but a good guess!"
+[[INPUT ELSE]]
+<br>
+"You wait... and wait some more.  But... nothing happens!  Perhaps you spoke the wrong name?"
+<br>
+"Better luck next time."
 "[scene id=1,1,2]"<press-any-key>
 "name=GIANNI'S DEN"[scene 1]
 "Oh the grea
@@ -233,12 +307,14 @@ isNightOwlDefeated=0
 [[RANDOM 3]]
 <story-sound><play-sound heavy-wings.mp3+hooting.mp3>
 <br>
-"The sky is dark and you hear the sound of flapping wings.  By the time you look up it's too late."
+"The sky is dark and you hear the sound of flapping wings.  By the time you look up it's too late..."
 <press-any-key>
 <play-sound heavy-wings.mp3+hooting.mp3>
+<br>
 <image night-owl.jpg>
-"NIGHT OWL has claimed you as his prey!  What an unfortunate way to end your journey."
 <press-any-key>
+<br>
+"NIGHT OWL has claimed you as his prey!  What an unfortunate way to end your journey."
 <hp-remove 100>
 "[scene id=1,3,2]"
 "name=MOUNT FLUFF"
@@ -248,7 +324,7 @@ isNightOwlDefeated=0
 <play-sound fluff.wav>
 "[scene id=1,1,3]"
 "name=MYSTERY ROOM"
-"color=255,140,0"
+"color=184,115,51"
 "sound="
 [scene 1]
 <if-game-variable PLAYER>
@@ -293,7 +369,11 @@ isNightOwlDefeated=0
 <inventory-add SWORD>
 <end-page>
 [[LISTEN]]
-Everything sounds a little magical.
+<play-sound magic.mp3>
+"You hear... magic, perhaps?  You attempt to focus on the sound..."
+<press-any-key>
+<br>
+"...but it disappears from your mind."
 <if-game-variable PLAYER>
 [[PLAYER GREYSON]]
 <br>

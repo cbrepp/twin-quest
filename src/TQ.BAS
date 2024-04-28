@@ -28,6 +28,8 @@
 ' hooting.mp3 - Desert Owl (https://freesound.org/people/claytron3000/sounds/384186/)
 ' inventory.mp3 - Cash Register (https://freesound.org/people/kiddpark/sounds/201159/)
 ' magic.mp3 - Magic.mp3 (https://freesound.org/people/Bastianhallo/sounds/434050/)
+' magic-humming.mp3 - Magical Humming Ambiance. (https://freesound.org/people/SnowFightStudios/sounds/670641/)
+' magic-chimes.mp3 - a mystical enclosed bell (https://freesound.org/people/kdemani/sounds/635328/)
 ' minigames.mp3 - video game menu music (https://freesound.org/people/magmadiverrr/sounds/661248/)
 ' mushroom.jpg - Crystal, Mushroom, Purple mushroom image. Free for use. by Fractals99 (https://pixabay.com/photos/crystal-mushroom-purple-mushroom-7428278/)
 ' mylee.jpg - Mylee Marie by Mr. Chris
@@ -46,6 +48,7 @@
 ' wilderness.jpg - Nature, Fog, Travel image. Free for use. by jameswheeler (https://pixabay.com/photos/nature-fog-travel-foggy-haze-mist-3787200/)
 ' wilderness2.jpg - Flow, Forest, Landscape image. Free for use. by jggrz (https://pixabay.com/photos/flow-forest-landscape-nature-4689820/)
 ' wilderness.mp3 - birds_210513_0088.mp3 (https://freesound.org/people/titi2/sounds/571247/)
+' wooden-sign.png - Sign Wood Wooden royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/sign-wood-wooden-brown-rustic-576261/)
 ' woods.jpg - Secret, Forest, Darkness image. Free for use. by jplenio (https://pixabay.com/photos/secret-forest-darkness-nature-3120483/)
 ' woods2.jpg - Forest, Darkness, Trees image. Free for use. by Tomegos (https://pixabay.com/photos/forest-darkness-trees-dark-nature-7543646/)
 ' woods.mp3 - forestsurroundings.mp3 (https://freesound.org/people/Luftrum/sounds/48411/)
@@ -431,32 +434,6 @@ Sub ChallengeHighScores (game As Book)
     Call DisplayHighScoresPage(game)
 End Sub
 
-' Chase bunnies action
-'
-' Parameters:
-' game - Book instance
-Sub ChaseBunniesAction (game As Book)
-    Exit Sub
-    Color _RGB(0, 100, 0) ' dark green
-    Call PrintPageText(game, "story", CsrLin, "Seems like an unimportant thing to do but nonetheless you try to chase some of the bunnies.")
-    Call PrintPageText(game, "story", CsrLin + 1, "And...")
-
-    Randomize Timer
-    bunnyChance% = Int(Rnd * 3) + 1
-    If bunnyChance% = 3 Then
-        bunnyImage& = _LoadImage("bionic-bunny.jpg")
-        Call DisplayImage(game, "story", bunnyImage&)
-        Call PrintPageText(game, "story", CsrLin + 1, "Instead the bunnies start chasing you!  What are they, bionic???  You run as fast as you can to get away.")
-        Call PrintPageText(game, "story", CsrLin + 1, "It would be best to forget this ever happened and continue on with your quest.")
-    Else
-        Call PrintPageText(game, "story", CsrLin + 1, "You can't catch a single one.  They are too fast!  Oh well, next time maybe.  You need to continue on with your quest.")
-    End If
-
-    If bunnyChance% = 3 Then
-        _FreeImage bunnyImage&
-    End If
-End Sub
-
 ' Does a string contain a given token? (1/0)
 '
 ' Parameters:
@@ -799,52 +776,35 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
             If tag$ <> "" Then
                 storyText$ = storyText$ + Left$(remainingDiv$, tagStart% - 1)
                 remainingDiv$ = Mid$(remainingDiv$, tagEnd% + 1, Len(remainingDiv$))
-                ' TODO - Handle all tags
-                If tag$ = "end-page" Then
-                    ' The End-Page tag prints any accumulated text and then causes an immediate termination of the page
-                    If storyText$ <> "" Then
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    End If
-                    isExitSet% = 1
-                    Exit Do
-                End If
-                If tag$ = "story-sound" Then
-                    ' The Story-Sound tag prints any accumulated text, stops the current story sound, and then plays the new story sound in a loop
-                    If storyText$ <> "" Then
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    End If
-                    soundFile$ = tagValue$
-                    Call StopSound(game.storySound)
-                    game.storySound = PlaySound&(soundFile$, 1, 1)
-                    _Continue
-                End If
-                If tag$ = "twin" Then
-                    ' The Twin tag is translated into the name of the game player's twin
-                    storyText$ = storyText$ + game.twin
-                    _Continue
-                End If
-                If tag$ = "player" Then
-                    ' The Player tag is translated into the name of the game's player
-                    storyText$ = storyText$ + game.player
-                    _Continue
-                End If
-                If tag$ = "quote" Then
-                    ' The Quote tag is translated into the double quote character
-                    storyText$ = storyText$ + Chr$(34)
-                    _Continue
-                End If
-                If tag$ = "press-any-key" Then
-                    ' The Press-Any-Key tag prints any accumulated text and then causes the program to sleep until the player provides input
-                    If storyText$ <> "" Then
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    End If
-                    Call PressAnyKey(game, 1)
-                    _Continue
-                End If
-                If tag$ = "br" Then
+
+                ' Supported Tags:
+                ' <br>/<break>
+                ' <choices-add CHOICE1+CHOICE2+CHOICE3...>
+                ' <color RED+BLUE+GREEN/STORY>
+                ' <end-page>
+                ' <get-input LABEL:CHOICE1+CHOICE2+CHOICE3...>
+                ' <goto-chapter CHAPTER>
+                ' <hp-remove POINTS>
+                ' <if-game-variable PLAYER/TODO>
+                ' <if-inventory-contains ITEM>
+                ' <if-story-variable VARIABLE>
+                ' <image IMAGE1+IMAGE2+IMAGE3...>
+                ' <inventory-add ITEM1+ITEM2+ITEM3...>
+                ' <play-sound SOUND1+SOUND2+SOUND3...>
+                ' <player>
+                ' <press-any-key>
+                ' <quote>
+                ' <random COUNT>
+                ' <set-story-variable VARIABLE=VALUE>
+                ' <stop-sound SOUND1+SOUND2+SOUND3...>
+                ' <story-prompt LABEL:CHOICE1+CHOICE2+CHOICE3...>
+                ' <story-sound SOUND>
+                ' <story-variable VARIABLE>
+                ' <turn-page>
+                ' <twin>
+                ' <unbreak>
+
+                If (tag$ = "br") Or (tag$ = "break") Then
                     ' The Break tag prints any accumulated text and advances to the next line
                     If storyText$ <> "" Then
                         Call PrintPageText(game, "story", CsrLin, storyText$)
@@ -854,14 +814,116 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     End If
                     _Continue
                 End If
-                If tag$ = "turn-page" Then
-                    ' The Next-Page tag advances to the next page in the story scene
-                    game.pageNumber = game.pageNumber + 1
+                If tag$ = "choices-add" Then
+                    ' The Choices-Add tag adds the choice(s) to the main story choices list
+                    choiceCount% = ListLength%(tagValue$, "+")
+                    For j% = 1 To choiceCount%
+                        newChoice$ = ListPiece$(tagValue$, "+", j%)
+                        game.storyChoices = ListAdd$(game.storyChoices, ",", newChoice$)
+                    Next j%
+                    _Continue
+                End If
+                If tag$ = "color" Then
+                    ' The Color tag prints any accumulated text and then changes the font color to the designated RGB value or resets to the scene's story color
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    If tagValue$ = "STORY" Then
+                        If scene.color = _RGB(255, 255, 255) Then
+                            Color _RGB(0, 0, 0) ' For readability, never use white text on the book
+                        Else
+                            Color scene.color
+                        End If
+                    Else
+                        redValue% = Val(ListPiece$(tagValue$, "+", 1))
+                        greenValue% = Val(ListPiece$(tagValue$, "+", 2))
+                        blueValue% = Val(ListPiece$(tagValue$, "+", 3))
+                        Color _RGB(redValue%, greenValue%, blueValue%)
+                    End If
+                    _Continue
+                End If
+                If tag$ = "end-page" Then
+                    ' The End-Page tag prints any accumulated text and then causes an immediate termination of the page
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    isExitSet% = 1
+                    Exit Do
+                End If
+                If tag$ = "get-input" Then
+                    ' The Get-Input tag prints any accumulated text and prompts the user for an input string
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    inputLabel$ = ListPiece(tagValue$, ":", 1)
+                    inputChoices$ = ListPiece(tagValue$, ":", 2)
+                    userInput$ = GetInput$(game, inputLabel$, 0, 0, 40)
+                    If ListContains%(inputChoices$, "+", userInput$) Then
+                        action = "INPUT " + userInput$
+                    Else
+                        action = "INPUT ELSE"
+                    End If
+                    If scene.color = _RGB(255, 255, 255) Then
+                        Color _RGB(0, 0, 0) ' For readability, never use white text on the book
+                    Else
+                        Color scene.color
+                    End If
                     _Continue
                 End If
                 If tag$ = "goto-chapter" Then
                     ' The Goto-Chapter tag redirects the player to the designated chapter
                     game.chapter = "CHAPTER " + tagValue$
+                    _Continue
+                End If
+                If tag$ = "hp-remove" Then
+                    ' The HP-Remove tag prints any accumulated text and decreases the player's hit points
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    Call DecreaseHitPoints(game, Val(tagValue$))
+                    _Continue
+                End If
+                If tag$ = "if-game-variable" Then
+                    ' The If-Game-Variable tag prints any accumulated text and then sets the current action to the sub-section that matches <VARIABLE> <VALUE>
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    variable$ = tagValue$
+                    variableValue$ = ""
+                    If variable$ = "PLAYER" Then
+                        variableValue$ = game.player
+                    End If
+                    action = (variable$ + " " + variableValue$)
+                    _Continue
+                End If
+                If tag$ = "if-inventory-contains" Then
+                    ' The If-Inventory-Contains tag prints any accumulated text and then sets the current action to the sub-section that matches HAS <ITEM> or NO <ITEM>
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    item$ = tagValue$
+                    If ListContains%(game.inventory, ",", item$) = 1 Then
+                        action = "HAS " + item$
+                    Else
+                        action = "NO " + item$
+                    End If
+                    _Continue
+                End If
+                If tag$ = "if-story-variable" Then
+                    ' The If-Story-Variable tag prints any accumulated text and then sets the current action to the sub-section that matches <VARIABLE> <VALUE>
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    variable.name = tagValue$
+                    Call StoryVariable(RETRIEVE, variable)
+                    action = (variable.name + " " + variable.value)
                     _Continue
                 End If
                 If tag$ = "image" Then
@@ -910,6 +972,43 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     Next j%
                     _Continue
                 End If
+                If tag$ = "player" Then
+                    ' The Player tag is translated into the name of the game's player
+                    storyText$ = storyText$ + game.player
+                    _Continue
+                End If
+                If tag$ = "press-any-key" Then
+                    ' The Press-Any-Key tag prints any accumulated text and then causes the program to sleep until the player provides input
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    Call PressAnyKey(game, 1)
+                    _Continue
+                End If
+                If tag$ = "quote" Then
+                    ' The Quote tag is translated into the double quote character
+                    storyText$ = storyText$ + Chr$(34)
+                    _Continue
+                End If
+                If tag$ = "random" Then
+                    ' The Random tag prints any accumulated text and sets the current action to a sub-section matching the random value
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    Randomize Timer
+                    randomNumber% = Int(Rnd * Val(tagValue$)) + 1
+                    action = "RANDOM " + LTrim$(Str$(randomNumber%))
+                    _Continue
+                End If
+                If tag$ = "set-story-variable" Then
+                    ' The Set-Story-Variable tag sets the target variable to the designated value
+                    variable.name = ListPiece$(tagValue$, "=", 1)
+                    variable.value = ListPiece$(tagValue$, "=", 2)
+                    Call StoryVariable(UPDATE, variable)
+                    _Continue
+                End If
                 If tag$ = "stop-sound" Then
                     ' The Stop-Sound tag prints any accumulated text and stops the playing sound(s)
                     If storyText$ <> "" Then
@@ -928,33 +1027,53 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     Next j%
                     _Continue
                 End If
-                If tag$ = "choices-add" Then
-                    ' The Choices-Add tag adds the choice(s) to the main story choices list
-                    choiceCount% = ListLength%(tagValue$, "+")
-                    For j% = 1 To choiceCount%
-                        newChoice$ = ListPiece$(tagValue$, "+", j%)
-                        game.storyChoices = ListAdd$(game.storyChoices, ",", newChoice$)
+                If tag$ = "story-prompt" Then
+                    ' The Story-Prompt tag prints any accumulated text and prompts the user with a list of choices
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    promptLabel$ = ListPiece$(tagValue$, ":", 1)
+                    promptChoices$ = ListPiece$(tagValue$, ":", 2)
+                    promptChoicesCount% = ListLength%(promptChoices$, "+")
+                    formattedChoices$ = ""
+                    maxChoiceListLength% = 0
+                    For j% = 1 To promptChoicesCount%
+                        choice$ = ListPiece$(promptChoices$, "+", j%)
+                        choiceListLength% = Len(choice$)
+                        If choiceListLength% > maxChoiceListLength% Then
+                            maxChoiceListLength% = choiceListLength%
+                        End If
+                        If formattedChoices$ <> "" Then
+                            formattedChoices$ = formattedChoices$ + ","
+                        End If
+                        formattedChoices$ = formattedChoices$ + choice$
                     Next j%
+                    If maxChoiceListLength% > 40 Then
+                        ' TODO - Hopefully this never happens!
+                        maxChoiceListLength% = 40
+                    End If
+                    Locate CsrLin + 1, 1
+                    ' TODO - Enable arrow keys if normal level chapter.  This is being passed as 0.
+                    action = StoryPrompt$(game, promptLabel$, formattedChoices$, 0, 1, maxChoiceListLength%)
+                    Locate CsrLin + 2, 1
+
+                    ' The remaining page text should now only be the sub-section for the selected choice, headed by [[choice]], and
+                    ' ending with the next choice's header or the end of the page text, whichever comes first
+                    ' TODO - The main for-loop needs to be updated to skip any <div> not in the selected choice's sub-section
+                    ' TODO - It's kind of magical that any remaining text in the div will be processed and then subsequent divs skipped if they
+                    ' don't match the target sub-section
                     _Continue
                 End If
-                If tag$ = "random" Then
-                    ' The Random tag prints any accumulated text and sets the current action to a sub-section matching the random value
+                If tag$ = "story-sound" Then
+                    ' The Story-Sound tag prints any accumulated text, stops the current story sound, and then plays the new story sound in a loop
                     If storyText$ <> "" Then
                         Call PrintPageText(game, "story", CsrLin, storyText$)
                         storyText$ = ""
                     End If
-                    Randomize Timer
-                    randomNumber% = Int(Rnd * Val(tagValue$)) + 1
-                    action = "RANDOM " + LTrim$(Str$(randomNumber%))
-                    _Continue
-                End If
-                If tag$ = "hp-remove" Then
-                    ' The HP-Remove tag prints any accumulated text and decreases the player's hit points
-                    If storyText$ <> "" Then
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    End If
-                    Call DecreaseHitPoints(game, Val(tagValue$))
+                    soundFile$ = tagValue$
+                    Call StopSound(game.storySound)
+                    game.storySound = PlaySound&(soundFile$, 1, 1)
                     _Continue
                 End If
                 If tag$ = "story-variable" Then
@@ -968,86 +1087,27 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     Call PrintPageText(game, "story", CsrLin, variable.value)
                     _Continue
                 End If
-                If tag$ = "if-game-variable" Then
-                    ' The If-Game-Variable tag prints any accumulated text and then sets the current action to the sub-section that matches <VARIABLE> <VALUE>
-                    If storyText$ <> "" Then
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    End If
-                    variable$ = tagValue$
-                    variableValue$ = ""
-                    If variable$ = "PLAYER" Then
-                        variableValue$ = game.player
-                    End If
-                    action = (variable$ + " " + variableValue$)
+                If tag$ = "turn-page" Then
+                    ' The Next-Page tag advances to the next page in the story scene
+                    game.pageNumber = game.pageNumber + 1
                     _Continue
                 End If
-                If tag$ = "if-inventory-contains" Then
-                    ' The If-Inventory-Contains tag prints any accumulated text and then sets the current action to the sub-section that matches HAS <ITEM> or NO <ITEM>
+                If tag$ = "twin" Then
+                    ' The Twin tag is translated into the name of the game player's twin
+                    storyText$ = storyText$ + game.twin
+                    _Continue
+                End If
+                If tag$ = "unbreak" Then
+                    ' The Unbreak tag prints any accumulated text and advances to the previous line
+                    currentLine% = CsrLin
                     If storyText$ <> "" Then
                         Call PrintPageText(game, "story", CsrLin, storyText$)
                         storyText$ = ""
                     End If
-                    item$ = tagValue$
-                    If ListContains%(game.inventory, ",", item$) = 1 Then
-                        action = "HAS " + item$
-                    Else
-                        action = "NO " + item$
-                    End If
+                    Locate currentLine% - 1, 1
                     _Continue
                 End If
 
-                If tag$ = "if-story-variable" Then
-                    ' The If-Story-Variable tag prints any accumulated text and then sets the current action to the sub-section that matches <VARIABLE> <VALUE>
-                    If storyText$ <> "" Then
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    End If
-                    variable.name = tagValue$
-                    Call StoryVariable(RETRIEVE, variable)
-                    action = (variable.name + " " + variable.value)
-                    _Continue
-                End If
-                If tag$ = "set-story-variable" Then
-                    ' The Set-Story-Variable tag sets the target variable to the designated value
-                    variable.name = ListPiece$(tagValue$, "=", 1)
-                    variable.value = ListPiece$(tagValue$, "=", 2)
-                    Call StoryVariable(UPDATE, variable)
-                    _Continue
-                End If
-                If tag$ = "story-prompt" Then
-                    ' The Story-Prompt tag prints any accumulated text and prompts the user with a list of choices
-                    If storyText$ <> "" Then
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    End If
-                    promptLabel$ = ListPiece$(tagValue$, ":", 1)
-                    promptChoices$ = ListPiece$(tagValue$, ":", 2)
-                    promptChoicesCount% = ListLength%(promptChoices$, ",")
-                    maxChoiceListLength% = 0
-                    For j% = 1 To promptChoicesCount%
-                        choice$ = ListPiece$(promptChoices$, ",", j%)
-                        choiceListLength% = Len(choice$)
-                        If choiceListLength% > maxChoiceListLength% Then
-                            maxChoiceListLength% = choiceListLength%
-                        End If
-                    Next j%
-                    If maxChoiceListLength% > 40 Then
-                        ' TODO - Hopefully this never happens!
-                        maxChoiceListLength% = 40
-                    End If
-                    Locate CsrLin + 1, 1
-                    ' TODO - Enable arrow keys if normal level chapter.  This is being passed as 0.
-                    action = StoryPrompt$(game, promptLabel$, promptChoices$, 0, 1, maxChoiceListLength%)
-                    Locate CsrLin + 2, 1
-
-                    ' The remaining page text should now only be the sub-section for the selected choice, headed by [[choice]], and
-                    ' ending with the next choice's header or the end of the page text, whichever comes first
-                    ' TODO - The main for-loop needs to be updated to skip any <div> not in the selected choice's sub-section
-                    ' TODO - It's kind of magical that any remaining text in the div will be processed and then subsequent divs skipped if they
-                    ' don't match the target sub-section
-                    _Continue
-                End If
                 storyText$ = storyText$ + tag$ ' Not a supported tag so just show its text
             Else
                 storyText$ = storyText$ + remainingDiv$
@@ -1508,25 +1568,16 @@ Sub ListenAction (game As Book)
     Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, currentScene)
     scene$ = currentScene.name
 
-    'scene$ = world(game.playerX, game.playerY)
-
-    'Call PrintPageText(game, "story", CsrLin, "You are in " + scene$ + ".")
-    ' Decribe what the player is hearing, and restart audio if not currently playing
     If game.storySound = 0 Then
         Call PrintPageText(game, "story", CsrLin, "You hear nothing.")
     Else
         If _SndPlaying(game.storySound) = 0 Then
             ReplaySound game.storySound, 1, 0
         End If
-        If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Then
+        If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Then
             ' Execute the LISTEN action
             Call WorldScenePage(RETRIEVE, currentScene.id, 1, pageContents$)
             Call DisplayStoryPage(game, currentScene, pageContents$, "LISTEN", 1)
-        End If
-        If scene$ = "MAGIC RING OF TOADSTOOLS" Then
-            Color _RGB(184, 115, 51)
-            Call PrintPageText(game, "story", CsrLin, "You hear... magic, perhaps?  You attempt to focus")
-            Call PrintPageText(game, "story", CsrLin, "on the sound but it disappears from your mind.")
         End If
         If scene$ = "GIANNI'S DEN" Then
             Color _RGB(169, 169, 169)
@@ -1882,15 +1933,6 @@ Sub LookAction (game As Book)
     Call WorldScenePage(RETRIEVE, scene.id, 1, pageContents$)
     Call DisplayStoryPage(game, scene, pageContents$, "LOOK", 1)
 
-    ' TODO - Execute LOOK action (to display the LOOK sub-section of the scene) then Call DisplayStoryPage(game)
-    If scene.name = "MAGIC RING OF TOADSTOOLS" Then
-        Call PrintPageText(game, "story", CsrLin, "A magical place of faeries and giant mushrooms!")
-        Call PrintPageText(game, "story", CsrLin, "A simple wooden sign sits in the center of this place.  On")
-        Call PrintPageText(game, "story", CsrLin, "this sign reads a simple message...")
-        Print
-        Call PrintPageText(game, "story", CsrLin, "'Speak the name of the spirit that dwells in this place and")
-        Call PrintPageText(game, "story", CsrLin, "be gifted with a magical item.'")
-    End If
     If scene.name = "MOUNT FLUFF" Then
         fluffImage& = _LoadImage("fluff.jpg")
         Call DisplayImage(game, "story", fluffImage&)
@@ -2085,11 +2127,8 @@ Sub MoveAheadAction (game As Book)
                 End If
 
                 ' Start playing the new scene's sound, if any
-                If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Then
+                If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Then
                     game.storySound = PlaySound&(newScene.sound, 1, 1)
-                End If
-                If scene$ = "MAGIC RING OF TOADSTOOLS" Then
-                    game.storySound = PlaySound&("magic.mp3", 1, 0)
                 End If
                 If scene$ = "GIANNI'S DEN" Then
                     game.storySound = PlaySound&("gianni.mp3", 1, 1)
@@ -2123,10 +2162,6 @@ Sub MoveAheadAction (game As Book)
                     game.storyChoices = game.storyChoices + ",PLAY GAME"
                     If Contains%(game.inventory, "RING OF TAMING", ",") Then
                         game.storyChoices = game.storyChoices + ",TAME FLUFF"
-                    End If
-                Else
-                    If scene$ = "MAGIC RING OF TOADSTOOLS" Then
-                        game.storyChoices = game.storyChoices + ",SPEAK NAME"
                     End If
                 End If
             End If
@@ -2203,6 +2238,8 @@ End Function
 ' game - Book instance
 ' isPageBreak - Is this intended to interrupt (meaning, not end) a page? (1/0)
 Sub PressAnyKey (game As Book, isPageBreak As Integer)
+    ' Remember the story color
+    storyColor& = _DefaultColor
     ' Display the prompt text
     Color _RGB(0, 139, 139) ' dark cyan
     curRow% = CsrLin
@@ -2234,7 +2271,7 @@ Sub PressAnyKey (game As Book, isPageBreak As Integer)
         _FreeImage background&
     End If
     ' Reposition the cursor
-    Color _RGB(0, 0, 0) ' black
+    Color storyColor& ' Restore the story color
     Locate curRow%, 1
 End Sub
 
@@ -2495,17 +2532,11 @@ Sub RefreshStoryPage (game As Book, choice As String)
             Call TurnPage(game, 1)
             Call LookAction(game)
         End If
-        If (choice = "SPEAK NAME") Then
-            Call SpeakNameAction(game)
-            Call PressAnyKey(game, 0)
-            choice = "LOOK"
-            Call TurnPage(game, 1)
-            Call LookAction(game)
-        End If
-        If (choice = "CHASE BUNNIES") Then
+        If (choice = "CHASE BUNNIES") Or (choice = "SPEAK NAME") Then
             Dim scene As Scene
             Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, scene)
             Call WorldScenePage(RETRIEVE, scene.id, 1, pageContents$)
+            Color scene.color
             Call DisplayStoryPage(game, scene, pageContents$, choice, 1)
         End If
         If (choice = "TAME FLUFF") Then
