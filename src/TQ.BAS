@@ -3,13 +3,16 @@
 ' bionic-bunny.jpg - Bionic Bunny Soldier by Zara
 ' bionic-bunny-commander.jpg - Bionic Bunny Commander by Zara
 ' book.png - Empty book by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
+' boss-battle.mp3 - Neon Dreams: A Retro-Futuristic Synthwave Track - MP3 Mixdown (https://freesound.org/people/Robbnix/sounds/685538/)
 ' bunny.jpg -  Rabbit, Field, Animal image. Free for use. by SvenZiegler (https://pixabay.com/photos/rabbit-field-animal-field-hare-6063733/)
 ' bunny2.jpg - Hare, Animal, Mammal image. Free for use. by apnear40 (https://pixabay.com/photos/hare-animal-mammal-wildlife-fauna-8585802/)
 ' castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
+' castle-interior.jpg - Ai Generated Gothic Castle royalty-free stock illustration. Free for use & download. (https://pixabay.com/illustrations/ai-generated-gothic-castle-room-8469399/)
 ' cat-meowing.mp3 - meow of a cat (https://freesound.org/people/lextrack/sounds/333916/)
 ' clouds.png - OpenClipart-Vectors (https://pixabay.com/vectors/sunrise-clouds-rising-sun-sky-sun-153600/)
 ' death.mp3 - Dramatic Scene Character Death Separation Melancholy Sadness (https://freesound.org/people/UNIVERSFIELD/sounds/697083/)
 ' dragon.mp3 - The Roar of a 5-Headed Dragon (https://freesound.org/people/bevibeldesign/sounds/366095/)
+' dragon-water.gif - Dragon, Fire, Reptile GIF. Free for use. (https://pixabay.com/gifs/dragon-fire-reptile-water-sea-sky-3473/)
 ' elevator.wav - music elevator ext (https://freesound.org/people/Jay_You/sounds/467240/)
 ' elevator-doors.png - Krolestwo_Nauki (https://pixabay.com/vectors/elevator-elevator-door-building-6232385/)
 ' elevator-open.mp3 - Elevator ding door open close, noisy, 10.mp3 (https://freesound.org/people/TRP/sounds/576359/)
@@ -22,6 +25,7 @@
 ' gianni.mp3 - bonfire flames sizzling (https://freesound.org/people/florianreichelt/sounds/563764/)
 ' gianni.jpg - Son of Fluff climbing a stair railing by Mr. Chris
 ' gianni2.jpg - Son of Fluff curled up on a blanket by Mr. Chris
+' gold.png - Chest Coins Gold royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/chest-coins-gold-lock-money-1293748/)
 ' grey.mp3 - 8-Bit Coin Or Power Up FX For Retro Video Games (https://freesound.org/people/Cloud-10/sounds/647977/)
 ' heavy-wings.mp3 - Wing Flap Heavy (prototype).mp3 (https://freesound.org/people/GearArcanaNo37/sounds/561364/)
 ' hit.mp3 - Hit with frying pan.mp3 (https://freesound.org/people/Whiprealgood/sounds/529567/)
@@ -35,6 +39,7 @@
 ' mushroom.jpg - Crystal, Mushroom, Purple mushroom image. Free for use. by Fractals99 (https://pixabay.com/photos/crystal-mushroom-purple-mushroom-7428278/)
 ' mylee.jpg - Mylee Marie by Mr. Chris
 ' night-owl.jpg - Scary, Owl, Eyes image. Free for use. by Skitterphoto (https://pixabay.com/photos/scary-owl-eyes-spooky-halloween-3595742/)
+' night-owl-flying.png - Owl Bird Nature royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/owl-bird-geometric-animal-wings-5986451/)
 ' old-books.jpg - Old books, Book, Old image. Free for use. by jarmoluk (https://pixabay.com/photos/old-books-book-old-library-436498/)
 ' points.mp3 - 320655__rhodesmas__level-up-01.mp3 (https://freesound.org/people/shinephoenixstormcrow/sounds/337049/)
 ' scream.mp3 - Human Death Scream.mp3 (https://freesound.org/people/DjCHAOS/sounds/77148/)
@@ -46,8 +51,9 @@
 ' turn-page.mp3 - page turn (https://freesound.org/people/partheeban/sounds/457767/)
 ' wayne-chung.jpg - Image of Wayne Chung wondering what's going on
 ' wayne-chung.mp3 - Wang Chung "Everybody Have Fun Tonight" snippet
-' wilderness.jpg - Nature, Fog, Travel image. Free for use. by jameswheeler (https://pixabay.com/photos/nature-fog-travel-foggy-haze-mist-3787200/)
+' wilderness.jpg and wilderness-full.jpg - Nature, Fog, Travel image. Free for use. by jameswheeler (https://pixabay.com/photos/nature-fog-travel-foggy-haze-mist-3787200/)
 ' wilderness2.jpg - Flow, Forest, Landscape image. Free for use. by jggrz (https://pixabay.com/photos/flow-forest-landscape-nature-4689820/)
+' wilderness3.jpg and wilderness3-small.jpg - Ai Generated Meadow Mountain royalty-free stock illustration. Free for use & download. (https://pixabay.com/illustrations/ai-generated-meadow-mountain-8190587/)
 ' wilderness.mp3 - birds_210513_0088.mp3 (https://freesound.org/people/titi2/sounds/571247/)
 ' wind.mp3 - A 1 min. 25 sec. raw audio mp3 recording of a rather strong-sounding wind blowing through pine trees. The wind eventually gets a little lighter toward the end of the recording. Includes a bit of breeze on the microphone but only enough to add to the effect. Recorded with a black Sony IC digital voice recorder. (https://freesound.org/people/FunWithSound/sounds/390740/)
 ' wooden-sign.png - Sign Wood Wooden royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/sign-wood-wooden-brown-rustic-576261/)
@@ -331,9 +337,94 @@ Sub AllTheThingsAction (game As Book)
     End If
 End Sub
 
+' TODO - Add parameters for making this as dynamic as possible
+' TODO - Add parameter for making the monster invisible
+Sub ArcadeShooter (game As Book)
+    'Sub ArcadeShooter (game As Book, playerImageFile As String, playerAttackImageFile As String, monsterImageFile As String, monsterAttackImageFile As String, monsterAttackSoundFile As String)
+    ' TODO - Copy book image starting with current row and column
+    currentCol% = Pos(0)
+    currentRow% = CsrLin
+    ' TODO - Add image for background
+    nightOwl& = _LoadImage("night-owl-flying.png")
+    ' TODO - Load different fireball images
+
+    Randomize Timer
+    randomNumber% = Int(Rnd * 400) + 1
+    monsterDestinationX% = nightOwlX% + randomNumber%
+
+    ' Hoot
+    monsterSound1& = PlaySound&("hooting.mp3", 1, 0)
+    'monsterSound2& = PlaySound&("heavy-wings.mp3", 1, 0)
+    ' Cool boss battle music
+    storySound& = PlaySound&("boss-battle.mp3", 1, 1)
+
+    image& = _LoadImage("wilderness3.jpg")
+    imageRow% = CsrLin
+    Call DisplayImage(game, "story", image&)
+    _FreeImage image&
+    Call RefreshControlPage(game)
+    Print
+    Call PrintPageText(game, "control", CsrLin, "To move, use the LEFT and RIGHT arrow keys.")
+    Call PrintPageText(game, "control", CsrLin, "To shoot, use the SPACE keys.")
+
+    startingScreen& = _CopyImage(0)
+
+    nightOwlX% = 150
+    nightOwlY% = ((imageRow%) * _FontHeight) + 10 ' TODO - Calculate the start of the background image and add a buffer so that the monster is inside of the background image
+    direction% = 1
+
+    Do
+        _Limit 30 ' 30 frames per second
+        Cls
+        _PutImage , startingScreen&
+        _PutImage (nightOwlX%, nightOwlY%), nightOwl&
+
+        ' Move monster
+        If direction% = 1 Then ' Move right
+            nightOwlX% = nightOwlX% + 2
+            If nightOwlX% > monsterDestinationX% Then
+                Call ReplaySound(monsterSound1&, 1, 0)
+                direction% = 2
+                ' TODO - Randomly compute number of iterations until next change (will need to compute edge in that direction for going too far)
+                randomNumber% = Int(Rnd * 400) + 1
+                monsterDestinationX% = nightOwlX% - randomNumber%
+                If monsterDestinationX% < 150 Then
+                    monsterDestinationX% = 150
+                End If
+            End If
+        End If
+        If direction% = 2 Then ' Move left
+            nightOwlX% = nightOwlX% - 2
+            If nightOwlX% < monsterDestinationX% Then
+                Call ReplaySound(monsterSound1&, 1, 0)
+                direction% = 1
+                ' TODO - Randomly compute number of iterations until next change
+                randomNumber% = Int(Rnd * 400) + 1
+                monsterDestinationX% = nightOwlX% + randomNumber%
+                If monsterDestinationX% > 550 Then
+                    monsterDestinationX% = 550
+                End If
+            End If
+        End If
+
+        ' TODO - If direction changed, play monster sound and start new volley of fireballs
+
+        ' TODO - For each fireball, compute the new x-y using that fireball's angle and draw the fireball at that location
+
+        ' Draw screen
+        _Display ' update screen with changes
+    Loop Until _KeyDown(27)
+
+    _AutoDisplay ' Automatically update the screen with changes
+    _PutImage , startingScreen&
+    _FreeImage startingScreen&
+    _FreeImage nightOwl&
+    Call StopSound(monsterSound1&)
+    Call StopSound(storySound&)
+    Locate currentRow%, currentCol%
+End Sub
+
 ' Capture the graphical area for a given text region
-'
-' TODO - Support multi-line text areas
 '
 ' Parameters:
 ' game - Book instance
@@ -351,6 +442,7 @@ Function CaptureTextArea& (game As Book, startColumn As Integer, startRow As Int
     y1% = (startRow - 1) * _FontHeight
     y2% = endRow * _FontHeight
     CaptureTextArea& = _NewImage(x2% - x1%, y2% - y1%, 32) ' Init the text area
+
 End Function
 
 ' Challenge the current set of high scores
@@ -780,8 +872,10 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                 remainingDiv$ = Mid$(remainingDiv$, tagEnd% + 1, Len(remainingDiv$))
 
                 ' Supported Tags:
+                ' <arcade-shooter>
                 ' <br>/<break>
                 ' <choices-add CHOICE1+CHOICE2+CHOICE3...>
+                ' <choices-remove CHOICE1+CHOICE2+CHOICE3...>
                 ' <color RED+BLUE+GREEN/STORY>
                 ' <end-page>
                 ' <get-input LABEL:CHOICE1+CHOICE2+CHOICE3...>
@@ -807,6 +901,15 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                 ' <twin>
                 ' <unbreak>
 
+                If (tag$ = "arcade-shooter") Then
+                    ' The Choices-Add tag prints any accumulated text and then launches the experimental arcade shooter mode
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    Call ArcadeShooter(game)
+                    _Continue
+                End If
                 If (tag$ = "br") Or (tag$ = "break") Then
                     ' The Break tag prints any accumulated text and advances to the next line
                     If storyText$ <> "" Then
@@ -823,6 +926,15 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     For j% = 1 To choiceCount%
                         newChoice$ = ListPiece$(tagValue$, "+", j%)
                         game.storyChoices = ListAdd$(game.storyChoices, ",", newChoice$)
+                    Next j%
+                    _Continue
+                End If
+                If tag$ = "choices-remove" Then
+                    ' The Choices-Remove tag removes the choice(s) from the main story choices list
+                    choiceCount% = ListLength%(tagValue$, "+")
+                    For j% = 1 To choiceCount%
+                        newChoice$ = ListPiece$(tagValue$, "+", j%)
+                        game.storyChoices = ListRemove$(game.storyChoices, ",", newChoice$)
                     Next j%
                     _Continue
                 End If
@@ -1267,6 +1379,8 @@ Sub ElevatorAction (game As Book)
             End If
         End If
     End If
+
+    ' TODO - story file needs an <arcade-shooter> tag that calls ArcadeShooter()
 End Sub
 
 Sub ExitAction (game As Book)
@@ -1601,17 +1715,10 @@ Sub ListenAction (game As Book)
         If _SndPlaying(game.storySound) = 0 Then
             ReplaySound game.storySound, 1, 0
         End If
-        If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Or (scene$ = "GIANNI'S DEN") Or (scene$ = "MOUNT FLUFF") Then
+        If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Or (scene$ = "GIANNI'S DEN") Or (scene$ = "MOUNT FLUFF") Or (scene$ = "CASTLE") Then
             ' Execute the LISTEN action
             Call WorldScenePage(RETRIEVE, currentScene.id, 1, pageContents$)
             Call DisplayStoryPage(game, currentScene, pageContents$, "LISTEN", 1)
-        End If
-        If scene$ = "CASTLE" Then
-            Color _RGB(255, 255, 0)
-            Call PrintPageText(game, "story", CsrLin, "You hear royal music... A harp!  A guitar!  And also")
-            Call PrintPageText(game, "story", CsrLin, "the deep sound of a tuba.  How splendid!  The music")
-            Call PrintPageText(game, "story", CsrLin, "carries loudly from the castle courtyard.  However,")
-            Call PrintPageText(game, "story", CsrLin, "you hear nothing from within the castle.")
         End If
         If scene$ = "DRAGON'S DEN" Then
             Color _RGB(255, 0, 0)
@@ -2001,14 +2108,6 @@ Sub LookAction (game As Book)
                 End If
             End If
         End If
-    End If
-    If scene.name = "CASTLE" Then
-        Call PrintPageText(game, "story", CsrLin, "What a magnificent castle!  But no one is home.")
-        Call PrintPageText(game, "story", CsrLin, "Perhaps the royal court fled because of BIG CHUNG?")
-    End If
-    If (scene.name = "CASTLE") And (Not Contains%(game.inventory, "GOLD", ",")) Then
-        Call PrintPageText(game, "story", CsrLin, "Beautiful gold coins are scattered around.  Will you take them?")
-        Print
     End If
 
     Color _RGB(0, 0, 0) ' Restore the default color
@@ -2424,15 +2523,12 @@ Sub RefreshStoryPage (game As Book, choice As String)
         If choice = "TURN RIGHT" Then
             Call TurnRightAction(game)
         End If
-        If (choice = "CHASE BUNNIES") Or (choice = "SPEAK NAME") Or (choice = "PLAY GAME") Or (choice = "TAME FLUFF") Then
+        If (choice = "CHASE BUNNIES") Or (choice = "SPEAK NAME") Or (choice = "PLAY GAME") Or (choice = "TAME FLUFF") Or (choice = "TAKE GOLD") Or (choice = "NIGHT OWL") Then
             Dim scene As Scene
             Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, scene)
             Call WorldScenePage(RETRIEVE, scene.id, 1, pageContents$)
             Color scene.color
             Call DisplayStoryPage(game, scene, pageContents$, choice, 1)
-        End If
-        If (choice = "TAKE GOLD") Then
-            Call TakeGoldAction(game)
         End If
         If (choice = "ALL THE THINGS") Then
             Call AllTheThingsAction(game)
@@ -2554,17 +2650,6 @@ Sub StoryVariable (event As Integer, variable As Variable)
     End If
     If event = DELETE Then
         ' Unsupported at this time
-    End If
-End Sub
-
-Sub TakeGoldAction (game As Book)
-    game.storyChoices = game.basicStoryChoices
-    If Not Contains%(game.inventory, "GOLD", ",") Then
-        Call IncreaseScore(game, 100)
-        Print
-        Call PrintPageText(game, "story", CsrLin, "All the gold now belongs to you!")
-        Print
-        Call IncreaseInventory(game, "GOLD")
     End If
 End Sub
 

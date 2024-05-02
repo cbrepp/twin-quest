@@ -144,10 +144,10 @@ isNightOwlDefeated=0
 "Oh the great outdoors!"
 <choices-add CHASE BUNNIES>
 [[LOOK]]
-<image wilderness2.jpg>
-"You see a babbling brook, trees, and cute bunnies."
+<image wilderness.jpg>
+"You see tall grass, a few trees, a misty stream, hills in the distance, and cute bunnies.  Also, the sun is shining brightly."
 [[LISTEN]]
-"You hear birds singing and perhaps some insects.  The brook is flowing peacefully.  These are the typical sounds of nature."
+"You hear birds singing and perhaps some insects.  There is also a slight breeze.  These are the typical sounds of nature."
 [[CHASE BUNNIES]]
 "Seems like an unimportant thing to do but nevertheless you try to chase some of the bunnies."
 <br>
@@ -167,14 +167,18 @@ isNightOwlDefeated=0
 <hp-remove 25>
 "[scene id=1,2,1]"
 "name=WILDERNESS"
-"color=0,100,0"
+"color=79,47,79"
 "sound=wilderness.mp3"
 [scene 1]
 "Oh the great outdoors!"
-<choices-add CHASE BUNNIES>
+<choices-add CHASE BUNNIES+NIGHT OWL>
 [[LOOK]]
-<image wilderness.jpg>
-"You see tall grass, a few trees, a misty stream, hills in the distance, and cute bunnies.  Also, the sun is shining brightly."
+<image wilderness3-small.jpg>
+"You see a meadow full of lavendar, then some trees, and then a mighty mountain range off in the distance.  The mountain range stretches to the south where a central point appears to climb so high that the mountain quite possibly goes up into outer space."
+<br>
+"Here in the meadow the sun is shining peacefully and cute bunnies scamper around you."
+<br>
+"You need to remember so you don't get lost... the ELEVATOR is by the purple lavendar."
 [[LISTEN]]
 "You hear birds singing and perhaps some insects.  There is also a slight breeze.  These are the typical sounds of nature."
 [[CHASE BUNNIES]]
@@ -194,6 +198,9 @@ isNightOwlDefeated=0
 <br>
 "The bunnies start chasing you!  What are they, bionic???  They shoot at you and you run as fast as you can to get away.  What were you thinking trying to chase bunnies???"
 <hp-remove 10>
+[[NIGHT OWL]]
+<story-sound>
+<arcade-shooter>
 "[scene id=1,3,1]"
 "name=MAGIC RING OF TOADSTOOLS"
 "color=184,115,51"
@@ -289,13 +296,13 @@ Think carefully.  What could the magic name be?
 "He's so cuuuuuuute!"
 <if-inventory-contains RING OF TAMING>
 [[HAS RING OF TAMING]]
-<play-sound cat-meowing.mp3>
 <image gianni.jpg>
-<press-any-key>
 <if-story-variable isCatTamed>
 [[isCatTamed 1]]
 "He meows with delight when he sees you and jumps into your waiting arms.  Oh what a wonderful cat he is!"
 [[isCatTamed 0]]
+<play-sound cat-meowing.mp3>
+<press-any-key>
 <set-story-variable isCatTamed=1>
 "You use your RING OF TAMING on him and he jumps into your waiting arms.  You pet him for hours and hours.  As a reward for your petting, he gives you a long-range weapon to aid you in your quest."
 <score-add 100>
@@ -355,15 +362,13 @@ Think carefully.  What could the magic name be?
 <choices-add TAME FLUFF>
 [[LISTEN]]
 <play-sound fluff.wav>
-"Oh my!  What magnificent guitar strumming!  The styling is firm and decisive and yet also... romantic."
+"Oh my!  The tom cat picks up his guitar and plays for you.  What magnificent guitar strumming!  His styling is firm and decisive and yet also... romantic.  The melody hypnotizes you."
 <press-any-key>
 <br>
 "You also hear a steady, blowing wind.  The sound swirls all around you.  This mountain must indeed be fluffy!"
 [[LOOK]]
-<play-sound fluff.wav>
 <image fluff.jpg>
-"You come upon the base of a mountain and see a gallant white tom cat wearing boots and playing a spanish guitar.  His melody hypnotizes you.  And my... he is so fluffy!"
-<press-any-key>
+"You come upon the base of a giant mountain that is so tall you can't even see the top.  Directly in front of you is a gallant white tom cat wearing boots.  Beside him is a noble-looking spanish guitar.  And my... this tom cat... he is so fluffy!"
 <br>
 "You are astonished to learn that this cat can speak.  He enjoys challenging others to a guessing game.  If you solve his riddle, he might just give you a prize."
 [[TAME FLUFF]]
@@ -399,22 +404,31 @@ Think carefully.  What could the magic name be?
 <br>
 <get-input You:THE SKY+THE BLUE SKY+BLUE SKY+SKY>
 [[INPUT THE SKY]]
+<play-sound fluff.wav>
 <br>
 <image fluff2.jpg>
 "FLUFFY CAT: <quote>Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK.<quote>"
+<press-any-key>
 [[INPUT THE BLUE SKY]]
+<play-sound fluff.wav>
 <br>
 <image fluff2.jpg>
 "FLUFFY CAT: <quote>Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK.<quote>"
+<press-any-key>
 [[INPUT BLUE SKY]]
+<play-sound fluff.wav>
 <br>
 <image fluff2.jpg>
 "FLUFFY CAT: <quote>Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK.<quote>"
+<press-any-key>
 [[INPUT SKY]]
+<play-sound fluff.wav>
 <br>
 <image fluff2.jpg>
 "FLUFFY CAT: <quote>Alas you have bested me!  And that was my finest riddle!  Very well then.  A deal is a deal. The magical name you seek is... SHMEBULOCK.<quote>"
+<press-any-key>
 [[INPUT ELSE]]
+<play-sound fluff.wav>
 <br>
 "FLUFFY CAT: <quote>Aha!  It appears that I have bested you!  That answer is INCORRECT.  No one is as clever as I!<quote>"
 <br>
@@ -469,7 +483,7 @@ Think carefully.  What could the magic name be?
 <play-sound magic.mp3>
 "You hear... magic, perhaps?  You attempt to focus on the sound..."
 <press-any-key>
-<br>
+<br>dd
 "...but it disappears from your mind."
 <if-game-variable PLAYER>
 [[PLAYER GREYSON]]
@@ -481,9 +495,28 @@ Think carefully.  What could the magic name be?
 "[scene id=1,2,3]"
 "name=CASTLE"
 "color=171,145,68"
-"sound="
+"sound=castle.mp3"
 [scene 1]
-<play-sound castle.mp3>
+[[LISTEN]]
+"You hear royal music... A harp!  A guitar!  And also the deep sound of a tuba.  How splendid!  The music carries loudly from the castle courtyard.  However, you hear nothing here within the castle."
+[[LOOK]]
+<image castle-interior.jpg>
+<if-inventory-contains GOLD>
+[[HAS GOLD]]
+"What a magnificent castle!  But no one is home.  Perhaps the royal court fled because of BIG CHUNG?"
+[[NO GOLD]]
+<unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak>
+<image gold.png>
+"What a magnificent castle!  But no one is home.  Perhaps the royal court fled because of BIG CHUNG?"
+<br>
+"A chest full of beautiful gold coins was left behind.  Will you it?"
+<choices-add TAKE GOLD>
+[[TAKE GOLD]]
+<score-add 100>
+<inventory-add GOLD>
+<br>
+"All the gold now belongs to you!"
+<choices-remove TAKE GOLD>
 "[scene id=1,3,3]"
 "name=DRAGON'S DEN"
 "color=255,0,0"
