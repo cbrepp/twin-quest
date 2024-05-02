@@ -71,6 +71,11 @@ Const CREATE = 1, RETRIEVE = 2, UPDATE = 3, DELETE = 4
 ' Define player names as shared, constant values
 Const GREYSON = "GREYSON", GREY = "GREY", ZARA = "ZARA"
 
+' GIF stuff
+Dim Shared Dbg: Dbg = 0
+Dim Shared powerOf2&(11)
+For a = 0 To 11: powerOf2&(a) = 2 ^ a: Next a
+
 Type Variable
     id As Integer
     name As String
@@ -129,6 +134,7 @@ Type Book
     levelSize As Integer
     magicPoints As Integer
     maxPageLength As Integer
+    openingGIF As String
     openingMusic As String
     pageNumber As Integer
     pageTurnSound As Long
@@ -150,6 +156,42 @@ Type Book
     twin As String
     version As String
 End Type
+
+' GIF type
+Type GIFDATA
+    file As Integer
+    sigver As String * 6
+    width As _Unsigned Integer
+    height As _Unsigned Integer
+    bpp As _Unsigned _Byte
+    sortFlag As _Byte ' Unused
+    colorRes As _Unsigned _Byte
+    colorTableFlag As _Byte
+    bgColor As _Unsigned _Byte
+    aspect As Single ' Unused
+    numColors As _Unsigned Integer
+    palette As String * 768
+End Type
+
+' Another GIF type
+Type FRAMEDATA
+    addr As Long
+    left As _Unsigned Integer
+    top As _Unsigned Integer
+    width As _Unsigned Integer
+    height As _Unsigned Integer
+    localColorTableFlag As _Byte
+    interlacedFlag As _Byte
+    sortFlag As _Byte ' Unused
+    palBPP As _Unsigned _Byte
+    minimumCodeSize As _Unsigned _Byte
+    transparentFlag As _Byte 'GIF89a-specific (animation) values
+    userInput As _Byte ' Unused
+    disposalMethod As _Unsigned _Byte
+    delay As Single
+    transColor As _Unsigned _Byte
+End Type
+
 
 ' Initialize the game
 Dim game As Book
@@ -203,6 +245,9 @@ game.pointsSound = _SndOpen("points.mp3")
 game.pageTurnSound = PlaySound&("turn-page.mp3", 1, 0)
 game.chapter = "SELECT STORY"
 Call LoadStory(game)
+If game.openingGIF <> "" Then
+    Call DisplayGIFPage(game)
+End If
 game.storySound = PlaySound&(game.openingMusic, 1, 1)
 game.chapter = ""
 Call DisplayTitlePage(game)
@@ -635,6 +680,395 @@ Sub DisplayCreditsPage (game As Book)
     scene.color = _RGB(0, 0, 0)
     Call DisplayStoryPage(game, scene, game.credits, "", 1)
     Call PressAnyKey(game, 0)
+End Sub
+
+' Display a GIF image
+'
+' Parameters:
+' game - Book instance
+' fileName - Name of GIF image file
+Sub DisplayGIF (game As Book, fileName As String)
+    ' Open gif file. This reads the headers and palette but not the image data.
+    ' The array will be redimentioned to fit the exact number of frames in the file.
+
+    Dim gifData As GIFDATA, frameData(0 To 0) As FRAMEDATA
+
+    'fileName$ = "dragon.gif" '<<<<<<<<<<<< Enter a file name here!!!
+
+    If Len(fileName) = 0 Then End
+    openGif fileName, gifData, frameData()
+
+    x% = (game.leftPageStartingColumn + 1) * _FontWidth
+    y% = (game.firstRow + 2) * _FontHeight
+    loadingMsgDisplayed% = 0
+    loadingMessage$ = "Loading ..."
+
+    ' Loop away.
+    startSeconds% = Val(ListPiece$(Time$, ":", 3))
+    frame = 0
+    Do
+        ' Request a frame. If it has been requested before, it is re-used,
+        ' otherwise it is read and decoded from the file.
+        frameImage& = getGifFrame&(gifData, frameData(), frame)
+        _PutImage (x%, y%), frameImage&
+        If (loadingMsgDisplayed% = 0) And (_Height(frameImage&) > -1) Then
+            Locate game.firstRow + 2 + (_Ceil(_Height(frameImage&) / _FontHeight)) + 1, game.leftPageStartingColumn + (game.maxPageLength / 2) - (Len(loadingMessage$) / 2)
+            Print loadingMessage$
+            loadingMsgDisplayed% = 1
+        End If
+        _Delay frameData(frame).delay
+        frame = (frame + 1) Mod (UBound(frameData) + 1)
+        currentSeconds% = Val(ListPiece$(Time$, ":", 3))
+        If startSeconds% > currentSeconds% Then
+            timeElapsed% = (60 - startSeconds%) + currentSeconds%
+        Else
+            timeElapsed% = currentSeconds% - startSeconds%
+        End If
+    Loop Until timeElapsed% >= 5
+
+    'Close the file and free the allocated frames.
+    codeGif gifData, frameData()
+End Sub
+
+' TODO - GIF sub
+'########################################################################################
+Sub openGif (filename$, gifData As GIFDATA, frameData() As FRAMEDATA) Static
+    file = FreeFile: gifData.file = file
+    Open "B", gifData.file, filename$
+
+    Get file, , gifData.sigver
+    Get file, , gifData.width
+    Get file, , gifData.height
+    Get file, , byte~%%
+    gifData.bpp = (byte~%% And 7) + 1
+    gifData.sortFlag = (byte~%% And 8) > 0
+    gifData.colorRes = (byte~%% \ 16 And 7) + 1
+    gifData.colorTableFlag = (byte~%% And 128) > 0
+    gifData.numColors = 2 ^ gifData.bpp
+    Get file, , gifData.bgColor
+    Get file, , byte~%%
+    If byte~%% = 0 Then gifData.aspect = 0 Else gifData.aspect = (byte~%% + 15) / 64
+
+    If gifData.sigver <> "GIF87a" And gifData.sigver <> "GIF89a" Then _Dest 0: Print "Invalid version": End
+    If Not gifData.colorTableFlag Then _Dest 0: Print "No Color Table": End
+
+    palette$ = Space$(3 * gifData.numColors)
+    Get file, , palette$
+    gifData.palette = palette$
+    If Dbg And 1 Then
+        Print "sigver         ="; gifData.sigver
+        Print "width          ="; gifData.width
+        Print "height         ="; gifData.height
+        Print "bpp            ="; gifData.bpp
+        Print "sortFlag       ="; gifData.sortFlag
+        Print "colorRes       ="; gifData.colorRes
+        Print "colorTableFlag ="; gifData.colorTableFlag
+        Print "bgColor        ="; gifData.bgColor
+        Print "aspect         ="; gifData.aspect
+        Print "numColors      ="; gifData.numColors
+        For i = 0 To gifData.numColors - 1
+            Print Using "pal(###) = "; i;
+            Print Hex$(_RGB32(Asc(gifData.palette, i * 3 + 1), Asc(gifData.palette, i * 3 + 2), Asc(gifData.palette, i * 3 + 3)))
+        Next
+    End If
+    Do
+        Get file, , byte~%%
+        If Dbg And 2 Then Print "Chunk: "; Hex$(byte~%%)
+        Select Case byte~%%
+            Case &H2C ' Image Descriptor
+                If frame > UBound(frameData) Then
+                    ReDim _Preserve frameData(0 To frame * 2 - 1) As FRAMEDATA
+                End If
+
+                Get file, , frameData(frame).left
+                Get file, , frameData(frame).top
+                Get file, , frameData(frame).width
+                Get file, , frameData(frame).height
+                Get file, , byte~%%
+                frameData(frame).localColorTableFlag = (byte~%% And 128) > 0
+                frameData(frame).interlacedFlag = (byte~%% And 64) > 0
+                frameData(frame).sortFlag = (byte~%% And 32) > 0
+                frameData(frame).palBPP = (byte~%% And 7) + 1
+                frameData(frame).addr = Loc(file) + 1
+
+                If frameData(frame).localColorTableFlag Then
+                    Seek file, Loc(file) + 3 * 2 ^ frameData(frame).palBPP + 1
+                End If
+                Get file, , frameData(frame).minimumCodeSize
+                If Dbg And 2 Then
+                    Print "addr                ="; Hex$(frameData(frame).addr - 1)
+                    Print "left                ="; frameData(frame).left
+                    Print "top                 ="; frameData(frame).top
+                    Print "width               ="; frameData(frame).width
+                    Print "height              ="; frameData(frame).height
+                    Print "localColorTableFlag ="; frameData(frame).localColorTableFlag
+                    Print "interlacedFlag      ="; frameData(frame).interlacedFlag
+                    Print "sortFlag            ="; frameData(frame).sortFlag
+                    Print "palBPP              ="; frameData(frame).palBPP
+                    Print "minimumCodeSize     ="; frameData(frame).minimumCodeSize
+                End If
+                If localColors Then _Dest 0: Print "Local color table": End
+                If frameData(frame).disposalMethod > 2 Then Print "Unsupported disposalMethod: "; frameData(frame).disposalMethod: End
+                skipBlocks file
+
+                frame = frame + 1
+            Case &H3B ' Trailer
+                Exit Do
+            Case &H21 ' Extension Introducer
+                Get file, , byte~%% ' Extension Label
+                If Dbg And 2 Then Print "Extension Introducer: "; Hex$(byte~%%)
+                Select Case byte~%%
+                    Case &HFF, &HFE ' Application Extension, Comment Extension
+                        skipBlocks file
+                    Case &HF9
+                        If frame > UBound(frameData) Then
+                            ReDim _Preserve frameData(0 To frame * 2 - 1) As FRAMEDATA
+                        End If
+
+                        Get 1, , byte~%% ' Block Size (always 4)
+                        Get 1, , byte~%%
+                        frameData(frame).transparentFlag = (byte~%% And 1) > 0
+                        frameData(frame).userInput = (byte~%% And 2) > 0
+                        frameData(frame).disposalMethod = byte~%% \ 4 And 7
+                        Get 1, , delay~%
+                        If delay~% = 0 Then frameData(frame).delay = 0.1 Else frameData(frame).delay = delay~% / 100
+                        Get 1, , frameData(frame).transColor
+                        If Dbg And 2 Then
+                            Print "frame           ="; frame
+                            Print "transparentFlag ="; frameData(frame).transparentFlag
+                            Print "userInput       ="; frameData(frame).userInput
+                            Print "disposalMethod  ="; frameData(frame).disposalMethod
+                            Print "delay           ="; frameData(frame).delay
+                            Print "transColor      ="; frameData(frame).transColor
+                        End If
+                        skipBlocks file
+                    Case Else
+                        Print "Unsupported extension Label: "; Hex$(byte~%%): End
+                End Select
+            Case Else
+                Print "Unsupported chunk: "; Hex$(byte~%%): End
+        End Select
+    Loop
+
+    ReDim _Preserve frameData(0 To frame - 1) As FRAMEDATA
+End Sub
+
+' TODO - GIF sub
+Sub skipBlocks (file)
+    Do
+        Get file, , byte~%% ' Block Size
+        If Dbg And 2 Then Print "block size ="; byte~%%
+        Seek file, Loc(file) + byte~%% + 1
+    Loop While byte~%%
+End Sub
+
+' TODO - GIF function
+Function getGifFrame& (gifData As GIFDATA, frameData() As FRAMEDATA, frame)
+    If frameData(frame).addr > 0 Then
+        If Dbg And 4 Then
+            Print "addr                ="; Hex$(frameData(frame).addr - 1)
+            Print "left                ="; frameData(frame).left
+            Print "top                 ="; frameData(frame).top
+            Print "width               ="; frameData(frame).width
+            Print "height              ="; frameData(frame).height
+            Print "localColorTableFlag ="; frameData(frame).localColorTableFlag
+            Print "interlacedFlag      ="; frameData(frame).interlacedFlag
+            Print "sortFlag            ="; frameData(frame).sortFlag
+            Print "palBPP              ="; frameData(frame).palBPP
+            Print "minimumCodeSize     ="; frameData(frame).minimumCodeSize
+            Print "transparentFlag     ="; frameData(frame).transparentFlag
+            Print "userInput           ="; frameData(frame).userInput
+            Print "disposalMethod      ="; frameData(frame).disposalMethod
+            Print "delay               ="; frameData(frame).delay
+            Print "transColor          ="; frameData(frame).transColor
+        End If
+        w = frameData(frame).width
+        h = frameData(frame).height
+        img& = _NewImage(w, h, 256)
+        frame& = _NewImage(gifData.width, gifData.height, 256)
+
+        _Dest img&
+        decodeFrame gifData, frameData(frame)
+
+        _Dest frame&
+        If frameData(frame).localColorTableFlag Then
+            _CopyPalette img&
+        Else
+            For i = 0 To gifData.numColors - 1
+                _PaletteColor i, _RGB32(Asc(gifData.palette, i * 3 + 1), Asc(gifData.palette, i * 3 + 2), Asc(gifData.palette, i * 3 + 3))
+            Next
+        End If
+
+        If frame Then
+            Select Case frameData(frame - 1).disposalMethod
+                Case 0, 1
+                    _PutImage , frameData(frame - 1).addr
+                Case 2
+                    Cls , gifData.bgColor
+                    _ClearColor gifData.bgColor
+            End Select
+        Else
+            Cls , gifData.bgColor
+        End If
+
+        If frameData(frame).transparentFlag Then
+            _ClearColor frameData(frame).transColor, img&
+        End If
+        _PutImage (frameData(frame).left, frameData(frame).top), img&
+        _FreeImage img&
+
+        frameData(frame).addr = frame&
+        _Dest 0
+    End If
+
+    getGifFrame& = frameData(frame).addr
+End Function
+
+' TODO - GIF sub
+'############################################################################################
+Sub decodeFrame (gifdata As GIFDATA, framedata As FRAMEDATA)
+    Dim byte As _Unsigned _Byte
+    Dim prefix(4095), suffix(4095), colorStack(4095)
+
+    startCodeSize = gifdata.bpp + 1
+    clearCode = 2 ^ gifdata.bpp
+    endCode = clearCode + 1
+    minCode = endCode + 1
+    startMaxCode = clearCode * 2 - 1
+    nvc = minCode
+    codeSize = startCodeSize
+    maxCode = startMaxCode
+
+    If framedata.interlacedFlag Then interlacedPass = 0: interlacedStep = 8
+    bitPointer = 0
+    blockSize = 0
+    blockPointer = 0
+    x = 0
+    y = 0
+
+    file = gifdata.file
+    Seek file, framedata.addr
+
+    If framedata.localColorTableFlag Then
+        palette$ = Space$(3 * 2 ^ framedata.palBPP)
+        Get 1, , palette$
+
+        For i = 0 To gifdata.numColors - 1
+            c& = _RGB32(Asc(palette$, i * 3 + 1), Asc(palette$, i * 3 + 2), Asc(palette$, i * 3 + 3))
+            _PaletteColor i, c&
+        Next
+    End If
+
+    Get file, , byte ' minimumCodeSize
+
+    Do
+        GoSub GetCode
+        stackPointer = 0
+        If code = clearCode Then 'Reset & Draw next color direct
+            nvc = minCode '           \
+            codeSize = startCodeSize ' Preset default codes
+            maxCode = startMaxCode '  /
+
+            GoSub GetCode
+            currentCode = code
+
+            lastColor = code
+            colorStack(stackPointer) = lastColor
+            stackPointer = 1
+        ElseIf code <> endCode Then 'Draw direct color or colors from suffix
+            currentCode = code
+            If currentCode = nvc Then 'Take last color too
+                currentCode = oldCode
+                colorStack(stackPointer) = lastColor
+                stackPointer = stackPointer + 1
+            End If
+
+            While currentCode >= minCode 'Extract colors from suffix
+                colorStack(stackPointer) = suffix(currentCode)
+                stackPointer = stackPointer + 1
+                currentCode = prefix(currentCode) 'Next color from suffix is described in
+            Wend '                                 the prefix, else prefix is the last col.
+
+            lastColor = currentCode '              Last color is equal to the
+            colorStack(stackPointer) = lastColor ' last known code (direct, or from
+            stackPointer = stackPointer + 1 '      Prefix)
+            suffix(nvc) = lastColor 'Automatically, update suffix
+            prefix(nvc) = oldCode 'Code from the session before (for extracting from suffix)
+            nvc = nvc + 1
+
+            If nvc > maxCode And codeSize < 12 Then
+                codeSize = codeSize + 1
+                maxCode = maxCode * 2 + 1
+            End If
+        End If
+
+        For i = stackPointer - 1 To 0 Step -1
+            PSet (x, y), colorStack(i)
+            x = x + 1
+            If x = framedata.width Then
+                x = 0
+                If framedata.interlacedFlag Then
+                    y = y + interlacedStep
+                    If y >= framedata.height Then
+                        Select Case interlacedPass
+                            Case 0: interlacedPass = 1: y = 4
+                            Case 1: interlacedPass = 2: y = 2
+                            Case 2: interlacedPass = 3: y = 1
+                        End Select
+                        interlacedStep = 2 * y
+                    End If
+                Else
+                    y = y + 1
+                End If
+            End If
+        Next
+
+        oldCode = code
+    Loop Until code = endCode
+
+    Get file, , byte
+    Exit Sub
+
+    GetCode:
+    If bitPointer = 0 Then GoSub ReadByteFromBlock: bitPointer = 8
+    WorkCode& = LastChar \ powerOf2&(8 - bitPointer)
+    While codeSize > bitPointer
+        GoSub ReadByteFromBlock
+
+        WorkCode& = WorkCode& Or LastChar * powerOf2&(bitPointer)
+        bitPointer = bitPointer + 8
+    Wend
+    bitPointer = bitPointer - codeSize
+    code = WorkCode& And maxCode
+    Return
+
+    ReadByteFromBlock:
+    If blockPointer = blockSize Then
+        Get file, , byte: blockSize = byte
+        a$ = Space$(blockSize): Get file, , a$
+        blockPointer = 0
+    End If
+    blockPointer = blockPointer + 1
+    LastChar = Asc(Mid$(a$, blockPointer, 1))
+    Return
+End Sub
+
+' TODO - GIF sub
+Sub codeGif (gifData As GIFDATA, frameData() As FRAMEDATA)
+    For i = 0 To UBound(frameData)
+        If frameData(i).addr < 0 Then _FreeImage frameData(i).addr
+    Next
+
+    Close gifData.file
+End Sub
+
+' Display the GIF page
+'
+' Parameters:
+' game - Book instance
+Sub DisplayGIFPage (game As Book)
+    Call TurnPage(game, 1)
+    Call DisplayGIF(game, game.openingGIF)
 End Sub
 
 ' Display the high scores page
@@ -1967,6 +2401,10 @@ Sub LoadStory (game As Book)
                     tempVariable.type = type$
                     tempVariable.value = value$
                     Call StoryVariable(CREATE, tempVariable)
+                End If
+                If section$ = "gif" Then
+                    game.openingGIF = fileLine$
+                    _Continue
                 End If
                 If Left$(section$, Len("scene")) = "scene" Then
                     Call WorldScene(RETRIEVE, 1, sceneLevel%, sceneX%, sceneY%, scene)
