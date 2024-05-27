@@ -2,6 +2,7 @@
 ' arcade.jpg - Teddy bear, Arcade, Claw machines image. Free for use. (https://pixabay.com/photos/teddy-bear-arcade-claw-machines-7558723/)
 ' bionic-bunny.jpg - Bionic Bunny Soldier by Zara
 ' bionic-bunny-commander.jpg - Bionic Bunny Commander by Zara
+' bonfire.mp3 - bonfire flames sizzling (https://freesound.org/people/florianreichelt/sounds/563764/)
 ' book.png - Empty book by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
 ' boss-battle.mp3 - Neon Dreams: A Retro-Futuristic Synthwave Track - MP3 Mixdown (https://freesound.org/people/Robbnix/sounds/685538/)
 ' bunny.jpg -  Rabbit, Field, Animal image. Free for use. by SvenZiegler (https://pixabay.com/photos/rabbit-field-animal-field-hare-6063733/)
@@ -12,6 +13,12 @@
 ' clouds.png - OpenClipart-Vectors (https://pixabay.com/vectors/sunrise-clouds-rising-sun-sky-sun-153600/)
 ' death.mp3 - Dramatic Scene Character Death Separation Melancholy Sadness (https://freesound.org/people/UNIVERSFIELD/sounds/697083/)
 ' dragon.mp3 - The Roar of a 5-Headed Dragon (https://freesound.org/people/bevibeldesign/sounds/366095/)
+' dragon.png - Animal Beast Creature royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/animal-beast-creature-dragon-drake-2027043/)
+' dragon-fight-grey.png - Dragon Fantasy Samurai royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/dragon-fantasy-samurai-forest-7063555/)
+' dragon-fight-grey2.png - (Expanded) Dragon Fantasy Samurai royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/dragon-fantasy-samurai-forest-7063555/)
+' dragon-fight-zara.png - Dragon Katana Woman royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/dragon-katana-woman-fantasy-sword-7063556/)
+' dragon-fight-zara2.png - (Expanded) Dragon Katana Woman royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/dragon-katana-woman-fantasy-sword-7063556/)
+' dragon-fire.jpg - Fire Breathing Fiction royalty-free stock illustration. Free for use & download. (https://pixabay.com/illustrations/fire-breathing-fiction-dragon-7853170/)
 ' dragon-water.gif - Dragon, Fire, Reptile GIF. Free for use. (https://pixabay.com/gifs/dragon-fire-reptile-water-sea-sky-3473/)
 ' elevator.wav - music elevator ext (https://freesound.org/people/Jay_You/sounds/467240/)
 ' elevator-doors.png - Krolestwo_Nauki (https://pixabay.com/vectors/elevator-elevator-door-building-6232385/)
@@ -22,7 +29,6 @@
 ' fluff2.jpg - Gallant Sir Fluff looking perplexed by Mr. Chris
 ' fluff.wav - Spanish Lick I, Acoustic- AB split stereo pair (Oktava).wav (https://freesound.org/people/debudding/sounds/44366/)
 ' game-over.mp3 - Game Over - low (https://freesound.org/people/MT4000/sounds/664606/)
-' gianni.mp3 - bonfire flames sizzling (https://freesound.org/people/florianreichelt/sounds/563764/)
 ' gianni.jpg - Son of Fluff climbing a stair railing by Mr. Chris
 ' gianni2.jpg - Son of Fluff curled up on a blanket by Mr. Chris
 ' gold.png - Chest Coins Gold royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/chest-coins-gold-lock-money-1293748/)
@@ -49,6 +55,7 @@
 ' store.jpg - Shoe repair, Shop, Store image. Free for use. (https://pixabay.com/photos/shoe-repair-shop-store-guerrande-2498429/)
 ' suspense.mp3 - Drone Background Music (https://freesound.org/people/Migfus20/sounds/561085/)
 ' turn-page.mp3 - page turn (https://freesound.org/people/partheeban/sounds/457767/)
+' uno-reverse.png - Uno reverse card Blank Template - Imgflip (https://imgflip.com/memetemplate/371071451/Uno-reverse-card)
 ' wayne-chung.jpg - Image of Wayne Chung wondering what's going on
 ' wayne-chung.mp3 - Wang Chung "Everybody Have Fun Tonight" snippet
 ' wilderness.jpg and wilderness-full.jpg - Nature, Fog, Travel image. Free for use. by jameswheeler (https://pixabay.com/photos/nature-fog-travel-foggy-haze-mist-3787200/)
@@ -423,16 +430,20 @@ Sub ArcadeShooter (game As Book)
         Cls
         _PutImage , startingScreen&
         _PutImage (nightOwlX%, nightOwlY%), nightOwl&
+        ' TODO - Put each flame image
 
         ' Move monster
         If direction% = 1 Then ' Move right
             nightOwlX% = nightOwlX% + 2
+            ' TODO - If halfway to the destination, spawn flames, set flag to zero
+            ' When spawning flame, compute the angle of the flame based on its position... flame 1 and flame 2 move to the left, flames 3 and 4 move to the right
             If nightOwlX% > monsterDestinationX% Then
                 Call ReplaySound(monsterSound1&, 1, 0)
                 direction% = 2
-                ' TODO - Randomly compute number of iterations until next change (will need to compute edge in that direction for going too far)
+                ' Randomly compute number of iterations until next change (will need to compute edge in that direction for going too far)
                 randomNumber% = Int(Rnd * 400) + 1
                 monsterDestinationX% = nightOwlX% - randomNumber%
+                ' TODO - Compute halfway to the destination, set flag for whether new flames have been spawned to zero
                 If monsterDestinationX% < 150 Then
                     monsterDestinationX% = 150
                 End If
@@ -443,7 +454,7 @@ Sub ArcadeShooter (game As Book)
             If nightOwlX% < monsterDestinationX% Then
                 Call ReplaySound(monsterSound1&, 1, 0)
                 direction% = 1
-                ' TODO - Randomly compute number of iterations until next change
+                ' Randomly compute number of iterations until next change
                 randomNumber% = Int(Rnd * 400) + 1
                 monsterDestinationX% = nightOwlX% + randomNumber%
                 If monsterDestinationX% > 550 Then
@@ -451,10 +462,10 @@ Sub ArcadeShooter (game As Book)
                 End If
             End If
         End If
-
-        ' TODO - If direction changed, play monster sound and start new volley of fireballs
-
-        ' TODO - For each fireball, compute the new x-y using that fireball's angle and draw the fireball at that location
+        ' TODO - For each flame, add 2 to the current y coordinate and add or subtract from the x coordinate based on the flame's angle
+        ' TODO - Each flame that is now offscreen gets nuked
+        ' TODO - Slowly rotate each flame
+        ' TODO - Slowly grow each flame
 
         ' Draw screen
         _Display ' update screen with changes
@@ -2144,25 +2155,15 @@ Sub ListenAction (game As Book)
     scene$ = currentScene.name
 
     If game.storySound = 0 Then
+        ' TODO - Should also check to see if there is anything implemented for the [[LISTEN]] action for the scene instead of skipping it outright
         Call PrintPageText(game, "story", CsrLin, "You hear nothing.")
     Else
         If _SndPlaying(game.storySound) = 0 Then
             ReplaySound game.storySound, 1, 0
         End If
-        If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Or (scene$ = "GIANNI'S DEN") Or (scene$ = "MOUNT FLUFF") Or (scene$ = "CASTLE") Then
-            ' Execute the LISTEN action
-            Call WorldScenePage(RETRIEVE, currentScene.id, 1, pageContents$)
-            Call DisplayStoryPage(game, currentScene, pageContents$, "LISTEN", 1)
-        End If
-        If scene$ = "DRAGON'S DEN" Then
-            Color _RGB(255, 0, 0)
-            variable.name = "isDragonDead"
-            Call StoryVariable(RETRIEVE, variable)
-            If variable.value = "0" Then
-                Call PrintPageText(game, "story", CsrLin, "You hear the fearsome roar of a dragon!")
-                Call PrintPageText(game, "story", CsrLin, "There is no time to stop and listen to it!")
-            End If
-        End If
+        ' Execute the LISTEN action
+        Call WorldScenePage(RETRIEVE, currentScene.id, 1, pageContents$)
+        Call DisplayStoryPage(game, currentScene, pageContents$, "LISTEN", 1)
     End If
     Color _RGB(0, 0, 0)
 End Sub
@@ -2493,61 +2494,6 @@ Sub LookAction (game As Book)
     Call WorldScenePage(RETRIEVE, scene.id, 1, pageContents$)
     Call DisplayStoryPage(game, scene, pageContents$, "LOOK", 1)
 
-    If scene.name = "DRAGON'S DEN" Then
-        variable.name = "isDragonDead"
-        Call StoryVariable(RETRIEVE, variable)
-        If variable.value = "0" Then
-            Call PrintPageText(game, "story", CsrLin, "You find yourself in a dark cave.  A fire burns deep inside.")
-            Call PrintPageText(game, "story", CsrLin, "You explore the cave and find yourself face to face with a")
-            Call PrintPageText(game, "story", CsrLin, "ferocious dragon!")
-        Else
-            If game.storySound <> 0 Then
-                StopSound game.storySound
-                game.storySound = 0
-            End If
-            Call PrintPageText(game, "story", CsrLin, "The dragon once lived here until you, an amazing hero, slew it!")
-            Call PrintPageText(game, "story", CsrLin, "Paintings depicting your heroic act now cover the wall, a tribute")
-            Call PrintPageText(game, "story", CsrLin, "from the townspeople you saved!")
-        End If
-        If (Contains%(game.inventory, "GOLD", ",")) And (Not Contains%(game.inventory, "SWORD", ",")) And (Not Contains%(game.inventory, "UNO REVERSE", ",")) Then
-            Call PrintPageText(game, "story", CsrLin, "The greedy dragon sees your gold and blasts you with")
-            Call PrintPageText(game, "story", CsrLin, "its burning fire.  With no defense, you are burned to death.")
-            Call PrintPageText(game, "story", CsrLin, "Alas, this is the end of your quest.")
-            Print
-            Color _RGB(0, 0, 0)
-            Call PrintPageText(game, "story", CsrLin, "You have died.")
-            Call PrintPageText(game, "story", CsrLin, "Score -" + LTrim$(Str$(game.score)))
-            game.score = 0
-            game.isOver = 1
-        Else
-            If Not Contains%(game.inventory, "GOLD", ",") Then
-                Call PrintPageText(game, "story", CsrLin, "With nothing heavy to carry you are able to run away")
-                Call PrintPageText(game, "story", CsrLin, "before the dragon can end your quest.")
-            Else
-                StopSound game.storySound
-                game.storySound = 0
-                If (Contains%(game.inventory, "SWORD", ",")) And (variable.value = "0") Then
-                    Call PrintPageText(game, "story", CsrLin, "With quick reflexes you use your mighty sword to slay the dragon.")
-                    Call PrintPageText(game, "story", CsrLin, "The townspeople are saved.  And you are today a hero!!!")
-                    Call IncreaseScore(game, 100)
-                    Color _RGB(0, 0, 0)
-                    variable.value = "1"
-                    Call StoryVariable(UPDATE, variable)
-                Else
-                    If (Contains%(game.inventory, "UNO REVERSE", ",")) And (variable.value = "0") Then
-                        Call PrintPageText(game, "story", CsrLin, "With quick reflexes you use your UNO REVERSE card to send the dragon's")
-                        Call PrintPageText(game, "story", CsrLin, "flames back at it.  With each fiery burst, the dragon destroys itself.")
-                        Call PrintPageText(game, "story", CsrLin, "The townspeople are saved.  And you are today a hero!!!")
-                        Call IncreaseScore(game, 100)
-                        Color _RGB(0, 0, 0)
-                        variable.value = "1"
-                        Call StoryVariable(UPDATE, variable)
-                    End If
-                End If
-            End If
-        End If
-    End If
-
     Color _RGB(0, 0, 0) ' Restore the default color
 End Sub
 
@@ -2605,30 +2551,10 @@ Sub MoveAheadAction (game As Book)
                 End If
 
                 ' Start playing the new scene's sound, if any
-                If (scene$ = "WILDERNESS") Or (scene$ = "WOODS") Or (scene$ = "MYSTERY ROOM") Or (scene$ = "MAGIC RING OF TOADSTOOLS") Or (scene$ = "GIANNI'S DEN") Or (scene$ = "MOUNT FLUFF") Then
-                    game.storySound = PlaySound&(newScene.sound, 1, 1)
-                End If
-                If scene$ = "CASTLE" Then
-                    game.storySound = PlaySound&("castle.mp3", 1, 0)
-                End If
-                If scene$ = "DRAGON'S DEN" Then
-                    variable.name = "isDragonDead"
-                    Call StoryVariable(RETRIEVE, variable)
-                    If variable.value = "0" Then
-                        game.storySound = PlaySound&("dragon.mp3", 1, 0)
-                    Else
-                        If game.storySound <> 0 Then
-                            StopSound game.storySound
-                            game.storySound = 0
-                        End If
-                    End If
-                End If
-            End If
+                game.storySound = PlaySound&(newScene.sound, 1, 1)
 
-            ' Add special choices specific to the new scene
-            game.storyChoices = game.basicStoryChoices
-            If (scene$ = "CASTLE") And (Not Contains%(game.inventory, "GOLD", ",")) Then
-                game.storyChoices = game.storyChoices + ",TAKE GOLD"
+                ' Reset the story choices
+                game.storyChoices = game.basicStoryChoices
             End If
 
             ' Refresh the scene's description

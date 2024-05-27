@@ -286,7 +286,7 @@ Think carefully.  What could the magic name be?
 "[scene id=1,1,2]"
 "name=GIANNI'S DEN"
 "color=0,0,0"
-"sound=gianni.mp3"
+"sound=bonfire.mp3"
 [scene 1]
 [[LISTEN]]
 "You hear the crackle of a campfire in a vacuous space.  The sounds of the outside world are muted."
@@ -522,9 +522,77 @@ Think carefully.  What could the magic name be?
 "[scene id=1,3,3]"
 "name=DRAGON'S DEN"
 "color=255,0,0"
-"sound="
+"sound=bonfire.mp3"
 [scene 1]
+[[LISTEN]]
+<if-story-variable isDragonDead>
+[[isDragonDead 1]]
+"You hear the crackle of torches in a vacuous space.  The sounds of the outside world are muted.  It is peaceful here.  There is no longer anything to fear in this cave."
+<end-page>
+[[isDragonDead 0]]
 <play-sound dragon.mp3>
+"You hear the fearsome roar of a DRAGON!  There is no time to stop and listen to it!"
+<press-any-key>
+<end-page>
+[[LOOK]]
+<if-story-variable isDragonDead>
+[[isDragonDead 1]]
+"The DRAGON once lived here until you, an amazing hero, slew it!  Paintings depicting your heroic act now cover the wall, a tribute from the townspeople you saved!"
+<end-page>
+[[isDragonDead 0]]
+"You find yourself in a dark cave.  Torches on the walls guide your way inside.  You explore the cave and stop when you see up ahead the shadow of a ferocious DRAGON!"
+<br>
+<play-sound dragon.mp3>
+<if-inventory-contains GOLD>
+[[NO GOLD]]
+<image dragon.png>
+<br>
+"With nothing heavy to carry, you are able to run away before the DRAGON knows that you entered its den."
+<end-page>
+[[HAS GOLD]]
+<if-game-variable PLAYER>
+[[PLAYER GREYSON]]
+<if-inventory-contains UNO REVERSE>
+[[NO UNO REVERSE]]
+<press-any-key>
+<image dragon-fire.jpg>
+<br>
+<play-sound dragon.mp3>
+"The greedy DRAGON smells your GOLD and charges you before you can escape.  It blasts you with its burning fire.  With no defense, you are burned to death."
+<br>
+"Alas, this is the end of your quest."
+<hp-remove 100>
+<end-page>
+[[HAS UNO REVERSE]]
+<press-any-key>
+<image dragon-fight-grey2.png>
+<unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak><unbreak>
+<image uno-reverse.png>
+<br><br><br><br>
+"With quick reflexes you run towards the DRAGON and throw your UNO REVERSE card at it.  The DRAGON shoots fire at you.  The flames are automatically redirected back at it.  With each fiery burst, the DRAGON destroys itself.  The townspeople are saved.  And you are today a hero!!!"
+<set-story-variable isDragonDead=1>
+<score-add 100>
+<end-page>
+[[PLAYER ZARA]]
+<if-inventory-contains SWORD>
+[[NO SWORD]]
+<press-any-key>
+<image dragon-fire.jpg>
+<br>
+"The greedy DRAGON smells your GOLD and charges you before you can escape.  It blasts you with its burning fire.  With no defense, you are burned to death."
+<br>
+"Alas, this is the end of your quest."
+<hp-remove 100>
+<end-page>
+[[HAS SWORD]]
+<press-any-key>
+<image dragon-fight-zara2.png>
+<br>
+<play-sound dragon.mp3>
+"With quick reflexes you run towards the DRAGON and swing your mighty SWORD before it has a chance to react.  The DRAGON is now slain.  The townspeople are saved.  And you are today a hero!!!"
+<set-story-variable isDragonDead=1>
+<score-add 100>
+<end-page>
 [high scores]
 300   GRE   03-09-2024
 300   ZRT   03-09-2024
