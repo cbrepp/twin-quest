@@ -20,6 +20,8 @@ dragon.gif
 isCatTamed=0
 isDragonDead=0
 isNightOwlDefeated=0
+longRangeWeapon=
+shortRangeWeapon=
 [scene 1]
 <story-sound suspense.mp3>
 "<twin>: <quote>Ahh!!!  <player>!!!  Save me!!!<quote>"
@@ -142,6 +144,7 @@ isNightOwlDefeated=0
 "name=WILDERNESS"
 "color=0,100,0"
 "sound=wilderness.mp3"
+"symbol=color"
 [scene 1]
 "Oh the great outdoors!"
 <choices-add CHASE BUNNIES>
@@ -171,6 +174,7 @@ isNightOwlDefeated=0
 "name=WILDERNESS"
 "color=79,47,79"
 "sound=wilderness.mp3"
+"symbol=color"
 [scene 1]
 "Oh the great outdoors!"
 <choices-add CHASE BUNNIES+NIGHT OWL>
@@ -207,6 +211,7 @@ isNightOwlDefeated=0
 "name=MAGIC RING OF TOADSTOOLS"
 "color=184,115,51"
 "sound=magic-chimes.mp3"
+"symbol=color"
 [scene 1]
 <choices-add SPEAK NAME>
 [[LISTEN]]
@@ -287,6 +292,7 @@ Think carefully.  What could the magic name be?
 "name=GIANNI'S DEN"
 "color=0,0,0"
 "sound=bonfire.mp3"
+"symbol=color"
 [scene 1]
 [[LISTEN]]
 "You hear the crackle of a campfire in a vacuous space.  The sounds of the outside world are muted."
@@ -311,8 +317,10 @@ Think carefully.  What could the magic name be?
 <if-game-variable PLAYER>
 [[PLAYER GREYSON]]
 <inventory-add BOW & ARROWS>
+<set-story-variable longRangeWeapon=BOW & ARROWS>
 [[PLAYER ZARA]]
 <inventory-add CAT-APULT>
+<set-story-variable longRangeWeapon=CAT-APULT>
 [[NO RING OF TAMING]]
 <image gianni2.jpg>
 "You attempt to pet him but he climbs a stair railing to get away.  If only you could tame him.  But such a feat would require strong magic..."
@@ -320,6 +328,7 @@ Think carefully.  What could the magic name be?
 "name=WOODS"
 "color=85,85,85"
 "sound=woods.mp3"
+"symbol=color"
 [scene 1]
 [[LISTEN]]
 "You hear the typical sounds of the woods at night.  There are birds.  Definitely crows.  Maybe a There are birds.  Definitely crows.  Maybe a woodpecker.  And... the hooting of an owl?"
@@ -357,6 +366,7 @@ Think carefully.  What could the magic name be?
 "name=MOUNT FLUFF"
 "color=255,255,255"
 "sound=wind.mp3"
+"symbol=color"
 [scene 1]
 <choices-add PLAY GAME>
 <if-inventory-contains RING OF TAMING>
@@ -439,6 +449,7 @@ Think carefully.  What could the magic name be?
 "name=MYSTERY ROOM"
 "color=184,115,51"
 "sound="
+"symbol=color"
 [scene 1]
 <if-game-variable PLAYER>
 [[PLAYER GREYSON]]
@@ -460,6 +471,7 @@ Think carefully.  What could the magic name be?
 <br>
 "You leave some GOLD coins on the table in exchange for the UNO deck.  You look at the cards and discover the legendary... UNO REVERSE!!!"
 <inventory-add UNO REVERSE>
+<set-story-variable shortRangeWeapon=UNO REVERSE>
 <end-page>
 [[PLAYER ZARA]]
 <story-sound zara.mp3>
@@ -480,6 +492,7 @@ Think carefully.  What could the magic name be?
 <br>
 "You put some GOLD coins on the counter..."
 <inventory-add SWORD>
+<set-story-variable shortRangeWeapon=SWORD>
 <end-page>
 [[LISTEN]]
 <play-sound magic.mp3>
@@ -498,6 +511,7 @@ Think carefully.  What could the magic name be?
 "name=CASTLE"
 "color=171,145,68"
 "sound=castle.mp3"
+"symbol=color"
 [scene 1]
 [[LISTEN]]
 "You hear royal music... A harp!  A guitar!  And also the deep sound of a tuba.  How splendid!  The music carries loudly from the castle courtyard.  However, you hear nothing here within the castle."
@@ -523,6 +537,7 @@ Think carefully.  What could the magic name be?
 "name=DRAGON'S DEN"
 "color=255,0,0"
 "sound=bonfire.mp3"
+"symbol=color"
 [scene 1]
 [[LISTEN]]
 <if-story-variable isDragonDead>
@@ -593,6 +608,71 @@ Think carefully.  What could the magic name be?
 <set-story-variable isDragonDead=1>
 <score-add 100>
 <end-page>
+"[scene id=1,2,0]"
+"name=MYLEE'S ELEVATOR"
+"color=0,0,0"
+"sound=elevator.wav"
+"symbol=asterisk"
+[scene 1]
+[[LISTEN]]
+"You hear surprisingly good elevator music."
+[[LOOK]]
+<if-inventory-contains GOLD>
+[[NO GOLD]]
+<play-sound elevator-open.mp3>
+"You return to the ELEVATOR and what you see surprises you..."
+<press-any-key>
+<image mylee-sink.jpg>
+"MYLEE: <quote>Hey!  I'm trying to take a bath!  Off with you human!!!  Don't you come back until you have some GOLD!<quote>"
+<br>
+<press-any-key>
+<play-sound elevator-open.mp3>
+"MYLEE presses a button on a remote control next to her and the elevator doors re-open."
+<br>
+"Hmm... seems like you're still not welcome in this elevator.  Maybe you should find some GOLD."
+<press-any-key>
+<set-game-variable playerX=LAST>
+<set-game-variable playerY=LAST>
+<load-scene>
+<end-page>
+[[HAS GOLD]]
+<if-story-variable isDragonDead>
+[[isDragonDead 0]]
+<play-sound elevator-open.mp3>
+"You return to the elevator and see a surprised MYLEE."
+<image mylee.jpg>
+"MYLEE: <quote>Oh no you didn't!!!  Did you come back here with GOLD without first slaying the DRAGON???<quote>"
+<press-any-key>
+<story-sound>
+<hp-remove 100>
+"You hear a thunderous sound behind you and turn to see the elevator doors burst open as a fearsome DRAGON sticks his head in and gobbles you up.  You'd like to say that at least you got the GOLD but that doesn't matter much when you're dead."
+<end-page>
+[[isDragonDead 1]]
+<if-story-variable isCatTamed>
+[[isCatTamed 0]]
+<play-sound elevator-open.mp3>
+"You return to the elevator and see a surprised MYLEE."
+<image mylee.jpg>
+"MYLEE: <quote>Oh no you didn't!!!  Did you come back here with GOLD without first getting a long-range weapon from GIANNI???<quote>"
+<press-any-key>
+<story-sound>
+<hp-remove 100>
+"You hear a thunderous sound behind you and turn to see the elevator doors burst open as NIGHT OWL sticks his head in and gobbles you up.  You'd like to say that at least you got the GOLD but that doesn't matter much when you're dead."
+<end-page>
+[[isCatTamed 1]]
+<play-sound elevator-open.mp3>
+"You return to the elevator and see a surprised MYLEE."
+<image mylee.jpg>
+"MYLEE: <quote>Oh no you didn't!!!  You brought NIGHT OWL back here!!!  He wants that GOLD!!!<quote>"
+<press-any-key>
+<story-sound>
+<play-sound hooting.mp3>
+<play-sound hit.mp3>
+"You hear a thunderous sound behind you and turn to see the elevator doors burst open as NIGHT OWL sticks his head in.  Before he can gobble you up, you hit him on the head with your trusty <get-story-variable shortRangeWeapon> and he lets out a painful, shrieking hoot."
+<press-any-key>
+"NIGHT OWL backs away into the bright light of the WILDERNESS where you can finally fight him in a fair battle.  You march after him with your <get-story-variable longRangeWeapon> and decide to end his reign of terror once and for all..."
+<press-any-key>
+<arcade-shooter>
 [high scores]
 300   GRE   03-09-2024
 300   ZRT   03-09-2024

@@ -2,6 +2,11 @@
 
 Current in-progress work and future goals.
 
+## IN PROGRESS
+
+- Track last x, y coordinate and allow story file to change the player's coordinates to the last set of coordinates, use this to return the player to the previous scene when interacting with the ELEVATOR
+- Finish the ELEVATOR
+
 ## PRIORITIES
 
 ### Modularize Level 1 so ALL story content can be loaded from a .quest file

@@ -4,6 +4,7 @@
 ' bionic-bunny-commander.jpg - Bionic Bunny Commander by Zara
 ' bonfire.mp3 - bonfire flames sizzling (https://freesound.org/people/florianreichelt/sounds/563764/)
 ' book.png - Empty book by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
+' boom.png - Explosion Detonation Blast royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/explosion-detonation-blast-burst-147909/)
 ' boss-battle.mp3 - Neon Dreams: A Retro-Futuristic Synthwave Track - MP3 Mixdown (https://freesound.org/people/Robbnix/sounds/685538/)
 ' bunny.jpg -  Rabbit, Field, Animal image. Free for use. by SvenZiegler (https://pixabay.com/photos/rabbit-field-animal-field-hare-6063733/)
 ' bunny2.jpg - Hare, Animal, Mammal image. Free for use. by apnear40 (https://pixabay.com/photos/hare-animal-mammal-wildlife-fauna-8585802/)
@@ -24,7 +25,12 @@
 ' elevator-doors.png - Krolestwo_Nauki (https://pixabay.com/vectors/elevator-elevator-door-building-6232385/)
 ' elevator-open.mp3 - Elevator ding door open close, noisy, 10.mp3 (https://freesound.org/people/TRP/sounds/576359/)
 ' epic.mp3 - Epic Trailer Background Music (https://freesound.org/people/Migfus20/sounds/560454/)
+' explode.png - Explosion Explode Nature royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/explosion-explode-colorful-abstract-2750400/)
 ' fireball.mp3 - 8 Bit Fireball (https://freesound.org/people/Jofae/sounds/368511/)
+' fireball1.png - Fire Hot Flame royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/fire-hot-flame-power-heat-danger-305341/)
+' fireball2.png - Fire Flame Danger royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/fire-flame-danger-burn-light-306894/)
+' fireball3.png - Fire Hot Flame royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/fire-hot-flame-power-heat-danger-305340/)
+' fireball4.png - Fire Flame Red royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/fire-flame-red-heat-hot-305227/)
 ' fluff.jpg - Gallant Sir Fluff on a mountain by Mr. Chris
 ' fluff2.jpg - Gallant Sir Fluff looking perplexed by Mr. Chris
 ' fluff.wav - Spanish Lick I, Acoustic- AB split stereo pair (Oktava).wav (https://freesound.org/people/debudding/sounds/44366/)
@@ -44,8 +50,10 @@
 ' minigames.mp3 - video game menu music (https://freesound.org/people/magmadiverrr/sounds/661248/)
 ' mushroom.jpg - Crystal, Mushroom, Purple mushroom image. Free for use. by Fractals99 (https://pixabay.com/photos/crystal-mushroom-purple-mushroom-7428278/)
 ' mylee.jpg - Mylee Marie by Mr. Chris
+' mylee-sink.jpg - Mylee in a sink by Mr. Chris
 ' night-owl.jpg - Scary, Owl, Eyes image. Free for use. by Skitterphoto (https://pixabay.com/photos/scary-owl-eyes-spooky-halloween-3595742/)
 ' night-owl-flying.png - Owl Bird Nature royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/owl-bird-geometric-animal-wings-5986451/)
+' ninja.png - Ninja Fighter Japanese royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/ninja-fighter-japanese-samurai-152415/)
 ' old-books.jpg - Old books, Book, Old image. Free for use. by jarmoluk (https://pixabay.com/photos/old-books-book-old-library-436498/)
 ' points.mp3 - 320655__rhodesmas__level-up-01.mp3 (https://freesound.org/people/shinephoenixstormcrow/sounds/337049/)
 ' scream.mp3 - Human Death Scream.mp3 (https://freesound.org/people/DjCHAOS/sounds/77148/)
@@ -78,7 +86,7 @@ Const CREATE = 1, RETRIEVE = 2, UPDATE = 3, DELETE = 4
 ' Define player names as shared, constant values
 Const GREYSON = "GREYSON", GREY = "GREY", ZARA = "ZARA"
 
-' GIF stuff
+' GIF stuff (https://qb64.com/wiki/GIF-Images)
 Dim Shared Dbg: Dbg = 0
 Dim Shared powerOf2&(11)
 For a = 0 To 11: powerOf2&(a) = 2 ^ a: Next a
@@ -101,6 +109,7 @@ Type Scene
     color As Long
     name As String
     sound As String
+    symbol As String
 End Type
 
 Type MapDirections
@@ -135,6 +144,7 @@ Type Book
     inventorySound As Long
     isOver As Integer
     isRightHanded As Integer
+    lastLevel As Integer
     lastRow As Integer
     leftPageStartingColumn As Integer
     level As Integer
@@ -147,6 +157,8 @@ Type Book
     pageTurnSound As Long
     player As String
     playerDirection As Integer
+    playerLastX As Integer
+    playerLastY As Integer
     playerX As Integer
     playerY As Integer
     pointsSound As Long
@@ -164,7 +176,19 @@ Type Book
     version As String
 End Type
 
-' GIF type
+Type Sprite
+    action As String
+    direction As Integer
+    image As Long
+    name As String
+    size As Double
+    speed As Integer
+    visible As Integer
+    x As Integer
+    y As Integer
+End Type
+
+' GIF type (https://qb64.com/wiki/GIF-Images)
 Type GIFDATA
     file As Integer
     sigver As String * 6
@@ -180,7 +204,7 @@ Type GIFDATA
     palette As String * 768
 End Type
 
-' Another GIF type
+' Another GIF type (https://qb64.com/wiki/GIF-Images)
 Type FRAMEDATA
     addr As Long
     left As _Unsigned Integer
@@ -198,7 +222,6 @@ Type FRAMEDATA
     delay As Single
     transColor As _Unsigned _Byte
 End Type
-
 
 ' Initialize the game
 Dim game As Book
@@ -253,7 +276,7 @@ game.pageTurnSound = PlaySound&("turn-page.mp3", 1, 0)
 game.chapter = "SELECT STORY"
 Call LoadStory(game)
 If game.openingGIF <> "" Then
-    Call DisplayGIFPage(game)
+    'Call DisplayGIFPage(game)
 End If
 game.storySound = PlaySound&(game.openingMusic, 1, 1)
 game.chapter = ""
@@ -288,12 +311,10 @@ Do
 
     Color _RGB(0, 0, 0)
 
-    ' TODO - Refactor this to be a re-usable story mode that activates before the story prompt
+    ' TODO - Refactor this to be a special story mode where you keep advancing pages in a scene
     If game.chapter = "INTRODUCTION" Then
         'Call DisplayIntroduction(game)
 
-        ' TODO - Experimental redirect to the new story engine, DisplayStoryPage()
-        ' TODO - Have DisplayScene() do this
         Dim introduction As Scene
         Call WorldScene(RETRIEVE, 1, 0, 0, 0, introduction)
         Call WorldScenePage(RETRIEVE, introduction.id, game.pageNumber, pageContents$)
@@ -301,6 +322,7 @@ Do
 
         If game.chapter = "CHAPTER 1" Then
             ' Every first step in every great adventure is... a first step
+            game.lastLevel = 0
             game.level = 1
             choice$ = "MOVE AHEAD"
         End If
@@ -391,18 +413,37 @@ End Sub
 
 ' TODO - Add parameters for making this as dynamic as possible
 ' TODO - Add parameter for making the monster invisible
+' https://www.qb64tutorial.com/lesson19
 Sub ArcadeShooter (game As Book)
     'Sub ArcadeShooter (game As Book, playerImageFile As String, playerAttackImageFile As String, monsterImageFile As String, monsterAttackImageFile As String, monsterAttackSoundFile As String)
-    ' TODO - Copy book image starting with current row and column
+
+    If game.isRightHanded = 1 Then
+        leftColumn% = game.leftPageStartingColumn
+    Else
+        leftColumn% = game.rightPageStartingColumn
+    End If
+    rightColumn% = leftColumn% + game.maxPageLength
+    leftEdgeX% = (leftColumn% * _FontWidth) - _FontWidth
+    rightEdgeX% = rightColumn% * _FontWidth
+    topRow% = game.firstRow
+    topEdgeY% = (topRow% * _FontHeight) - _FontHeight
+    bottomRow% = game.lastRow
+    bottomEdgeY% = bottomRow% * _FontHeight
+
     currentCol% = Pos(0)
     currentRow% = CsrLin
-    ' TODO - Add image for background
     nightOwl& = _LoadImage("night-owl-flying.png")
-    ' TODO - Load different fireball images
+    player& = _LoadImage("ninja.png")
+    playerSizeX% = _Width(nightOwl&)
+    playerSizeY% = playerSizeX% * (_Height(player&) / _Width(player&))
+    playerX% = (leftEdgeX% + rightEdgeX%) / 2
+    playerY% = bottomEdgeY% - playerSizeY% - 25 ' Buffer of 25 ensures player is inside of background image
+    boom& = _LoadImage("boom.png")
 
     Randomize Timer
     randomNumber% = Int(Rnd * 400) + 1
     monsterDestinationX% = nightOwlX% + randomNumber%
+    halfMonsterDestinationX% = nightOwlX% + (randomNumber% / 2)
 
     ' Hoot
     monsterSound1& = PlaySound&("hooting.mp3", 1, 0)
@@ -421,60 +462,190 @@ Sub ArcadeShooter (game As Book)
 
     startingScreen& = _CopyImage(0)
 
-    nightOwlX% = 150
-    nightOwlY% = ((imageRow%) * _FontHeight) + 10 ' TODO - Calculate the start of the background image and add a buffer so that the monster is inside of the background image
+    nightOwlX% = (leftEdgeX% + rightEdgeX%) / 2
+    nightOwlY% = ((imageRow%) * _FontHeight) + 10 ' Buffer of 10 ensures monster is inside of background image
     direction% = 1
+    Dim fireball(50) As Sprite
+    fireballIndex% = 0
+    fireballCount% = 0
+
+    ' Prep the fireball templates
+    Dim fireballTemplate(4) As Sprite
+    fireballTemplate(1).direction = -1
+    fireballTemplate(1).name = "hot"
+    fireballTemplate(1).image = _LoadImage("fireball1.png")
+    fireballTemplate(1).size = _Width(nightOwl&) * .125
+    fireballTemplate(1).speed = 4
+    fireballTemplate(1).y = nightOwlY% + (_Height(nightOwl&) * .25)
+    fireballTemplate(2).direction = -1
+    fireballTemplate(2).name = "blazin"
+    fireballTemplate(2).image = _LoadImage("fireball3.png")
+    fireballTemplate(2).size = _Width(nightOwl&) * .125
+    fireballTemplate(2).speed = 3
+    fireballTemplate(2).y = nightOwlY% + (_Height(nightOwl&) * .5)
+    fireballTemplate(3).direction = 1
+    fireballTemplate(3).name = "inferno"
+    fireballTemplate(3).image = _LoadImage("fireball4.png")
+    fireballTemplate(3).size = _Width(nightOwl&) * .125
+    fireballTemplate(3).speed = 3
+    fireballTemplate(3).y = nightOwlY% + (_Height(nightOwl&) * .5)
+    fireballTemplate(4).direction = 1
+    fireballTemplate(4).name = "hotter"
+    fireballTemplate(4).image = _LoadImage("fireball2.png")
+    fireballTemplate(4).size = _Width(nightOwl&) * .125
+    fireballTemplate(4).speed = 4
+    fireballTemplate(4).y = nightOwlY% + (_Height(nightOwl&) * .25)
+
+    fireballsSpawned% = 0
+    fireballsUnleashed% = 0
+    halfwayThere% = 0
 
     Do
         _Limit 30 ' 30 frames per second
         Cls
         _PutImage , startingScreen&
         _PutImage (nightOwlX%, nightOwlY%), nightOwl&
-        ' TODO - Put each flame image
+        _PutImage (playerX%, playerY%)-(playerX% + playerSizeX%, playerY% + playerSizeY%), player&
+
+        ' Render each fireball
+        If fireballIndex% >= 1 Then
+            For i% = 1 To fireballCount%
+                If fireball(i%).visible = 1 Then
+                    _PutImage (fireball(i%).x, fireball(i%).y)-(fireball(i%).x + fireball(i%).size, fireball(i%).y + fireball(i%).size), fireball(i%).image
+                End If
+            Next i%
+        End If
+        ' TODO - Render each missile
 
         ' Move monster
-        If direction% = 1 Then ' Move right
-            nightOwlX% = nightOwlX% + 2
-            ' TODO - If halfway to the destination, spawn flames, set flag to zero
-            ' When spawning flame, compute the angle of the flame based on its position... flame 1 and flame 2 move to the left, flames 3 and 4 move to the right
-            If nightOwlX% > monsterDestinationX% Then
-                Call ReplaySound(monsterSound1&, 1, 0)
-                direction% = 2
-                ' Randomly compute number of iterations until next change (will need to compute edge in that direction for going too far)
-                randomNumber% = Int(Rnd * 400) + 1
-                monsterDestinationX% = nightOwlX% - randomNumber%
-                ' TODO - Compute halfway to the destination, set flag for whether new flames have been spawned to zero
-                If monsterDestinationX% < 150 Then
-                    monsterDestinationX% = 150
-                End If
-            End If
-        End If
-        If direction% = 2 Then ' Move left
-            nightOwlX% = nightOwlX% - 2
-            If nightOwlX% < monsterDestinationX% Then
-                Call ReplaySound(monsterSound1&, 1, 0)
-                direction% = 1
-                ' Randomly compute number of iterations until next change
-                randomNumber% = Int(Rnd * 400) + 1
-                monsterDestinationX% = nightOwlX% + randomNumber%
-                If monsterDestinationX% > 550 Then
-                    monsterDestinationX% = 550
-                End If
-            End If
-        End If
-        ' TODO - For each flame, add 2 to the current y coordinate and add or subtract from the x coordinate based on the flame's angle
-        ' TODO - Each flame that is now offscreen gets nuked
-        ' TODO - Slowly rotate each flame
-        ' TODO - Slowly grow each flame
+        spawnFireballs% = 0
+        xDelta% = 2 * direction%
+        nightOwlX% = nightOwlX% + xDelta%
 
-        ' Draw screen
-        _Display ' update screen with changes
+        ' If the monster is halfway to its destination, toggle between spawning new fireballs and unleashing the current fireballs
+        If (halfwayThere% = 0) And (((direction% = 1) And (nightOwlX% > halfMonsterDestinationX%)) Or ((direction% = -1) And (nightOwlX% < halfMonsterDestinationX%))) Then
+            If (fireballsSpawned% = 0) Then
+                spawnFireballs% = 1 'Request new fireballs
+            Else
+                ' Fireballs attached to monster are now free to descend
+                For i% = 1 To fireballCount%
+                    If fireball(i%).action = "static" Then
+                        fireball(i%).action = "unleashed"
+                    End If
+                Next i%
+                fireballsSpawned% = 0
+            End If
+            Call ReplaySound(monsterSound1&, 1, 0)
+            halfwayThere% = 1
+        End If
+
+        If ((direction% = 1) And (nightOwlX% > monsterDestinationX%)) Or ((direction% = -1) And (nightOwlX% < monsterDestinationX%)) Then
+            direction% = direction% * -1
+            ' Randomly compute number of iterations until next change (will need to compute edge in that direction for going too far)
+            randomNumber% = Int(Rnd * 400) + 1
+            monsterDestinationX% = nightOwlX% + (randomNumber% * direction%)
+            If monsterDestinationX% < leftEdgeX% Then
+                monsterDestinationX% = leftEdgeX%
+            End If
+            If monsterDestinationX% > (rightEdgeX% - _Width(nightOwl&)) Then
+                monsterDestinationX% = (rightEdgeX% - _Width(nightOwl&))
+            End If
+            ' Compute halfway to the destination
+            halfMonsterDestinationX% = (monsterDestinationX% + nightOwlX%) / 2
+            halfwayThere% = 0
+        End If
+        ' Move each fireball
+        If fireballIndex% >= 1 Then
+            For i% = 1 To fireballCount%
+                If fireball(i%).visible = 1 Then
+                    If fireball(i%).action = "static" Then
+                        fireball(i%).x = fireball(i%).x + xDelta%
+                    Else
+                        fireball(i%).x = fireball(i%).x + fireball(i%).direction
+                        fireball(i%).y = fireball(i%).y + fireball(i%).speed
+                        ' TODO - Rotate the sprite as it descends (https://www.qb64tutorial.com/lesson17)
+                        fireball(i%).size = fireball(i%).size + .2
+                        If (fireball(i%).x < leftEdgeX%) Or ((fireball(i%).x + fireball(i%).size) > rightEdgeX%) Or ((fireball(i%).y + fireball(i%).size) > bottomEdgeY%) Then
+                            fireball(i%).visible = 0
+                        End If
+                    End If
+                End If
+            Next i%
+        End If
+        If spawnFireballs% = 1 Then
+            If fireballIndex% > 46 Then
+                fireballIndex% = 0
+            End If
+            For i% = 1 To 4
+                fireballIndex% = fireballIndex% + 1
+                fireball(fireballIndex%).action = "static"
+                fireball(fireballIndex%).direction = fireballTemplate(i%).direction
+                fireball(fireballIndex%).name = fireballTemplate(i%).name
+                fireball(fireballIndex%).image = fireballTemplate(i%).image
+                fireball(fireballIndex%).size = fireballTemplate(i%).size
+                fireball(fireballIndex%).speed = fireballTemplate(i%).speed
+                If i% = 1 Then
+                    fireball(fireballIndex%).x = nightOwlX%
+                End If
+                If i% = 2 Then
+                    fireball(fireballIndex%).x = nightOwlX% + (_Width(nightOwl&) * .25)
+                End If
+                If i% = 3 Then
+                    fireball(fireballIndex%).x = nightOwlX% + (_Width(nightOwl&) * .75) - fireballTemplate(3).size
+                End If
+                If i% = 4 Then
+                    fireball(fireballIndex%).x = nightOwlX% + (_Width(nightOwl&)) - fireballTemplate(4).size
+                End If
+                fireball(fireballIndex%).y = fireballTemplate(i%).y
+                fireball(fireballIndex%).visible = 1
+            Next i%
+            If fireballCount% < fireballIndex% Then
+                fireballCount% = fireballIndex%
+            End If
+            spawnFireballs% = 0
+            fireballsSpawned% = 1
+        End If
+
+        ' TODO - Move each missile
+
+        ' TODO - move player based on input
+        If _KeyDown(19200) Then
+            ' TODO - Move player left
+            If playerX% > (leftEdgeX% + 20 + 4) Then
+                playerX% = playerX% - 4
+            End If
+        End If
+        If _KeyDown(19712) Then
+            ' TODO - Move player right
+            If (playerX% + playerSizeX%) < (rightEdgeX% - 20 - 4) Then
+                playerX% = playerX% + 4
+            End If
+        End If
+        If _KeyHit = 32 Then
+            ' TODO - Spacebar... fire missile
+        End If
+
+        ' TODO - For each visible fireball, compute whether the fireball is now touching either a missile or the player (and show explode or boom)
+
+        ' TODO - For each visible missile, compute whether the missile is touching the monster (and show boom)
+
+        _Display ' Update screen with changes
     Loop Until _KeyDown(27)
 
     _AutoDisplay ' Automatically update the screen with changes
     _PutImage , startingScreen&
     _FreeImage startingScreen&
     _FreeImage nightOwl&
+    _FreeImage ninja&
+    _FreeImage boom&
+    For i% = 1 To 4
+        _FreeImage fireballTemplate(i%).image
+    Next i%
+    If fireballIndex% >= 1 Then
+        For i% = 1 To fireballCount%
+            _FreeImage fireball(i%).image
+        Next i%
+    End If
     Call StopSound(monsterSound1&)
     Call StopSound(storySound&)
     Locate currentRow%, currentCol%
@@ -693,7 +864,7 @@ Sub DisplayCreditsPage (game As Book)
     Call PressAnyKey(game, 0)
 End Sub
 
-' Display a GIF image
+' Display a GIF image (https://qb64.com/wiki/GIF-Images)
 '
 ' Parameters:
 ' game - Book instance
@@ -741,7 +912,7 @@ Sub DisplayGIF (game As Book, fileName As String)
     codeGif gifData, frameData()
 End Sub
 
-' TODO - GIF sub
+' TODO - GIF sub (https://qb64.com/wiki/GIF-Images)
 '########################################################################################
 Sub openGif (filename$, gifData As GIFDATA, frameData() As FRAMEDATA) Static
     file = FreeFile: gifData.file = file
@@ -864,7 +1035,7 @@ Sub openGif (filename$, gifData As GIFDATA, frameData() As FRAMEDATA) Static
     ReDim _Preserve frameData(0 To frame - 1) As FRAMEDATA
 End Sub
 
-' TODO - GIF sub
+' TODO - GIF sub (https://qb64.com/wiki/GIF-Images)
 Sub skipBlocks (file)
     Do
         Get file, , byte~%% ' Block Size
@@ -873,7 +1044,7 @@ Sub skipBlocks (file)
     Loop While byte~%%
 End Sub
 
-' TODO - GIF function
+' TODO - GIF function (https://qb64.com/wiki/GIF-Images)
 Function getGifFrame& (gifData As GIFDATA, frameData() As FRAMEDATA, frame)
     If frameData(frame).addr > 0 Then
         If Dbg And 4 Then
@@ -935,7 +1106,7 @@ Function getGifFrame& (gifData As GIFDATA, frameData() As FRAMEDATA, frame)
     getGifFrame& = frameData(frame).addr
 End Function
 
-' TODO - GIF sub
+' TODO - GIF sub (https://qb64.com/wiki/GIF-Images)
 '############################################################################################
 Sub decodeFrame (gifdata As GIFDATA, framedata As FRAMEDATA)
     Dim byte As _Unsigned _Byte
@@ -1064,7 +1235,7 @@ Sub decodeFrame (gifdata As GIFDATA, framedata As FRAMEDATA)
     Return
 End Sub
 
-' TODO - GIF sub
+' TODO - GIF sub (https://qb64.com/wiki/GIF-Images)
 Sub codeGif (gifData As GIFDATA, frameData() As FRAMEDATA)
     For i = 0 To UBound(frameData)
         If frameData(i).addr < 0 Then _FreeImage frameData(i).addr
@@ -1256,29 +1427,24 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
         If game.playerDirection = game.directions.west Then
             aheadX% = aheadX% - 1
         End If
-        If (aheadX% = game.doorX) And (aheadY% = game.doorY) Then
-            Color _RGB(0, 0, 0) ' TODO - This should be scene 0,0,0's color
-            Call PrintPageText(game, "story", CsrLin, "Ahead you see an elevator.  Perhaps an exit to this world?")
+        Color _RGB(0, 0, 0)
+        Dim nextScene As Scene
+        Call WorldScene(RETRIEVE, 1, game.level, aheadX%, aheadY%, nextScene)
+        If nextScene.name = "" Then
+            Color _RGB(0, 0, 0)
+            Call PrintPageText(game, "story", CsrLin, "There is nothing ahead.  You are facing the edge of the world.")
         Else
-            If (aheadX% = 0) Or (aheadX% = (game.levelSize + 1)) Or (aheadY% = 0) Or (aheadY% = (game.levelSize + 1)) Then
-                Color _RGB(0, 0, 0)
-                Call PrintPageText(game, "story", CsrLin, "There is nothing ahead.  You are facing the edge of the world.")
+            Call PrintPageText(game, "story", CsrLin, "Ahead you see ")
+            If nextScene.color = _RGB(255, 255, 255) Then
+                Color _RGB(0, 0, 0) ' For readability, never use white text on the book
             Else
-                Color _RGB(0, 0, 0)
-                Dim nextScene As Scene
-                Call WorldScene(RETRIEVE, 1, game.level, aheadX%, aheadY%, nextScene)
-                Call PrintPageText(game, "story", CsrLin, "Ahead you see ")
-                If nextScene.color = _RGB(255, 255, 255) Then
-                    Color _RGB(0, 0, 0) ' For readability, never use white text on the book
-                Else
-                    Color nextScene.color
-                End If
-                Locate CsrLin - 1, game.cursor.lastColumn + Len("Ahead you see ")
-                Print nextScene.name
-                Color _RGB(0, 0, 0)
-                Locate CsrLin - 1, game.cursor.lastColumn + Len("Ahead you see " + nextScene.name)
-                Print "."
+                Color nextScene.color
             End If
+            Locate CsrLin - 1, game.cursor.lastColumn + Len("Ahead you see ")
+            Print nextScene.name
+            Color _RGB(0, 0, 0)
+            Locate CsrLin - 1, game.cursor.lastColumn + Len("Ahead you see " + nextScene.name)
+            Print "."
         End If
 
         If scene.color = _RGB(255, 255, 255) Then
@@ -1324,6 +1490,7 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                 ' <color RED+BLUE+GREEN/STORY>
                 ' <end-page>
                 ' <get-input LABEL:CHOICE1+CHOICE2+CHOICE3...>
+                ' <get-story-variable VARIABLE>
                 ' <goto-chapter CHAPTER>
                 ' <hp-remove POINTS>
                 ' <if-game-variable PLAYER/TODO>
@@ -1331,12 +1498,14 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                 ' <if-story-variable VARIABLE>
                 ' <image IMAGE1+IMAGE2+IMAGE3...>
                 ' <inventory-add ITEM1+ITEM2+ITEM3...>
+                ' <load-scene>
                 ' <play-sound SOUND1+SOUND2+SOUND3...>
                 ' <player>
                 ' <press-any-key>
                 ' <quote>
                 ' <random COUNT>
                 ' <score-add POINTS>
+                ' <set-game-variable VARIABLE=VALUE>
                 ' <set-story-variable VARIABLE=VALUE>
                 ' <stop-sound SOUND1+SOUND2+SOUND3...>
                 ' <story-prompt LABEL:CHOICE1+CHOICE2+CHOICE3...>
@@ -1352,6 +1521,7 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                         Call PrintPageText(game, "story", CsrLin, storyText$)
                         storyText$ = ""
                     End If
+                    Call TurnPage(game, 1)
                     Call ArcadeShooter(game)
                     _Continue
                 End If
@@ -1431,6 +1601,13 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     Else
                         Color scene.color
                     End If
+                    _Continue
+                End If
+                If tag$ = "get-story-variable" Then
+                    ' The Get-Story-Variable tag adds the value of the target variable to the story text
+                    variable.name = tagValue$
+                    Call StoryVariable(RETRIEVE, variable)
+                    storyText$ = storyText$ + variable.value
                     _Continue
                 End If
                 If tag$ = "goto-chapter" Then
@@ -1526,6 +1703,17 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     End If
                     _Continue
                 End If
+                If tag$ = "load-scene" Then
+                    ' The Load-Scene tag loads a new story scene
+                    ' TODO - This is a VERY ugly way to load a scene.  Could be cleaned up.
+                    Dim newScene As Scene
+                    Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, newScene)
+                    Call LoadScene(game, newScene)
+                    Call TurnPage(game, 1)
+                    Call LookAction(game)
+                    isExitSet% = 1
+                    _Continue
+                End If
                 If tag$ = "play-sound" Then
                     ' The Play-Sound tag prints any accumulated text and plays the new sound(s)
                     If storyText$ <> "" Then
@@ -1584,6 +1772,49 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     Else
                         Color scene.color
                     End If
+                    _Continue
+                End If
+                If tag$ = "set-game-variable" Then
+                    ' The Set-Game-Variable tag sets the target variable to the designated value
+                    variableName$ = ListPiece$(tagValue$, "=", 1)
+                    variableValueStr$ = ListPiece$(tagValue$, "=", 2)
+                    If variableName$ = "playerX" Then
+                        If variableValueStr$ = "LAST" Then
+                            variableValue% = game.playerLastX
+                        Else
+                            variableValue% = Val(variableValueStr$)
+                        End If
+                        If game.playerX <> variableValue% Then
+                            game.playerLastX = game.playerX
+                            game.playerX = variableValue%
+                        End If
+                        _Continue
+                    End If
+                    If variableName$ = "playerY" Then
+                        If variableValueStr$ = "LAST" Then
+                            variableValue% = game.playerLastY
+                        Else
+                            variableValue% = Val(variableValueStr$)
+                        End If
+                        If game.playerY <> variableValue% Then
+                            game.playerLastY = game.playerY
+                            game.playerY = variableValue%
+                        End If
+                        _Continue
+                    End If
+                    If variableName$ = "level" Then
+                        If variableValueStr$ = "LAST" Then
+                            variableValue% = game.lastLevel
+                        Else
+                            variableValue% = Val(variableValueStr$)
+                        End If
+                        If game.level <> variableValue% Then
+                            game.lastLevel = game.level
+                            game.level = variableValue%
+                        End If
+                        _Continue
+                    End If
+                    ' TODO - Implement more game variables
                     _Continue
                 End If
                 If tag$ = "set-story-variable" Then
@@ -1660,6 +1891,7 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     game.storySound = PlaySound&(soundFile$, 1, 1)
                     _Continue
                 End If
+                ' TODO - This looks like a duplicate of get-story-variable.  Which implementation is better?
                 If tag$ = "story-variable" Then
                     ' The Story-Variable tag prints any accumulated text and then prints the value of the variable
                     If storyText$ <> "" Then
@@ -1766,66 +1998,6 @@ End Sub
 Sub DumbAction (game As Book)
     Call PrintPageText(game, "story", CsrLin, "That is NOT a choice.  Better luck next time.")
     Print
-End Sub
-
-' Elevator action
-'
-' Parameters:
-' game - Book instance
-Sub ElevatorAction (game As Book)
-    _SndStop game.storySound
-    elevator& = PlaySound&("elevator-open.mp3", 1, 1)
-    elevatorMusic& = PlaySound&("elevator.wav", 1, 1)
-    Locate game.firstRow + 2, 1
-    myleeImage& = _LoadImage("mylee.jpg")
-    Call DisplayImage(game, "story", myleeImage&)
-    Call PrintPageText(game, "story", CsrLin + 2, "MYLEE: " + Chr$(34) + "Oh hey kid, welcome back." + Chr$(34))
-    Call PressAnyKey(game, 1)
-    Call StopSound(elevator&)
-    If Not Contains%(game.inventory, "GOLD", ",") Then
-        Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "So... I noticed you don't have any GOLD.  You're not very good at following directions are you?  Off with you, human.  I have very important work to do and you're wasting my time." + Chr$(34))
-        Call PrintPageText(game, "story", CsrLin + 1, "With that MYLEE flips a switch and the elevator doors open.  Hmm... seems like you're still not welcome in this elevator.  Maybe you should get some GOLD.")
-        Call ReplaySound(elevator&, 1, 1) ' Elevator doors are on a loop because if the player waits to leave they should open and close multiple times
-        Call PressAnyKey(game, 1)
-        Call StopSound(elevatorMusic&)
-        Call ReplaySound(game.storySound, 1, 1)
-        Call StopSound(elevator&)
-    Else
-        Dim variable As Variable
-        variable.name = "isDragonDead"
-        Call StoryVariable(RETRIEVE, variable)
-        If variable.value = "0" Then
-            Call StopSound(elevatorMusic&)
-            Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Oh no you didn't!!!  Did you come back here with GOLD without first slaying the DRAGON???" + Chr$(34))
-            Call PrintPageText(game, "story", CsrLin + 1, "You hear a thunderous sound behind you and turn to see the elevator doors burst open as a fearsome DRAGON sticks his head in and gobbles you up.  You'd like to say that at least you got the GOLD but that doesn't matter much when you're dead.")
-            game.isOver = 1
-        Else
-            variable.name = "isCatTamed"
-            Call StoryVariable(RETRIEVE, variable)
-            If variable.value = "0" Then
-                Call StopSound(elevatorMusic&)
-                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Oh no you didn't!!!  Did you come back here with GOLD without first getting a long-range weapon from GIANNI???" + Chr$(34))
-                Call PrintPageText(game, "story", CsrLin + 1, "You hear a thunderous sound behind you and turn to see the elevator doors burst open as NIGHT OWL sticks his head in and gobbles you up.  You'd like to say that at least you got the GOLD but that doesn't matter much when you're dead.")
-                game.isOver = 1
-            Else
-                If game.player = "GREYSON" Then
-                    weapon$ = "BOW & ARROWS"
-                Else
-                    weapon$ = "CAT-APULT"
-                End If
-                Call StopSound(elevatorMusic&)
-                Call PrintPageText(game, "story", CsrLin + 1, "MYLEE: " + Chr$(34) + "Oh no you didn't!!!  You brought NIGHT OWL back here!!!  He wants that GOLD!!!" + Chr$(34))
-                Call PrintPageText(game, "story", CsrLin + 1, "You hear a thunderous sound behind you and turn to see the elevator doors burst open as NIGHT OWL sticks his head in.  Before he can gobble you up, you hit him on the head with your trusty " + weapon$ + " and he lets out a painful, shrieking hoot.  NIGHT OWL backs away into the bright light of the WILDERNESS where you can finally fight him in a fair battle.  You march after him with your " + weapon$ + " and decide to end his reign of terror once and for all.")
-                Call PrintPageText(game, "story", CsrLin + 1, "[INSERT NIGHT OWL MINI-GAME]")
-                game.isOver = 1
-                Call PressAnyKey(game, 1)
-                Call PrintPageText(game, "story", CsrLin + 1, "You have won the game!!!")
-                Call PrintPageText(game, "story", CsrLin + 1, "MAXIMUM SCORE!!!")
-            End If
-        End If
-    End If
-
-    ' TODO - story file needs an <arcade-shooter> tag that calls ArcadeShooter()
 End Sub
 
 Sub ExitAction (game As Book)
@@ -2296,6 +2468,34 @@ Function ListRemove$ (text As String, delimiter As String, value As String)
     ListRemove$ = tempText$
 End Function
 
+' Load a new story scene
+'
+' Parameters:
+' game - Book instance
+Sub LoadScene (game As Book, newScene As Scene)
+    ' Advance the player to the next scene
+    Dim lastScene As Scene
+    Call WorldScene(RETRIEVE, 1, game.level, game.playerLastX, game.playerLastY, lastScene)
+    lastScene$ = lastScene.name
+
+    ' Update the scene's sound
+    If lastScene$ <> newScene.name Then
+        ' Stop playing the current scene's sound, if any
+        If game.storySound <> 0 Then
+            StopSound game.storySound
+        End If
+
+        ' Start playing the new scene's sound, if any
+        game.storySound = PlaySound&(newScene.sound, 1, 1)
+
+        ' Reset the story choices
+        game.storyChoices = game.basicStoryChoices
+    End If
+
+    ' Refresh the scene's description
+    Call LookAction(game)
+End Sub
+
 ' Load the game story
 '
 ' Parameters:
@@ -2434,6 +2634,12 @@ Sub LoadStory (game As Book)
                             Call WorldScene(UPDATE, 1, sceneLevel%, sceneX%, sceneY%, scene)
                             _Continue
                         End If
+                        If Left$(fileLine$, 6) = "symbol=" Then
+                            symbol$ = ListPiece$(fileLine$, "=", 2)
+                            scene.symbol = symbol$
+                            Call WorldScene(UPDATE, 1, sceneLevel%, sceneX%, sceneY%, scene)
+                            _Continue
+                        End If
                         _Continue ' Unsupported scene property
                     End If
 
@@ -2457,27 +2663,16 @@ Sub LoadStory (game As Book)
         Call PrintPageText(game, "story", CsrLin, storyFile$ + " does not exist")
     End If
 
+    ' TODO - Game vars should be initialized dynamically by the story file
     game.level = 0
     game.levelSize = 3
     game.doorX = 2
     game.doorY = 0
     game.playerX = game.doorX
+    game.playerLastX = game.playerX
     game.playerY = game.doorY
+    game.playerLastY = game.playerY
     game.playerDirection = 3
-
-    ' TODO - LOAD THESE INTO THE STORY FILE!!!
-
-    'If game.player = "ZARA" Then
-    '    world(1, 3) = "ZARA'S STORE"
-    'Else
-    '    If (game.player = "GREYSON") Or (game.player = "GREY") Then
-    '        game.player = "GREYSON"
-    '        world(1, 3) = "GREYSON'S GAME ROOM"
-    '    Else
-    '        End
-    '    End If
-    'End If
-
 End Sub
 
 ' Look action
@@ -2517,49 +2712,21 @@ Sub MoveAheadAction (game As Book)
     If game.playerDirection = game.directions.west Then
         aheadX% = aheadX% - 1
     End If
-    If (aheadX% = game.doorX) And (aheadY% = game.doorY) Then
-        Call ElevatorAction(game)
-        If game.isOver = 0 Then
-            Call TurnPage(game, 1)
-            Call LookAction(game)
-        End If
+
+    Dim newScene As Scene
+    Call WorldScene(RETRIEVE, 1, game.level, aheadX%, aheadY%, newScene)
+    scene$ = newScene.name
+
+    If scene$ = "" Then
+        Call PrintPageText(game, "story", CsrLin, "There is nothing ahead.  You are facing the edge of the world.")
+        Print
+        Call PrintPageText(game, "story", CsrLin, "Jumping off the edge of the world is NOT allowed in this game.")
     Else
-        If (aheadX% = 0) Or (aheadX% = (game.levelSize + 1)) Or (aheadY% = 0) Or (aheadY% = (game.levelSize + 1)) Then
-            Call PrintPageText(game, "story", CsrLin, "There is nothing ahead.  You are facing the edge of the world.")
-            Print
-            Call PrintPageText(game, "story", CsrLin, "Jumping off the edge of the world is NOT allowed in this game.")
-        Else
-            ' Advance the player to the next scene
-            Dim lastScene As Scene
-            Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, lastScene)
-            lastScene$ = lastScene.name
-            'lastScene$ = world(game.playerX, game.playerY)
-
-            game.playerX = aheadX%
-            game.playerY = aheadY%
-
-            Dim newScene As Scene
-            Call WorldScene(RETRIEVE, 1, game.level, game.playerX, game.playerY, newScene)
-            scene$ = newScene.name
-            'scene$ = world(game.playerX, game.playerY)
-
-            ' Update the scene's sound
-            If lastScene$ <> scene$ Then
-                ' Stop playing the current scene's sound, if any
-                If game.storySound <> 0 Then
-                    StopSound game.storySound
-                End If
-
-                ' Start playing the new scene's sound, if any
-                game.storySound = PlaySound&(newScene.sound, 1, 1)
-
-                ' Reset the story choices
-                game.storyChoices = game.basicStoryChoices
-            End If
-
-            ' Refresh the scene's description
-            Call LookAction(game)
-        End If
+        game.playerLastX = game.playerX
+        game.playerX = aheadX%
+        game.playerLastY = game.playerY
+        game.playerY = aheadY%
+        Call LoadScene(game, newScene)
     End If
 End Sub
 
@@ -3094,7 +3261,12 @@ Sub WorldScene (event As Integer, world As Integer, level As Integer, x As Integ
         Next pageNumber%
     End If
     If event = RETRIEVE Then
-        scene = scenes(world, level, x, y)
+        If (x >= 0) And (y >= 0) Then
+            scene = scenes(world, level, x, y)
+        Else
+            Dim emptyScene As Scene
+            scene = emptyScene
+        End If
     End If
     If event = UPDATE Then
         scenes(world, level, x, y) = scene
