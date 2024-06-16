@@ -144,6 +144,8 @@ Type Book
     inventorySound As Long
     isOver As Integer
     isRightHanded As Integer
+    lastImageX As Integer
+    lastImageY As Integer
     lastLevel As Integer
     lastRow As Integer
     leftPageStartingColumn As Integer
@@ -177,7 +179,8 @@ Type Book
 End Type
 
 Type Sprite
-    action As String
+    action1 As String
+    action2 As String
     direction As Integer
     image As Long
     name As String
@@ -396,7 +399,7 @@ Sub AllTheThingsAction (game As Book)
             thingDone% = 1
         End If
         If (game.player = "GREYSON") And (Not Contains%(game.inventory, "UNO REVERSE", ",")) Then
-            Call IncreaseInventory(game, "UNO REVERSE")
+            Call IncreaseInventory(game, "UNO REVER                                                                                                                    SE")
             Call PrintPageText(game, "story", CsrLin, "You obtained the legendary UNO Reverse card!")
             thingDone% = 1
         End If
@@ -411,13 +414,19 @@ Sub AllTheThingsAction (game As Book)
     End If
 End Sub
 
-' TODO - Add parameters for making this as dynamic as possible
+' TODO - Add parameters for making  this as dynamic as possible
 ' TODO - Add parameter for making the monster invisible
 ' https://www.qb64tutorial.com/lesson19
 Sub ArcadeShooter (game As Book)
     'Sub ArcadeShooter (game As Book, playerImageFile As String, playerAttackImageFile As String, monsterImageFile As String, monsterAttackImageFile As String, monsterAttackSoundFile As String)
 
-    If game.isRightHanded = 1 Then
+    ' TODO - Capture an image of the control page, minus any contents.
+    ' TODO - Then, display Call RefreshControlPage(game).
+    Call TurnPage(game, 1)
+    currentCol% = Pos(0)
+    currentRow% = CsrLin
+
+    If game.isRightHanded = 0 Then
         leftColumn% = game.leftPageStartingColumn
     Else
         leftColumn% = game.rightPageStartingColumn
@@ -429,16 +438,23 @@ Sub ArcadeShooter (game As Book)
     topEdgeY% = (topRow% * _FontHeight) - _FontHeight
     bottomRow% = game.lastRow
     bottomEdgeY% = bottomRow% * _FontHeight
+    controlPage& = _NewImage(rightEdgeX% - leftEdgeX%, bottomEdgeY% - topEdgeY%, 32) ' Init the screen capture by matching the size of the control page
+    _PutImage (0, 0), 0, controlPage&, (leftEdgeX%, topEdgeY%)-(rightEdgeX%, bottomEdgeY%) ' Copy the exact coordinates from the screen image to the screen capture
+    controlX% = leftEdgeX%
+    controlY% = topEdgeY%
 
-    currentCol% = Pos(0)
-    currentRow% = CsrLin
+    Call RefreshControlPage(game)
+    Print
+    Call PrintPageText(game, "control", CsrLin, "To move, use the LEFT and RIGHT arrow keys.")
+    Call PrintPageText(game, "control", CsrLin, "To shoot, use the SPACE keys.")
+
+    Locate currentRow%, currentCol%
     nightOwl& = _LoadImage("night-owl-flying.png")
     player& = _LoadImage("ninja.png")
     playerSizeX% = _Width(nightOwl&)
     playerSizeY% = playerSizeX% * (_Height(player&) / _Width(player&))
-    playerX% = (leftEdgeX% + rightEdgeX%) / 2
-    playerY% = bottomEdgeY% - playerSizeY% - 25 ' Buffer of 25 ensures player is inside of background image
     boom& = _LoadImage("boom.png")
+    explode& = _LoadImage("explode.png")
 
     Randomize Timer
     randomNumber% = Int(Rnd * 400) + 1
@@ -454,13 +470,18 @@ Sub ArcadeShooter (game As Book)
     image& = _LoadImage("wilderness3.jpg")
     imageRow% = CsrLin
     Call DisplayImage(game, "story", image&)
+    leftEdgeX% = game.lastImageX
+    rightEdgeX% = game.lastImageX + _Width(image&)
+    topEdgeY% = game.lastImageY
+    bottomEdgeY% = game.lastImageY + _Height(image&)
     _FreeImage image&
-    Call RefreshControlPage(game)
-    Print
-    Call PrintPageText(game, "control", CsrLin, "To move, use the LEFT and RIGHT arrow keys.")
-    Call PrintPageText(game, "control", CsrLin, "To shoot, use the SPACE keys.")
+    playerX% = (leftEdgeX% + rightEdgeX%) / 2
+    playerY% = bottomEdgeY% - playerSizeY% - 25 ' Buffer of 25 ensures player is inside of background image
 
-    startingScreen& = _CopyImage(0)
+    'startingScreen& = _CopyImage(0)
+    'startingScreen& = _ScreenImage(leftEdgeX%, topEdgeY%, rightEdgeX%, bottomEdgeY%)
+    startingScreen& = _NewImage(rightEdgeX% - leftEdgeX%, bottomEdgeY% - topEdgeY%, 32) ' Init the screen capture by matching the size of the game area
+    _PutImage (0, 0), 0, startingScreen&, (leftEdgeX%, topEdgeY%)-(rightEdgeX%, bottomEdgeY%) ' Copy the exact coordinates from the screen image to the screen capture
 
     nightOwlX% = (leftEdgeX% + rightEdgeX%) / 2
     nightOwlY% = ((imageRow%) * _FontHeight) + 10 ' Buffer of 10 ensures monster is inside of background image
@@ -502,8 +523,7 @@ Sub ArcadeShooter (game As Book)
 
     Do
         _Limit 30 ' 30 frames per second
-        Cls
-        _PutImage , startingScreen&
+        _PutImage (leftEdgeX%, topEdgeY%), startingScreen&, 0
         _PutImage (nightOwlX%, nightOwlY%), nightOwl&
         _PutImage (playerX%, playerY%)-(playerX% + playerSizeX%, playerY% + playerSizeY%), player&
 
@@ -529,8 +549,8 @@ Sub ArcadeShooter (game As Book)
             Else
                 ' Fireballs attached to monster are now free to descend
                 For i% = 1 To fireballCount%
-                    If fireball(i%).action = "static" Then
-                        fireball(i%).action = "unleashed"
+                    If fireball(i%).action1 = "static" Then
+                        fireball(i%).action1 = "unleashed"
                     End If
                 Next i%
                 fireballsSpawned% = 0
@@ -558,7 +578,7 @@ Sub ArcadeShooter (game As Book)
         If fireballIndex% >= 1 Then
             For i% = 1 To fireballCount%
                 If fireball(i%).visible = 1 Then
-                    If fireball(i%).action = "static" Then
+                    If fireball(i%).action1 = "static" Then
                         fireball(i%).x = fireball(i%).x + xDelta%
                     Else
                         fireball(i%).x = fireball(i%).x + fireball(i%).direction
@@ -578,7 +598,7 @@ Sub ArcadeShooter (game As Book)
             End If
             For i% = 1 To 4
                 fireballIndex% = fireballIndex% + 1
-                fireball(fireballIndex%).action = "static"
+                fireball(fireballIndex%).action1 = "static"
                 fireball(fireballIndex%).direction = fireballTemplate(i%).direction
                 fireball(fireballIndex%).name = fireballTemplate(i%).name
                 fireball(fireballIndex%).image = fireballTemplate(i%).image
@@ -588,13 +608,13 @@ Sub ArcadeShooter (game As Book)
                     fireball(fireballIndex%).x = nightOwlX%
                 End If
                 If i% = 2 Then
-                    fireball(fireballIndex%).x = nightOwlX% + (_Width(nightOwl&) * .25)
+                    fireball(fireballIndex%).x = nightOwlX% + (_Width(nightOwl&) * .25) - 1
                 End If
                 If i% = 3 Then
-                    fireball(fireballIndex%).x = nightOwlX% + (_Width(nightOwl&) * .75) - fireballTemplate(3).size
+                    fireball(fireballIndex%).x = nightOwlX% + (_Width(nightOwl&) * .75) - fireballTemplate(3).size - 1
                 End If
                 If i% = 4 Then
-                    fireball(fireballIndex%).x = nightOwlX% + (_Width(nightOwl&)) - fireballTemplate(4).size
+                    fireball(fireballIndex%).x = nightOwlX% + (_Width(nightOwl&)) - fireballTemplate(4).size - 1
                 End If
                 fireball(fireballIndex%).y = fireballTemplate(i%).y
                 fireball(fireballIndex%).visible = 1
@@ -610,13 +630,13 @@ Sub ArcadeShooter (game As Book)
 
         ' TODO - move player based on input
         If _KeyDown(19200) Then
-            ' TODO - Move player left
+            ' Move player left
             If playerX% > (leftEdgeX% + 20 + 4) Then
                 playerX% = playerX% - 4
             End If
         End If
         If _KeyDown(19712) Then
-            ' TODO - Move player right
+            ' Move player right
             If (playerX% + playerSizeX%) < (rightEdgeX% - 20 - 4) Then
                 playerX% = playerX% + 4
             End If
@@ -625,33 +645,89 @@ Sub ArcadeShooter (game As Book)
             ' TODO - Spacebar... fire missile
         End If
 
-        ' TODO - For each visible fireball, compute whether the fireball is now touching either a missile or the player (and show explode or boom)
+        playerX2% = playerX% + playerSizeX%
+        playerMiddleX% = (playerX% + playerX2%) / 2
+        playerY2% = playerY% + playerSizeY%
+        playerMiddleY% = (playerY% + playerY2%) / 2
+
+        ' For each visible fireball, compute whether the fireball is now touching either a missile or the player (and show explode or BOOMM)
+        If fireballIndex% >= 1 Then
+            For i% = 1 To fireballCount%
+                If fireball(i%).visible = 1 Then
+                    ' Is the fireball touching the player?
+                    If IsOverlap%(playerX%, playerY%, playerX2%, playerY2%, fireball(i%).x, fireball(i%).y, fireball(i%).x + fireball(i%).size, fireball(i%).y + fireball(i%).size) Then
+                        If fireball(i%).action2 <> "hit player" Then
+                            ' Decrease hit points, but only once per fireball
+                            fireball(i%).action2 = "hit player"
+                            fireballDamage% = 0
+                            If fireball(i%).name = "hot" Then
+                                fireballDamage% = 10
+                            Else
+                                If fireball(i%).name = "hotter" Then
+                                    fireballDamage% = 15
+                                Else
+                                    If fireball(i%).name = "blazin" Then
+                                        fireballDamage% = 20
+                                    Else
+                                        If fireball(i%).name = "inferno" Then
+                                            fireballDamage% = 25
+                                        End If
+                                    End If
+                                End If
+                            End If
+                            Call DecreaseHitPoints(game, fireballDamage%, 0)
+                            ' TODO - Redisplay the control page
+                            _PutImage (controlX%, controlY%), controlPage&, 0
+                            Call RefreshControlPage(game)
+                            Print
+                            Call PrintPageText(game, "control", CsrLin, "To move, use the LEFT and RIGHT arrow keys.")
+                            Call PrintPageText(game, "control", CsrLin, "To shoot, use the SPACE keys.")
+                        End If
+                        ' Compute the center of each object, then center the BOOMM between the two objects
+                        fireballMiddleX% = (fireball(i%).x + fireball(i%).x + fireball(i%).size) / 2
+                        fireballMiddleY% = (fireball(i%).y + fireball(i%).y + fireball(i%).size) / 2
+                        If fireballMiddleX% <= playerMiddleX% Then
+                            boomLeftX% = fireballMiddleX%
+                            boomRightX% = playerMiddleX%
+                        Else
+                            boomLeftX% = playerMiddleX%
+                            boomRightX% = fireballMiddleX%
+                        End If
+                        If fireballMiddleY% <= playerMiddleY% Then
+                            boomTopY% = fireballMiddleY%
+                            boomBottomY% = playerMiddleY%
+                        Else
+                            boomTopY% = playerMiddleY%
+                            boomBottomY% = fireballMiddleY%
+                        End If
+                        _PutImage (boomLeftX%, boomTopY%)-(boomRightX%, boomBottomY%), boom&
+                    End If
+                End If
+            Next i%
+        End If
 
         ' TODO - For each visible missile, compute whether the missile is touching the monster (and show boom)
 
         _Display ' Update screen with changes
-    Loop Until _KeyDown(27)
+    Loop Until (_KeyDown(27)) Or (game.hitPoints = 0)
 
     _AutoDisplay ' Automatically update the screen with changes
-    _PutImage , startingScreen&
+    _PutImage (leftEdgeX%, topEdgeY%), startingScreen&, 0
     _FreeImage startingScreen&
+    _FreeImage controlPage&
     _FreeImage nightOwl&
-    _FreeImage ninja&
+    _FreeImage player&
     _FreeImage boom&
+    _FreeImage explode&
     For i% = 1 To 4
         _FreeImage fireballTemplate(i%).image
     Next i%
-    If fireballIndex% >= 1 Then
-        For i% = 1 To fireballCount%
-            _FreeImage fireball(i%).image
-        Next i%
-    End If
     Call StopSound(monsterSound1&)
     Call StopSound(storySound&)
     Locate currentRow%, currentCol%
 End Sub
 
-' Capture the graphical area for a given text region
+' TODO - Capture the graphical area for a given text region
 '
 ' Parameters:
 ' game - Book instance
@@ -669,7 +745,6 @@ Function CaptureTextArea& (game As Book, startColumn As Integer, startRow As Int
     y1% = (startRow - 1) * _FontHeight
     y2% = endRow * _FontHeight
     CaptureTextArea& = _NewImage(x2% - x1%, y2% - y1%, 32) ' Init the text area
-
 End Function
 
 ' Challenge the current set of high scores
@@ -773,7 +848,8 @@ End Function
 ' Parameters:
 ' game - Book instance
 ' points - Number of points by which to decrease the player's hit points
-Sub DecreaseHitPoints (game As Book, points As Integer)
+' updateDisplay - Update the display? (1/0)
+Sub DecreaseHitPoints (game As Book, points As Integer, updateDisplay As Integer)
     game.hitPoints = game.hitPoints - points
     If game.hitPoints < 0 Then
         game.hitPoints = 0
@@ -789,25 +865,27 @@ Sub DecreaseHitPoints (game As Book, points As Integer)
         End If
     End If
 
-    currentColumn% = Pos(0)
-    currentRow% = CsrLin
-    screenImage& = _CopyImage(0)
-    redScreen& = _NewImage(_Width, _Height, 32)
-    Screen redScreen&
-    Cls , _RGB(255, 0, 0) ' Clear screen with red as the background color
-    _Delay 0.25 ' Suspend program execution for a half second
-    _PutImage , screenImage&, 0 ' Restore the application screen
-    _PrintMode _KeepBackground ' Preserve the image background when printing text
-    _FreeImage screenImage& ' Free up memory
-    Locate currentRow%, currentColumn% ' Restore the current text row and column
+    If updateDisplay Then
+        currentColumn% = Pos(0)
+        currentRow% = CsrLin
+        screenImage& = _CopyImage(0)
+        redScreen& = _NewImage(_Width, _Height, 32)
+        Screen redScreen&
+        Cls , _RGB(255, 0, 0) ' Clear screen with red as the background color
+        _Delay 0.25 ' Suspend program execution for a half second
+        _PutImage , screenImage&, 0 ' Restore the application screen
+        _PrintMode _KeepBackground ' Preserve the image background when printing text
+        _FreeImage screenImage& ' Free up memory
+        Locate currentRow%, currentColumn% ' Restore the current text row and column
 
-    storyColor& = _DefaultColor
-    Color _RGB(255, 140, 0)
-    Call PrintPageText(game, "story", CsrLin + 1, "HP -" + LTrim$(Str$(points)))
-    storyRow% = CsrLin
-    Call RefreshControlPage(game)
-    Color storyColor&
-    Locate storyRow%, 1
+        storyColor& = _DefaultColor
+        Color _RGB(255, 140, 0)
+        Call PrintPageText(game, "story", CsrLin + 1, "HP -" + LTrim$(Str$(points)))
+        storyRow% = CsrLin
+        Call RefreshControlPage(game)
+        Color storyColor&
+        Locate storyRow%, 1
+    End If
 End Sub
 
 ' Get files in current directory
@@ -1305,6 +1383,10 @@ Sub DisplayImage (game As Book, page As String, image As Long)
     imageY% = imageRow% * _FontHeight
     _PutImage (imageX%, imageY%), image
 
+    ' Track the calculated image coordinates
+    game.lastImageX = imageX%
+    game.lastImageY = imageY%
+
     ' Move the cursor to the next row after the image
     nextRow% = imageRow% + _Ceil(imageHeight% / _FontHeight) + 1
     Locate nextRow%, leftColumn%
@@ -1621,7 +1703,7 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                         Call PrintPageText(game, "story", CsrLin, storyText$)
                         storyText$ = ""
                     End If
-                    Call DecreaseHitPoints(game, Val(tagValue$))
+                    Call DecreaseHitPoints(game, Val(tagValue$), 1)
                     If scene.color = _RGB(255, 255, 255) Then
                         Color _RGB(0, 0, 0) ' For readability, never use white text on the book
                     Else
@@ -2315,6 +2397,37 @@ Sub IncreaseScore (game As Book, points As Integer)
     Color storyColor&
     Locate storyRow%, 1
 End Sub
+
+' Are two objects touching?
+'
+' Parameters:
+' object1x1 - First object's x1
+' object1y1 - First object's y1
+' object1x2 - First object's x2
+' object1y2 - First object's y2
+' object2x1 - Second object's x1
+' object2y1 - Second object's y1
+' object2x2 - Second object's x2
+' object2y2 - Second object's y2
+'
+' Returns:
+' Touching? (1/0)
+Function IsOverlap% (object1x1 As Integer, object1y1 As Integer, object1x2 As Integer, object1y2 As Integer, object2x1 As Integer, object2y1 As Integer, object2x2 As Integer, object2y2 As Integer)
+    returnVal% = 0
+    If ((object1x1 >= object2x1) And (object1x1 <= object2x2)) Or ((object1x2 >= object2x1) And (object1x2 <= object2x2)) Then
+        If ((object1y1 >= object2y1) And (object1y1 <= object2y2)) Or ((object1y2 >= object2y1) And (object1y2 <= object2y2)) Then
+            returnVal% = 1
+        End If
+    End If
+    If returnVal% = 0 Then
+        If ((object2x1 >= object1x1) And (object2x1 <= object1x2)) Or ((object2x2 >= object1x1) And (object2x2 <= object1x2)) Then
+            If ((object2y1 >= object1y1) And (object2y1 <= object1y2)) Or ((object2y2 >= object1y1) And (object2y2 <= object1y2)) Then
+                returnVal% = 1
+            End If
+        End If
+    End If
+    IsOverlap% = returnVal%
+End Function
 
 ' Listen action
 '
