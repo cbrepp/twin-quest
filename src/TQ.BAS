@@ -10,6 +10,7 @@
 ' bunny2.jpg - Hare, Animal, Mammal image. Free for use. by apnear40 (https://pixabay.com/photos/hare-animal-mammal-wildlife-fauna-8585802/)
 ' castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
 ' castle-interior.jpg - Ai Generated Gothic Castle royalty-free stock illustration. Free for use & download. (https://pixabay.com/illustrations/ai-generated-gothic-castle-room-8469399/)
+' cat-meow.wav - my hungry cat meowing (https://freesound.org/people/tuberatanka/sounds/110010/)
 ' cat-meowing.mp3 - meow of a cat (https://freesound.org/people/lextrack/sounds/333916/)
 ' clouds.png - OpenClipart-Vectors (https://pixabay.com/vectors/sunrise-clouds-rising-sun-sky-sun-153600/)
 ' death.mp3 - Dramatic Scene Character Death Separation Melancholy Sadness (https://freesound.org/people/UNIVERSFIELD/sounds/697083/)
@@ -53,9 +54,10 @@
 ' mylee-sink.jpg - Mylee in a sink by Mr. Chris
 ' night-owl.jpg - Scary, Owl, Eyes image. Free for use. by Skitterphoto (https://pixabay.com/photos/scary-owl-eyes-spooky-halloween-3595742/)
 ' night-owl-flying.png - Owl Bird Nature royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/owl-bird-geometric-animal-wings-5986451/)
-' ninja.png - Ninja Fighter Japanese royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/ninja-fighter-japanese-samurai-152415/)
+' ninja-cat.png - Ai Generated Cat Ninja royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/ai-generated-cat-ninja-stealth-8471008/)
 ' old-books.jpg - Old books, Book, Old image. Free for use. by jarmoluk (https://pixabay.com/photos/old-books-book-old-library-436498/)
 ' points.mp3 - 320655__rhodesmas__level-up-01.mp3 (https://freesound.org/people/shinephoenixstormcrow/sounds/337049/)
+' pause.mp3 - This is a sound I created to the game https://apps.facebook.com/social-snakes/ using Garage Band.  It's a small sound, just like old school video games.  The "pause" sound it's simply the notes C, D, E.  (https://freesound.org/people/crisstanza/sounds/167127/)
 ' scream.mp3 - Human Death Scream.mp3 (https://freesound.org/people/DjCHAOS/sounds/77148/)
 ' select-player.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
 ' select-player-grey.png - Image by johngelling from Pixabay (https://pixabay.com/vectors/people-man-woman-child-boy-girl-1886412/)
@@ -64,6 +66,7 @@
 ' suspense.mp3 - Drone Background Music (https://freesound.org/people/Migfus20/sounds/561085/)
 ' turn-page.mp3 - page turn (https://freesound.org/people/partheeban/sounds/457767/)
 ' uno-reverse.png - Uno reverse card Blank Template - Imgflip (https://imgflip.com/memetemplate/371071451/Uno-reverse-card)
+' victory.mp3 - Success Fanfare Trumpets.mp3 - A simple success/triumph/resolution fanfare made using the brass sound on Musescore. Enjoy! (https://freesound.org/people/FunWithSound/sounds/456966/)
 ' wayne-chung.jpg - Image of Wayne Chung wondering what's going on
 ' wayne-chung.mp3 - Wang Chung "Everybody Have Fun Tonight" snippet
 ' wilderness.jpg and wilderness-full.jpg - Nature, Fog, Travel image. Free for use. by jameswheeler (https://pixabay.com/photos/nature-fog-travel-foggy-haze-mist-3787200/)
@@ -85,6 +88,9 @@ Const CREATE = 1, RETRIEVE = 2, UPDATE = 3, DELETE = 4
 
 ' Define player names as shared, constant values
 Const GREYSON = "GREYSON", GREY = "GREY", ZARA = "ZARA"
+
+' Define game difficulty levels as shared, constant values
+Const EASY = "EASY", HARD = "HARD"
 
 ' GIF stuff (https://qb64.com/wiki/GIF-Images)
 Dim Shared Dbg: Dbg = 0
@@ -130,6 +136,7 @@ Type Book
     credits As String
     cursor As TextCursor
     deathHitSound As Long
+    difficulty As String
     directions As MapDirections
     doorX As Integer
     doorY As Integer
@@ -161,6 +168,7 @@ Type Book
     playerDirection As Integer
     playerLastX As Integer
     playerLastY As Integer
+    playerMode As String
     playerX As Integer
     playerY As Integer
     pointsSound As Long
@@ -176,6 +184,7 @@ Type Book
     title As String
     twin As String
     version As String
+    victorySound As Long
 End Type
 
 Type Sprite
@@ -273,6 +282,7 @@ game.heavyHitSound = _SndOpen("hit-harder.mp3")
 game.deathHitSound = _SndOpen("fireball.mp3")
 game.inventorySound = _SndOpen("inventory.mp3")
 game.pointsSound = _SndOpen("points.mp3")
+game.victorySound = _SndOpen("victory.mp3")
 
 ' Display pre-chapter pages with epic music
 game.pageTurnSound = PlaySound&("turn-page.mp3", 1, 0)
@@ -290,6 +300,8 @@ game.chapter = "HIGH SCORES"
 Call DisplayHighScoresPage(game)
 game.chapter = "SELECT MAIN CHARACTER"
 Call DisplaySelectPlayerPage(game)
+game.chapter = "SELECT DIFFICULTY"
+Call DisplaySelectDifficultyPage(game)
 
 ' Start the story
 game.chapter = "INTRODUCTION"
@@ -300,7 +312,7 @@ game.storyChoices = game.basicStoryChoices
 choice$ = ""
 Do
     Call RefreshStoryPage(game, choice$)
-    Call RefreshControlPage(game)
+    Call RefreshControlPage(game, "")
 
     If game.hitPoints = 0 Then
         game.isOver = 1
@@ -399,7 +411,7 @@ Sub AllTheThingsAction (game As Book)
             thingDone% = 1
         End If
         If (game.player = "GREYSON") And (Not Contains%(game.inventory, "UNO REVERSE", ",")) Then
-            Call IncreaseInventory(game, "UNO REVER                                                                                                                    SE")
+            Call IncreaseInventory(game, "UNO REVERSE")
             Call PrintPageText(game, "story", CsrLin, "You obtained the legendary UNO Reverse card!")
             thingDone% = 1
         End If
@@ -412,319 +424,6 @@ Sub AllTheThingsAction (game As Book)
             Call PrintPageText(game, "story", CsrLin, "You have done all the things for level " + LTrim$(Str$(game.level)) + ".")
         End If
     End If
-End Sub
-
-' TODO - Add parameters for making  this as dynamic as possible
-' TODO - Add parameter for making the monster invisible
-' https://www.qb64tutorial.com/lesson19
-Sub ArcadeShooter (game As Book)
-    'Sub ArcadeShooter (game As Book, playerImageFile As String, playerAttackImageFile As String, monsterImageFile As String, monsterAttackImageFile As String, monsterAttackSoundFile As String)
-
-    ' TODO - Capture an image of the control page, minus any contents.
-    ' TODO - Then, display Call RefreshControlPage(game).
-    Call TurnPage(game, 1)
-    currentCol% = Pos(0)
-    currentRow% = CsrLin
-
-    If game.isRightHanded = 0 Then
-        leftColumn% = game.leftPageStartingColumn
-    Else
-        leftColumn% = game.rightPageStartingColumn
-    End If
-    rightColumn% = leftColumn% + game.maxPageLength
-    leftEdgeX% = (leftColumn% * _FontWidth) - _FontWidth
-    rightEdgeX% = rightColumn% * _FontWidth
-    topRow% = game.firstRow
-    topEdgeY% = (topRow% * _FontHeight) - _FontHeight
-    bottomRow% = game.lastRow
-    bottomEdgeY% = bottomRow% * _FontHeight
-    controlPage& = _NewImage(rightEdgeX% - leftEdgeX%, bottomEdgeY% - topEdgeY%, 32) ' Init the screen capture by matching the size of the control page
-    _PutImage (0, 0), 0, controlPage&, (leftEdgeX%, topEdgeY%)-(rightEdgeX%, bottomEdgeY%) ' Copy the exact coordinates from the screen image to the screen capture
-    controlX% = leftEdgeX%
-    controlY% = topEdgeY%
-
-    Call RefreshControlPage(game)
-    Print
-    Call PrintPageText(game, "control", CsrLin, "To move, use the LEFT and RIGHT arrow keys.")
-    Call PrintPageText(game, "control", CsrLin, "To shoot, use the SPACE keys.")
-
-    Locate currentRow%, currentCol%
-    nightOwl& = _LoadImage("night-owl-flying.png")
-    player& = _LoadImage("ninja.png")
-    playerSizeX% = _Width(nightOwl&)
-    playerSizeY% = playerSizeX% * (_Height(player&) / _Width(player&))
-    boom& = _LoadImage("boom.png")
-    explode& = _LoadImage("explode.png")
-
-    Randomize Timer
-    randomNumber% = Int(Rnd * 400) + 1
-    monsterDestinationX% = nightOwlX% + randomNumber%
-    halfMonsterDestinationX% = nightOwlX% + (randomNumber% / 2)
-
-    ' Hoot
-    monsterSound1& = PlaySound&("hooting.mp3", 1, 0)
-    'monsterSound2& = PlaySound&("heavy-wings.mp3", 1, 0)
-    ' Cool boss battle music
-    storySound& = PlaySound&("boss-battle.mp3", 1, 1)
-
-    image& = _LoadImage("wilderness3.jpg")
-    imageRow% = CsrLin
-    Call DisplayImage(game, "story", image&)
-    leftEdgeX% = game.lastImageX
-    rightEdgeX% = game.lastImageX + _Width(image&)
-    topEdgeY% = game.lastImageY
-    bottomEdgeY% = game.lastImageY + _Height(image&)
-    _FreeImage image&
-    playerX% = (leftEdgeX% + rightEdgeX%) / 2
-    playerY% = bottomEdgeY% - playerSizeY% - 25 ' Buffer of 25 ensures player is inside of background image
-
-    'startingScreen& = _CopyImage(0)
-    'startingScreen& = _ScreenImage(leftEdgeX%, topEdgeY%, rightEdgeX%, bottomEdgeY%)
-    startingScreen& = _NewImage(rightEdgeX% - leftEdgeX%, bottomEdgeY% - topEdgeY%, 32) ' Init the screen capture by matching the size of the game area
-    _PutImage (0, 0), 0, startingScreen&, (leftEdgeX%, topEdgeY%)-(rightEdgeX%, bottomEdgeY%) ' Copy the exact coordinates from the screen image to the screen capture
-
-    nightOwlX% = (leftEdgeX% + rightEdgeX%) / 2
-    nightOwlY% = ((imageRow%) * _FontHeight) + 10 ' Buffer of 10 ensures monster is inside of background image
-    direction% = 1
-    Dim fireball(50) As Sprite
-    fireballIndex% = 0
-    fireballCount% = 0
-
-    ' Prep the fireball templates
-    Dim fireballTemplate(4) As Sprite
-    fireballTemplate(1).direction = -1
-    fireballTemplate(1).name = "hot"
-    fireballTemplate(1).image = _LoadImage("fireball1.png")
-    fireballTemplate(1).size = _Width(nightOwl&) * .125
-    fireballTemplate(1).speed = 4
-    fireballTemplate(1).y = nightOwlY% + (_Height(nightOwl&) * .25)
-    fireballTemplate(2).direction = -1
-    fireballTemplate(2).name = "blazin"
-    fireballTemplate(2).image = _LoadImage("fireball3.png")
-    fireballTemplate(2).size = _Width(nightOwl&) * .125
-    fireballTemplate(2).speed = 3
-    fireballTemplate(2).y = nightOwlY% + (_Height(nightOwl&) * .5)
-    fireballTemplate(3).direction = 1
-    fireballTemplate(3).name = "inferno"
-    fireballTemplate(3).image = _LoadImage("fireball4.png")
-    fireballTemplate(3).size = _Width(nightOwl&) * .125
-    fireballTemplate(3).speed = 3
-    fireballTemplate(3).y = nightOwlY% + (_Height(nightOwl&) * .5)
-    fireballTemplate(4).direction = 1
-    fireballTemplate(4).name = "hotter"
-    fireballTemplate(4).image = _LoadImage("fireball2.png")
-    fireballTemplate(4).size = _Width(nightOwl&) * .125
-    fireballTemplate(4).speed = 4
-    fireballTemplate(4).y = nightOwlY% + (_Height(nightOwl&) * .25)
-
-    fireballsSpawned% = 0
-    fireballsUnleashed% = 0
-    halfwayThere% = 0
-
-    Do
-        _Limit 30 ' 30 frames per second
-        _PutImage (leftEdgeX%, topEdgeY%), startingScreen&, 0
-        _PutImage (nightOwlX%, nightOwlY%), nightOwl&
-        _PutImage (playerX%, playerY%)-(playerX% + playerSizeX%, playerY% + playerSizeY%), player&
-
-        ' Render each fireball
-        If fireballIndex% >= 1 Then
-            For i% = 1 To fireballCount%
-                If fireball(i%).visible = 1 Then
-                    _PutImage (fireball(i%).x, fireball(i%).y)-(fireball(i%).x + fireball(i%).size, fireball(i%).y + fireball(i%).size), fireball(i%).image
-                End If
-            Next i%
-        End If
-        ' TODO - Render each missile
-
-        ' Move monster
-        spawnFireballs% = 0
-        xDelta% = 2 * direction%
-        nightOwlX% = nightOwlX% + xDelta%
-
-        ' If the monster is halfway to its destination, toggle between spawning new fireballs and unleashing the current fireballs
-        If (halfwayThere% = 0) And (((direction% = 1) And (nightOwlX% > halfMonsterDestinationX%)) Or ((direction% = -1) And (nightOwlX% < halfMonsterDestinationX%))) Then
-            If (fireballsSpawned% = 0) Then
-                spawnFireballs% = 1 'Request new fireballs
-            Else
-                ' Fireballs attached to monster are now free to descend
-                For i% = 1 To fireballCount%
-                    If fireball(i%).action1 = "static" Then
-                        fireball(i%).action1 = "unleashed"
-                    End If
-                Next i%
-                fireballsSpawned% = 0
-            End If
-            Call ReplaySound(monsterSound1&, 1, 0)
-            halfwayThere% = 1
-        End If
-
-        If ((direction% = 1) And (nightOwlX% > monsterDestinationX%)) Or ((direction% = -1) And (nightOwlX% < monsterDestinationX%)) Then
-            direction% = direction% * -1
-            ' Randomly compute number of iterations until next change (will need to compute edge in that direction for going too far)
-            randomNumber% = Int(Rnd * 400) + 1
-            monsterDestinationX% = nightOwlX% + (randomNumber% * direction%)
-            If monsterDestinationX% < leftEdgeX% Then
-                monsterDestinationX% = leftEdgeX%
-            End If
-            If monsterDestinationX% > (rightEdgeX% - _Width(nightOwl&)) Then
-                monsterDestinationX% = (rightEdgeX% - _Width(nightOwl&))
-            End If
-            ' Compute halfway to the destination
-            halfMonsterDestinationX% = (monsterDestinationX% + nightOwlX%) / 2
-            halfwayThere% = 0
-        End If
-        ' Move each fireball
-        If fireballIndex% >= 1 Then
-            For i% = 1 To fireballCount%
-                If fireball(i%).visible = 1 Then
-                    If fireball(i%).action1 = "static" Then
-                        fireball(i%).x = fireball(i%).x + xDelta%
-                    Else
-                        fireball(i%).x = fireball(i%).x + fireball(i%).direction
-                        fireball(i%).y = fireball(i%).y + fireball(i%).speed
-                        ' TODO - Rotate the sprite as it descends (https://www.qb64tutorial.com/lesson17)
-                        fireball(i%).size = fireball(i%).size + .2
-                        If (fireball(i%).x < leftEdgeX%) Or ((fireball(i%).x + fireball(i%).size) > rightEdgeX%) Or ((fireball(i%).y + fireball(i%).size) > bottomEdgeY%) Then
-                            fireball(i%).visible = 0
-                        End If
-                    End If
-                End If
-            Next i%
-        End If
-        If spawnFireballs% = 1 Then
-            If fireballIndex% > 46 Then
-                fireballIndex% = 0
-            End If
-            For i% = 1 To 4
-                fireballIndex% = fireballIndex% + 1
-                fireball(fireballIndex%).action1 = "static"
-                fireball(fireballIndex%).direction = fireballTemplate(i%).direction
-                fireball(fireballIndex%).name = fireballTemplate(i%).name
-                fireball(fireballIndex%).image = fireballTemplate(i%).image
-                fireball(fireballIndex%).size = fireballTemplate(i%).size
-                fireball(fireballIndex%).speed = fireballTemplate(i%).speed
-                If i% = 1 Then
-                    fireball(fireballIndex%).x = nightOwlX%
-                End If
-                If i% = 2 Then
-                    fireball(fireballIndex%).x = nightOwlX% + (_Width(nightOwl&) * .25) - 1
-                End If
-                If i% = 3 Then
-                    fireball(fireballIndex%).x = nightOwlX% + (_Width(nightOwl&) * .75) - fireballTemplate(3).size - 1
-                End If
-                If i% = 4 Then
-                    fireball(fireballIndex%).x = nightOwlX% + (_Width(nightOwl&)) - fireballTemplate(4).size - 1
-                End If
-                fireball(fireballIndex%).y = fireballTemplate(i%).y
-                fireball(fireballIndex%).visible = 1
-            Next i%
-            If fireballCount% < fireballIndex% Then
-                fireballCount% = fireballIndex%
-            End If
-            spawnFireballs% = 0
-            fireballsSpawned% = 1
-        End If
-
-        ' TODO - Move each missile
-
-        ' TODO - move player based on input
-        If _KeyDown(19200) Then
-            ' Move player left
-            If playerX% > (leftEdgeX% + 20 + 4) Then
-                playerX% = playerX% - 4
-            End If
-        End If
-        If _KeyDown(19712) Then
-            ' Move player right
-            If (playerX% + playerSizeX%) < (rightEdgeX% - 20 - 4) Then
-                playerX% = playerX% + 4
-            End If
-        End If
-        If _KeyHit = 32 Then
-            ' TODO - Spacebar... fire missile
-        End If
-
-        playerX2% = playerX% + playerSizeX%
-        playerMiddleX% = (playerX% + playerX2%) / 2
-        playerY2% = playerY% + playerSizeY%
-        playerMiddleY% = (playerY% + playerY2%) / 2
-
-        ' For each visible fireball, compute whether the fireball is now touching either a missile or the player (and show explode or BOOMM)
-        If fireballIndex% >= 1 Then
-            For i% = 1 To fireballCount%
-                If fireball(i%).visible = 1 Then
-                    ' Is the fireball touching the player?
-                    If IsOverlap%(playerX%, playerY%, playerX2%, playerY2%, fireball(i%).x, fireball(i%).y, fireball(i%).x + fireball(i%).size, fireball(i%).y + fireball(i%).size) Then
-                        If fireball(i%).action2 <> "hit player" Then
-                            ' Decrease hit points, but only once per fireball
-                            fireball(i%).action2 = "hit player"
-                            fireballDamage% = 0
-                            If fireball(i%).name = "hot" Then
-                                fireballDamage% = 10
-                            Else
-                                If fireball(i%).name = "hotter" Then
-                                    fireballDamage% = 15
-                                Else
-                                    If fireball(i%).name = "blazin" Then
-                                        fireballDamage% = 20
-                                    Else
-                                        If fireball(i%).name = "inferno" Then
-                                            fireballDamage% = 25
-                                        End If
-                                    End If
-                                End If
-                            End If
-                            Call DecreaseHitPoints(game, fireballDamage%, 0)
-                            ' TODO - Redisplay the control page
-                            _PutImage (controlX%, controlY%), controlPage&, 0
-                            Call RefreshControlPage(game)
-                            Print
-                            Call PrintPageText(game, "control", CsrLin, "To move, use the LEFT and RIGHT arrow keys.")
-                            Call PrintPageText(game, "control", CsrLin, "To shoot, use the SPACE keys.")
-                        End If
-                        ' Compute the center of each object, then center the BOOMM between the two objects
-                        fireballMiddleX% = (fireball(i%).x + fireball(i%).x + fireball(i%).size) / 2
-                        fireballMiddleY% = (fireball(i%).y + fireball(i%).y + fireball(i%).size) / 2
-                        If fireballMiddleX% <= playerMiddleX% Then
-                            boomLeftX% = fireballMiddleX%
-                            boomRightX% = playerMiddleX%
-                        Else
-                            boomLeftX% = playerMiddleX%
-                            boomRightX% = fireballMiddleX%
-                        End If
-                        If fireballMiddleY% <= playerMiddleY% Then
-                            boomTopY% = fireballMiddleY%
-                            boomBottomY% = playerMiddleY%
-                        Else
-                            boomTopY% = playerMiddleY%
-                            boomBottomY% = fireballMiddleY%
-                        End If
-                        _PutImage (boomLeftX%, boomTopY%)-(boomRightX%, boomBottomY%), boom&
-                    End If
-                End If
-            Next i%
-        End If
-
-        ' TODO - For each visible missile, compute whether the missile is touching the monster (and show boom)
-
-        _Display ' Update screen with changes
-    Loop Until (_KeyDown(27)) Or (game.hitPoints = 0)
-
-    _AutoDisplay ' Automatically update the screen with changes
-    _PutImage (leftEdgeX%, topEdgeY%), startingScreen&, 0
-    _FreeImage startingScreen&
-    _FreeImage controlPage&
-    _FreeImage nightOwl&
-    _FreeImage player&
-    _FreeImage boom&
-    _FreeImage explode&
-    For i% = 1 To 4
-        _FreeImage fireballTemplate(i%).image
-    Next i%
-    Call StopSound(monsterSound1&)
-    Call StopSound(storySound&)
-    Locate currentRow%, currentCol%
 End Sub
 
 ' TODO - Capture the graphical area for a given text region
@@ -882,7 +581,7 @@ Sub DecreaseHitPoints (game As Book, points As Integer, updateDisplay As Integer
         Color _RGB(255, 140, 0)
         Call PrintPageText(game, "story", CsrLin + 1, "HP -" + LTrim$(Str$(points)))
         storyRow% = CsrLin
-        Call RefreshControlPage(game)
+        Call RefreshControlPage(game, "")
         Color storyColor&
         Locate storyRow%, 1
     End If
@@ -1396,6 +1095,19 @@ Sub DisplayScene (game As Book, scene As Scene)
     ' TODO - For each page in a scene, call DisplayStoryPage()
 End Sub
 
+' Display the select difficulty page
+'
+' Parameters:
+' game - Book instance
+Sub DisplaySelectDifficultyPage (game As Book)
+    turnPageSound% = 1
+    Do
+        Call TurnPage(game, turnPageSound%)
+        game.difficulty = StoryPrompt$(game, "Difficulty Choices", EASY + "," + HARD, 0, 1, 4)
+        turnPageSound% = 0 ' If the player enters an incorrect choice and the page is turned to reset the screen, be silent
+    Loop While Not Contains%(game.storyChoices, game.difficulty, ",")
+End Sub
+
 ' Display the select player page
 '
 ' Parameters:
@@ -1565,7 +1277,6 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                 remainingDiv$ = Mid$(remainingDiv$, tagEnd% + 1, Len(remainingDiv$))
 
                 ' Supported Tags:
-                ' <arcade-shooter>
                 ' <br>/<break>
                 ' <choices-add CHOICE1+CHOICE2+CHOICE3...>
                 ' <choices-remove CHOICE1+CHOICE2+CHOICE3...>
@@ -1581,6 +1292,7 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                 ' <image IMAGE1+IMAGE2+IMAGE3...>
                 ' <inventory-add ITEM1+ITEM2+ITEM3...>
                 ' <load-scene>
+                ' <monster-shooter>
                 ' <play-sound SOUND1+SOUND2+SOUND3...>
                 ' <player>
                 ' <press-any-key>
@@ -1588,6 +1300,7 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                 ' <random COUNT>
                 ' <score-add POINTS>
                 ' <set-game-variable VARIABLE=VALUE>
+                ' <set-player-mode VALUE>
                 ' <set-story-variable VARIABLE=VALUE>
                 ' <stop-sound SOUND1+SOUND2+SOUND3...>
                 ' <story-prompt LABEL:CHOICE1+CHOICE2+CHOICE3...>
@@ -1597,18 +1310,9 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                 ' <twin>
                 ' <unbreak>
 
-                If (tag$ = "arcade-shooter") Then
-                    ' The Choices-Add tag prints any accumulated text and then launches the experimental arcade shooter mode
-                    If storyText$ <> "" Then
-                        Call PrintPageText(game, "story", CsrLin, storyText$)
-                        storyText$ = ""
-                    End If
-                    Call TurnPage(game, 1)
-                    Call ArcadeShooter(game)
-                    _Continue
-                End If
                 If (tag$ = "br") Or (tag$ = "break") Then
                     ' The Break tag prints any accumulated text and advances to the next line
+                    ' TODO - PrintPageText() now natively supports <br>
                     If storyText$ <> "" Then
                         Call PrintPageText(game, "story", CsrLin, storyText$)
                         storyText$ = ""
@@ -1796,6 +1500,48 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     isExitSet% = 1
                     _Continue
                 End If
+                If (tag$ = "monster-shooter") Then
+                    ' The Choices-Add tag prints any accumulated text and then launches the experimental arcade shooter mode
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    success% = 0
+                    keepPlaying% = 1
+                    startingHP% = game.hitPoints
+                    backgroundImageFile$ = ListPiece$(tagValue$, "+", 1)
+                    storySoundFile$ = ListPiece$(tagValue$, "+", 2)
+                    playerImageFile$ = ListPiece$(tagValue$, "+", 3)
+                    monsterImageFile$ = ListPiece$(tagValue$, "+", 4)
+                    isMonsterVisible% = Val(ListPiece$(tagValue$, "+", 5))
+                    monsterSoundFile$ = ListPiece$(tagValue$, "+", 6)
+                    While keepPlaying% = 1
+                        success% = MonsterShooter%(game, backgroundImageFile$, storySoundFile$, playerImageFile$, monsterImageFile$, isMonsterVisible%, monsterSoundFile$)
+                        keepPlaying% = 0
+                        If success% = 0 Then
+                            Call PressAnyKey(game, 1)
+                            Call TurnPage(game, 1)
+                            promptLabel$ = "Defeated By Boss"
+                            formattedChoices$ = "Abort,Retry,Fail"
+                            promptChoicesCount% = ListLength%(promptChoices$, "+")
+                            Locate CsrLin + 1, 1
+                            ' TODO - Enable arrow keys if normal level chapter.  This is being passed as 0.
+                            userInput$ = StoryPrompt$(game, promptLabel$, formattedChoices$, 0, 1, 5)
+                            Locate CsrLin + 2, 1
+                            If userInput$ = "Retry" Then
+                                keepPlaying% = 1
+                                game.hitPoints = startingHP%
+                            End If
+                        End If
+                    Wend
+                    ' Automatically redirect to a section for handling the success or failure of the minigame
+                    If success% = 1 Then
+                        action = "[[MINIGAME VICTORY]]"
+                    Else
+                        action = "[[MINIGAME DEFEAT]]"
+                    End If
+                    _Continue
+                End If
                 If tag$ = "play-sound" Then
                     ' The Play-Sound tag prints any accumulated text and plays the new sound(s)
                     If storyText$ <> "" Then
@@ -1854,6 +1600,15 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     Else
                         Color scene.color
                     End If
+                    _Continue
+                End If
+                If tag$ = "set-player-mode" Then
+                    ' The Set-Player-Mode tag prints any accumulated text and sets the game's player mode to the designated value
+                    If storyText$ <> "" Then
+                        Call PrintPageText(game, "story", CsrLin, storyText$)
+                        storyText$ = ""
+                    End If
+                    Call SetPlayerMode(game, tagValue$)
                     _Continue
                 End If
                 If tag$ = "set-game-variable" Then
@@ -2374,7 +2129,7 @@ Sub IncreaseInventory (game As Book, item As String)
         Color _RGB(255, 140, 0)
         Call PrintPageText(game, "story", CsrLin + 1, "INVENTORY +" + item)
         storyRow% = CsrLin
-        Call RefreshControlPage(game)
+        Call RefreshControlPage(game, "")
         Color storyColor&
         Locate storyRow%, 1
     End If
@@ -2393,7 +2148,7 @@ Sub IncreaseScore (game As Book, points As Integer)
     Color _RGB(255, 140, 0)
     Call PrintPageText(game, "story", CsrLin + 1, "SCORE +" + LTrim$(Str$(points)))
     storyRow% = CsrLin
-    Call RefreshControlPage(game)
+    Call RefreshControlPage(game, "")
     Color storyColor&
     Locate storyRow%, 1
 End Sub
@@ -2805,6 +2560,409 @@ Sub LookAction (game As Book)
     Color _RGB(0, 0, 0) ' Restore the default color
 End Sub
 
+' Display the Monster Shooter minigame.
+'
+' For more 2d gaming fun, see https://www.qb64tutorial.com/lesson19.
+'
+' Parameters:
+' game - Book instance
+' backgroundImageFile - File for the image of the background
+' storySoundFile - File for the cool boss battle music
+' playerImageFile - File for the image of the player
+' monsterImageFile - File for the image of the monster
+' isMonsterVisible - Is the monster visible? (1/0)  If not, the monster's image will not be displayed.
+' monsterSoundFile - File for the sound the monster makes
+'
+' Returns:
+' Success? (1/0)
+Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoundFile As String, playerImageFile As String, monsterImageFile As String, isMonsterVisible As Integer, monsterSoundFile As String)
+    'Sub ArcadeShooter (game As Book, playerImageFile As String, playerAttackImageFile As String, monsterImageFile As String, monsterAttackImageFile As String, monsterAttackSoundFile As String)
+
+    ' TODO - Clean up all of this code
+
+    ' TODO - Use a timer to track duration between inbound missile launches.  After X seconds, put an image of the next missile that is ready to go.
+    ' TODO - When the user presses the spacebar, a missile will only launch if one is ready.
+    ' TODO - (Need to move ready missile with player when they move.  Also need to explode that missile if a fireball hits it.)
+
+    ' Refresh the screen, blanking out both the story page and the control page
+    Call TurnPage(game, 1)
+    startingCol% = Pos(0)
+    startingRow% = CsrLin
+    buffer% = 10 ' x/y coordinate padding to ensure minigame objects remain within the background image
+
+    ' Calculate the text and x/y coordinates of the control page and screen capture it so it can be easily redrawn without redrawing the whole screen
+    If game.isRightHanded = 0 Then
+        leftColumn% = game.leftPageStartingColumn
+    Else
+        leftColumn% = game.rightPageStartingColumn
+    End If
+    rightColumn% = leftColumn% + game.maxPageLength
+    leftEdgeX% = (leftColumn% * _FontWidth) - _FontWidth
+    rightEdgeX% = rightColumn% * _FontWidth
+    topRow% = game.firstRow
+    topEdgeY% = (topRow% * _FontHeight) - _FontHeight
+    bottomRow% = game.lastRow
+    bottomEdgeY% = bottomRow% * _FontHeight
+    controlPage& = _NewImage(rightEdgeX% - leftEdgeX%, bottomEdgeY% - topEdgeY%, 32) ' Init the screen capture by matching the size of the control page
+    _PutImage (0, 0), 0, controlPage&, (leftEdgeX%, topEdgeY%)-(rightEdgeX%, bottomEdgeY%) ' Copy the exact coordinates from the screen image to the screen capture
+    controlX% = leftEdgeX%
+    controlY% = topEdgeY%
+
+    ' Display the control page with special instructions
+    instructions$ = "To move, hold the LEFT and RIGHT arrow keys.<br>To shoot, press the SPACE key.<br><br>To exit, press the Esc key."
+    Call RefreshControlPage(game, instructions$)
+
+    ' Load the image resource files
+    backgroundImage& = _LoadImage(backgroundImageFile)
+    playerImage& = _LoadImage(playerImageFile)
+    monsterImage& = _LoadImage(monsterImageFile)
+    boomImage& = _LoadImage("boom.png")
+    explodeImage& = _LoadImage("explode.png")
+
+    ' Load the audio resource files
+    storySound& = PlaySound&(storySoundFile, 1, 1) ' Load and play cool boss battle music
+    monsterSound& = PlaySound&(monsterSoundFile, 1, 0) ' Load and play monster's vocal challenge to the player
+    pauseSound& = _SndOpen("pause.mp3") ' Load pause-the-game sound
+    _SndVol pauseSound&, 1
+
+    ' Display the story page and screen capture it so it can be easily redrawn without redrawing the whole screen
+    Locate startingRow%, startingCol%
+    Call DisplayImage(game, "story", backgroundImage&)
+    leftEdgeX% = game.lastImageX
+    rightEdgeX% = game.lastImageX + _Width(backgroundImage&)
+    topEdgeY% = game.lastImageY
+    bottomEdgeY% = game.lastImageY + _Height(backgroundImage&)
+    startingScreen& = _NewImage(rightEdgeX% - leftEdgeX%, bottomEdgeY% - topEdgeY%, 32) ' Init the screen capture by matching the size of the game area
+    _PutImage (0, 0), 0, startingScreen&, (leftEdgeX%, topEdgeY%)-(rightEdgeX%, bottomEdgeY%) ' Copy the exact coordinates from the screen image to the screen capture
+
+    ' Initialize the player's starting position
+    playerSizeX% = _Width(monsterImage&)
+    playerSizeY% = playerSizeX% * (_Height(playerImage&) / _Width(playerImage&))
+    playerX% = (leftEdgeX% + rightEdgeX%) / 2
+    playerY% = bottomEdgeY% - playerSizeY% - 25 ' Buffer of 25 ensures player is inside of background image
+
+    ' Initialize the monster's starting position, movement, and health
+    monsterX% = (leftEdgeX% + rightEdgeX%) / 2
+    monsterY% = (startingRow% * _FontHeight) + buffer% ' Buffer ensures monster is inside of background image
+    monsterDirection% = 1 ' 1 = Move to the right, -1 = Move to the left
+    Randomize Timer
+    randomNumber% = Int(Rnd * 400) + 1
+    monsterDestinationX% = monsterX% + (randomNumber% * monsterDirection%)
+    If monsterDestinationX% < leftEdgeX% Then
+        monsterDestinationX% = leftEdgeX%
+    End If
+    If monsterDestinationX% > (rightEdgeX% - _Width(monsterImage&)) Then
+        monsterDestinationX% = (rightEdgeX% - _Width(monsterImage&))
+    End If
+    halfMonsterDestinationX% = monsterX% + ((randomNumber% / 2) * monsterDirection%)
+    monsterHalfwayThere% = 0
+    monsterHP% = 100
+
+    ' Initialize the fireball templates
+    multiplier# = .125 ' 1/8
+    Dim fireballTemplate(4) As Sprite
+    fireballTemplate(1).direction = -1
+    fireballTemplate(1).name = "hot"
+    fireballTemplate(1).image = _LoadImage("fireball1.png")
+    fireballTemplate(1).size = _Width(monsterImage&) * multiplier#
+    fireballTemplate(1).speed = 4
+    fireballTemplate(1).y = monsterY% + (_Height(monsterImage&) * .25)
+    fireballTemplate(2).direction = -1
+    fireballTemplate(2).name = "blazin"
+    fireballTemplate(2).image = _LoadImage("fireball3.png")
+    fireballTemplate(2).size = _Width(monsterImage&) * multiplier#
+    fireballTemplate(2).speed = 3
+    fireballTemplate(2).y = monsterY% + (_Height(monsterImage&) * .5)
+    fireballTemplate(3).direction = 1
+    fireballTemplate(3).name = "inferno"
+    fireballTemplate(3).image = _LoadImage("fireball4.png")
+    fireballTemplate(3).size = _Width(monsterImage&) * multiplier#
+    fireballTemplate(3).speed = 3
+    fireballTemplate(3).y = monsterY% + (_Height(monsterImage&) * .5)
+    fireballTemplate(4).direction = 1
+    fireballTemplate(4).name = "hotter"
+    fireballTemplate(4).image = _LoadImage("fireball2.png")
+    fireballTemplate(4).size = _Width(monsterImage&) * multiplier#
+    fireballTemplate(4).speed = 4
+    fireballTemplate(4).y = monsterY% + (_Height(monsterImage&) * .25)
+    If game.difficulty = HARD Then
+        growthRate# = .4
+    Else
+        growthRate# = .2
+    End If
+
+    ' Initialize the fireballs
+    Dim fireball(50) As Sprite
+    fireballIndex% = 0
+    fireballCount% = 0
+    fireballsSpawned% = 0
+    fireballsUnleashed% = 0
+
+    Do
+        If game.difficulty = HARD Then
+            _Limit 50 ' 50 frames per second
+        Else
+            _Limit 35 ' 35 frames per second
+        End If
+
+        ' Display the background, player, and monster
+        _PutImage (leftEdgeX%, topEdgeY%), startingScreen&, 0
+        _PutImage (playerX%, playerY%)-(playerX% + playerSizeX%, playerY% + playerSizeY%), playerImage&
+        If isMonsterVisible = 1 Then
+            _PutImage (monsterX%, monsterY%), monsterImage&
+        End If
+
+        ' Display each fireball
+        If fireballIndex% >= 1 Then
+            For i% = 1 To fireballCount%
+                If fireball(i%).visible = 1 Then
+                    _PutImage (fireball(i%).x, fireball(i%).y)-(fireball(i%).x + fireball(i%).size, fireball(i%).y + fireball(i%).size), fireball(i%).image
+                End If
+            Next i%
+        End If
+        ' TODO - Display each missile
+
+        ' Move the monster
+        spawnFireballs% = 0
+        xDelta% = 2 * monsterDirection%
+        monsterX% = monsterX% + xDelta%
+
+        ' Difficulty Levels:
+        ' EASY... If the monster is halfway to its destination, toggle between spawning new fireballs and unleashing the current fireballs
+        ' HARD... If the monster is halfway to its destination, unleash the current fireballs.  And spawn new fireballs when it reaches its destination.
+
+        ' Evaluate whether the monster is now halfway to its destination
+        If (monsterHalfwayThere% = 0) And (((monsterDirection% = 1) And (monsterX% >= halfMonsterDestinationX%)) Or ((monsterDirection% = -1) And (monsterX% <= halfMonsterDestinationX%))) Then
+            If fireballsSpawned% = 0 Then
+                spawnFireballs% = 1 ' Request new fireballs
+            Else
+                ' Fireballs attached to monster are now free to descend
+                For i% = 1 To fireballCount%
+                    If fireball(i%).action1 = "static" Then
+                        fireball(i%).action1 = "unleashed"
+                    End If
+                Next i%
+                fireballsSpawned% = 0
+            End If
+            Call ReplaySound(monsterSound&, 1, 0)
+            monsterHalfwayThere% = 1
+        End If
+
+        ' Evaluate whether the monster is at its destination
+        If ((monsterDirection% = 1) And (monsterX% >= monsterDestinationX%)) Or ((monsterDirection% = -1) And (monsterX% <= monsterDestinationX%)) Then
+            monsterDirection% = monsterDirection% * -1
+            ' Randomly compute number of iterations until next change (will need to compute edge in that direction for going too far)
+            randomNumber% = Int(Rnd * 400) + 1
+            monsterDestinationX% = monsterX% + (randomNumber% * monsterDirection%)
+            If monsterDestinationX% < leftEdgeX% Then
+                monsterDestinationX% = leftEdgeX%
+            End If
+            If monsterDestinationX% > (rightEdgeX% - _Width(monsterImage&)) Then
+                monsterDestinationX% = (rightEdgeX% - _Width(monsterImage&))
+            End If
+            ' Compute halfway to the destination
+            halfMonsterDestinationX% = (monsterDestinationX% + monsterX%) / 2
+            monsterHalfwayThere% = 0
+            ' For HARD difficulty, always spawn new fireballs now
+            If game.difficulty = HARD Then
+                spawnFireballs% = 1 ' Request new fireballs
+            End If
+        End If
+
+        ' Move each fireball
+        If fireballIndex% >= 1 Then
+            For i% = 1 To fireballCount%
+                If fireball(i%).visible = 1 Then
+                    If fireball(i%).action1 = "static" Then
+                        ' New fireballs stay with the monster
+                        fireball(i%).x = fireball(i%).x + xDelta%
+                    Else
+                        ' Unleashed fireballs descend and move slightly left or right depending on their starting position relative to the monster
+                        fireball(i%).x = fireball(i%).x + fireball(i%).direction
+                        fireball(i%).y = fireball(i%).y + fireball(i%).speed
+                        ' TODO - Rotate the fireball as it descends (https://www.qb64tutorial.com/lesson17)
+                        fireball(i%).size = fireball(i%).size + growthRate#
+                        If (fireball(i%).x < leftEdgeX%) Or ((fireball(i%).x + fireball(i%).size) > rightEdgeX%) Or ((fireball(i%).y + fireball(i%).size) > bottomEdgeY%) Then
+                            fireball(i%).visible = 0
+                        End If
+                    End If
+                End If
+            Next i%
+        End If
+
+        ' Spawn new fireballs
+        If spawnFireballs% = 1 Then
+            If fireballIndex% > 46 Then
+                fireballIndex% = 0
+            End If
+            For i% = 1 To 4
+                fireballIndex% = fireballIndex% + 1
+                fireball(fireballIndex%).action1 = "static"
+                fireball(fireballIndex%).direction = fireballTemplate(i%).direction
+                fireball(fireballIndex%).name = fireballTemplate(i%).name
+                fireball(fireballIndex%).image = fireballTemplate(i%).image
+                fireball(fireballIndex%).size = fireballTemplate(i%).size
+                fireball(fireballIndex%).speed = fireballTemplate(i%).speed
+                If i% = 1 Then
+                    fireball(fireballIndex%).x = monsterX%
+                End If
+                If i% = 2 Then
+                    fireball(fireballIndex%).x = monsterX% + (_Width(monsterImage&) * .25) - 1
+                End If
+                If i% = 3 Then
+                    fireball(fireballIndex%).x = monsterX% + (_Width(monsterImage&) * .75) - fireballTemplate(3).size - 1
+                End If
+                If i% = 4 Then
+                    fireball(fireballIndex%).x = monsterX% + (_Width(monsterImage&)) - fireballTemplate(4).size - 1
+                End If
+                fireball(fireballIndex%).y = fireballTemplate(i%).y
+                fireball(fireballIndex%).visible = 1
+            Next i%
+            If fireballCount% < fireballIndex% Then
+                fireballCount% = fireballIndex%
+            End If
+            spawnFireballs% = 0
+            fireballsSpawned% = 1
+        End If
+
+        ' TODO - Move each missile
+
+        ' Move player based on input
+        keyHit% = _KeyHit
+        If _KeyDown(19200) Then
+            ' Move player left
+            If playerX% > (leftEdgeX% + buffer% + 4) Then
+                playerX% = playerX% - 4
+            End If
+        End If
+        If _KeyDown(19712) Then
+            ' Move player right
+            If (playerX% + playerSizeX%) < (rightEdgeX% - buffer% - 4) Then
+                playerX% = playerX% + 4
+            End If
+        End If
+        If keyHit% = 32 Then
+            ' TODO - Spacebar... fire missile
+        End If
+
+        playerX2% = playerX% + playerSizeX%
+        playerMiddleX% = (playerX% + playerX2%) / 2
+        playerY2% = playerY% + playerSizeY%
+        playerMiddleY% = (playerY% + playerY2%) / 2
+
+        ' For each visible fireball, compute whether the fireball is now touching either a missile or the player (and show explode or BOOMM)
+        If fireballIndex% >= 1 Then
+            For i% = 1 To fireballCount%
+                If fireball(i%).visible = 1 Then
+                    ' Is the fireball touching the player?
+                    If IsOverlap%(playerX%, playerY%, playerX2%, playerY2%, fireball(i%).x, fireball(i%).y, fireball(i%).x + fireball(i%).size, fireball(i%).y + fireball(i%).size) Then
+                        If fireball(i%).action2 <> "hit player" Then
+                            ' Decrease hit points, but only once per fireball
+                            fireball(i%).action2 = "hit player"
+                            fireballDamage% = 0
+                            If fireball(i%).name = "hot" Then
+                                fireballDamage% = 10
+                            Else
+                                If fireball(i%).name = "hotter" Then
+                                    fireballDamage% = 15
+                                Else
+                                    If fireball(i%).name = "blazin" Then
+                                        fireballDamage% = 20
+                                    Else
+                                        If fireball(i%).name = "inferno" Then
+                                            fireballDamage% = 25
+                                        End If
+                                    End If
+                                End If
+                            End If
+                            Call DecreaseHitPoints(game, fireballDamage%, 0)
+                            ' Redisplay the control page to refresh the player's hit points
+                            _PutImage (controlX%, controlY%), controlPage&, 0
+                            Call RefreshControlPage(game, instructions$)
+                        End If
+                        ' Calculate the center of each object, then center the BOOMM between the two objects
+                        fireballMiddleX% = (fireball(i%).x + fireball(i%).x + fireball(i%).size) / 2
+                        fireballMiddleY% = (fireball(i%).y + fireball(i%).y + fireball(i%).size) / 2
+
+                        halfFireballWidth% = fireball(i%).size / 2
+                        boomCenterX% = (playerMiddleX% + fireballMiddleX%) / 2
+                        boomCenterY% = (playerMiddleY% + fireballMiddleY%) / 2
+                        boomLeftX% = boomCenterX% - halfFireballWidth%
+                        boomRightX% = boomCenterX% + halfFireballWidth%
+                        boomTopY% = boomCenterY% - halfFireballWidth%
+                        boomBottomY% = boomCenterY% + halfFireballWidth%
+                        _PutImage (boomLeftX%, boomTopY%)-(boomRightX%, boomBottomY%), boomImage&
+                    End If
+                End If
+            Next i%
+        End If
+
+        ' TODO - For each visible missile, compute whether the missile is touching the monster (and show boom)
+        ' TODO - When NIGHT OWL has his fireballs loaded and a missile reaches his bottom y coordinate, show a shield and play a soft vaporization sound
+
+        _Display ' Update the screen with changes
+
+        ' "P" or "p" was pressed so pause the game
+        If (keyHit% = 80) Or (keyHit% = 112) Then
+            ' Silence all game sounds
+            _SndPause storySound&
+            _SndPause monsterSound&
+
+            ' Play the pause sound
+            _SndPlay pauseSound&
+
+            ' Suspend input until the player press the any key
+            Sleep
+            _KeyClear
+
+            ' Continue game sounds
+            _SndPlay storySound&
+            _SndPlay monsterSound&
+        End If
+        ' "X" or "x" was pressed so win the game
+        If (keyHit% = 88) Or (keyHit% = 120) Then
+            monsterHP% = 0
+        End If
+    Loop Until (_KeyDown(27)) Or (game.hitPoints = 0) Or (monsterHP% <= 0)
+
+    _AutoDisplay ' Resume automatically updating the screen with changes rather than controlling the number of frames per second
+
+    ' Refresh the pages
+    '_PutImage (leftEdgeX%, topEdgeY%), startingScreen&, 0
+    ' Redisplay the control page to refresh the player's hit points
+    '_PutImage (controlX%, controlY%), controlPage&, 0
+    'Call RefreshControlPage(game, "")
+
+    ' Free up the image resources
+    _FreeImage startingScreen&
+    _FreeImage controlPage&
+    _FreeImage backgroundImage&
+    _FreeImage playerImage&
+    _FreeImage monsterImage&
+    _FreeImage boomImage&
+    _FreeImage explodeImage&
+    For i% = 1 To 4
+        _FreeImage fireballTemplate(i%).image
+    Next i%
+
+    ' Silence all game sounds and free up the sound resources
+    Call StopSound(monsterSound&)
+    Call StopSound(storySound&)
+    _SndClose pauseSound&
+
+    ' Reset the text cursor
+    Locate startingRow%, startingCol%
+
+    ' Victory is determined by the player having hit points and the monster having none
+    If (game.hitPoints > 0) And (monsterHP% <= 0) Then
+        Call ReplaySound(game.victorySound, 1, 0)
+        MonsterShooter% = 1
+    Else
+        Call ReplaySound(game.deathHitSound, 1, 0)
+        MonsterShooter% = 0
+    End If
+End Function
+
 ' Move Ahead action
 '
 ' Parameters:
@@ -2926,6 +3084,16 @@ End Sub
 ' row - Text row
 ' text - Text to print
 Sub PrintPageText (game As Book, page As String, row As Integer, text As String)
+    ' Support the <br> tag by calling this sub once for each <br>-delimited section of text
+    breakLines% = ListLength%(text, "<br>") - 1
+    If breakLines% > 0 Then
+        For i = 1 To breakLines% + 1
+            breakLine$ = ListPiece$(text, "<br>", i)
+            Call PrintPageText(game, page, row + i - 1, breakLine$)
+        Next i
+        Exit Sub
+    End If
+
     lastColumn = 0
 
     ' Determine the starting position for the text based on the designated page
@@ -2997,10 +3165,17 @@ End Sub
 '
 ' Parameters:
 ' game - Book instance
-Sub RefreshControlPage (game As Book)
+' [instructions] - Optional.  Special game instructions to display instead of the default game actions.
+Sub RefreshControlPage (game As Book, instructions As String)
     Color _RGB(146, 146, 146) ' darker grey
     firstRow% = game.firstRow + 2
-    Call PrintPageText(game, "control", firstRow%, "_" + game.player + String$(62 - Len(game.player), "_"))
+    If game.playerMode = "" Then
+        Call PrintPageText(game, "control", firstRow%, "_" + game.player + String$(62 - Len(game.player), "_"))
+    Else
+        playerMode$ = " (" + game.playerMode + ")"
+        playerModeLength% = Len(playerMode$)
+        Call PrintPageText(game, "control", firstRow%, "_" + game.player + playerMode$ + String$(62 - Len(game.player) - playerModeLength%, "_"))
+    End If
     Color _RGB(0, 0, 0) ' black
     Call PrintPageText(game, "control", CsrLin, "Score: " + LTrim$(Str$(game.score)))
     Call PrintPageText(game, "control", CsrLin, "Inventory: " + game.inventory)
@@ -3019,6 +3194,16 @@ Sub RefreshControlPage (game As Book)
     playerSymbol(2) = ">"
     playerSymbol(3) = "v"
     playerSymbol(4) = "<"
+
+    If instructions <> "" Then
+        Print
+        Call PrintPageText(game, "control", CsrLin, instructions)
+        Exit Sub
+    End If
+
+    If game.hitPoints <= 0 Then
+        Exit Sub
+    End If
 
     ' Display the map
     Dim mapInfo(5) As String ' TODO - Refactor this out
@@ -3196,6 +3381,22 @@ Sub ReplaySound (soundHandle As Long, volume As Single, loopSound As Integer)
             _SndLoop soundHandle&
         End If
     End If
+End Sub
+
+' Set a special player mode
+'
+' Parameters:
+' game - Book instance
+' mode - Special player mode
+Sub SetPlayerMode (game As Book, mode As String)
+    game.playerMode = mode
+    storyColor& = _DefaultColor
+    Color _RGB(255, 140, 0)
+    Call PrintPageText(game, "story", CsrLin + 1, "PLAYER MODE +" + mode)
+    storyRow% = CsrLin
+    Call RefreshControlPage(game, "")
+    Color storyColor&
+    Locate storyRow%, 1
 End Sub
 
 ' Stop playing a sound file

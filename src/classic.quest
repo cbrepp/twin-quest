@@ -206,7 +206,7 @@ shortRangeWeapon=
 <hp-remove 10>
 [[NIGHT OWL]]
 <story-sound>
-<arcade-shooter>
+<monster-shooter wilderness3.jpg+boss-battle.mp3+ninja-cat.png+night-owl-flying.png+1+hooting.mp3>
 "[scene id=1,3,1]"
 "name=MAGIC RING OF TOADSTOOLS"
 "color=184,115,51"
@@ -662,17 +662,65 @@ Think carefully.  What could the magic name be?
 [[isCatTamed 1]]
 <play-sound elevator-open.mp3>
 "You return to the elevator and see a surprised MYLEE."
-<image mylee.jpg>
+<br>
 "MYLEE: <quote>Oh no you didn't!!!  You brought NIGHT OWL back here!!!  He wants that GOLD!!!<quote>"
 <press-any-key>
 <story-sound>
 <play-sound hooting.mp3>
 <play-sound hit.mp3>
+<play-sound heavy-wings.mp3>
+<br>
 "You hear a thunderous sound behind you and turn to see the elevator doors burst open as NIGHT OWL sticks his head in.  Before he can gobble you up, you hit him on the head with your trusty <get-story-variable shortRangeWeapon> and he lets out a painful, shrieking hoot."
 <press-any-key>
-"NIGHT OWL backs away into the bright light of the WILDERNESS where you can finally fight him in a fair battle.  You march after him with your <get-story-variable longRangeWeapon> and decide to end his reign of terror once and for all..."
+<play-sound heavy-wings.mp3>
+<br>
+"NIGHT OWL backs away into the bright light of the WILDERNESS where you can finally fight him in a fair battle.  You decide to march after him..."
 <press-any-key>
-<arcade-shooter>
+<br>
+"MYLEE: <quote>WAIT!!!<quote>"
+<press-any-key>
+<br>
+"<player>: <quote>What???<quote>"
+<press-any-key>
+<br>
+"MYLEE: <quote>You can't go out there looking like that!!!<quote>"
+<press-any-key>
+<br>
+"<player>: <quote>Why not???<quote>"
+<press-any-key>
+<br>
+"MYLEE: <quote>Because NIGHT OWL will just swoop down on you.  You need this to be a fair fight.  Here, let me cast a spell to transform you into something NIGHT OWL fears...<quote>"
+<play-sound magic.mp3>
+<press-any-key>
+<set-player-mode CAT>
+<play-sound cat-meow.wav>
+<br>
+"<player>: <quote>I'M NOW A CAT???<quote>"
+<press-any-key>
+<br>
+"MYLEE: <quote>You're welcome!  Now get out there and fight NIGHT OWL!!!<quote>"
+<press-any-key>
+<br>
+You march after NIGHT OWL with your <get-story-variable longRangeWeapon>, determined to end his reign of terror once and for all..."
+<press-any-key>
+<monster-shooter wilderness3.jpg+boss-battle.mp3+ninja-cat.png+night-owl-flying.png+1+hooting.mp3>
+[[MINIGAME VICTORY]]
+<set-game-variable playerX=0>
+<set-game-variable playerY=0>
+<score-add 100>
+"[scene id=1,0,0]"
+"name=MYLEE'S ELEVATOR"
+"color=0,0,0"
+"sound=elevator.wav"
+[variables]
+[scene 1]
+<image mylee.jpg>
+<br>
+"MYLEE: <quote>Good job kid.<quote>"
+<press-any-key>
+<turn-page>
+[scene 2]
+"Level 2 introduction... give gold to MYLEE, story prompt for her phone call with BIG CHUNG, what it will take to undo CAT MODE, etc."
 [high scores]
 300   GRE   03-09-2024
 300   ZRT   03-09-2024
