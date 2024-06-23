@@ -206,7 +206,12 @@ shortRangeWeapon=
 <hp-remove 10>
 [[NIGHT OWL]]
 <story-sound>
-<monster-shooter wilderness3.jpg+boss-battle.mp3+ninja-cat.png+night-owl-flying.png+1+hooting.mp3>
+<if-game-variable PLAYER>
+[[PLAYER GREYSON]]
+<monster-shooter wilderness3.jpg+boss-battle.mp3+ninja-cat.png+arrow.png+arrow.png+night-owl-flying.png+1+hooting.mp3>
+[[PLAYER ZARA]]
+<monster-shooter wilderness3.jpg+boss-battle.mp3+ninja-cat.png+cat-missile-left.png+cat-missile-right.png+night-owl-flying.png+1+hooting.mp3>
+<end-page>
 "[scene id=1,3,1]"
 "name=MAGIC RING OF TOADSTOOLS"
 "color=184,115,51"
@@ -703,11 +708,16 @@ Think carefully.  What could the magic name be?
 <br>
 You march after NIGHT OWL with your <get-story-variable longRangeWeapon>, determined to end his reign of terror once and for all..."
 <press-any-key>
-<monster-shooter wilderness3.jpg+boss-battle.mp3+ninja-cat.png+night-owl-flying.png+1+hooting.mp3>
+<if-game-variable PLAYER>
+[[PLAYER GREYSON]]
+<monster-shooter wilderness3.jpg+boss-battle.mp3+ninja-cat.png+arrow.png+arrow.png+night-owl-flying.png+1+hooting.mp3>
+[[PLAYER ZARA]]
+<monster-shooter wilderness3.jpg+boss-battle.mp3+ninja-cat.png+cat-missile-left.png+cat-missile-right.png+night-owl-flying.png+1+hooting.mp3>
 [[MINIGAME VICTORY]]
 <set-game-variable playerX=0>
 <set-game-variable playerY=0>
 <score-add 100>
+<end-page>
 "[scene id=1,0,0]"
 "name=MYLEE'S ELEVATOR"
 "color=0,0,0"

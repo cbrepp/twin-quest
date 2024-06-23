@@ -6,12 +6,14 @@
 ' book.png - Empty book by Darkmoon_Art (https://pixabay.com/illustrations/reserve-pages-empty-book-open-book-3057904/)
 ' boom.png - Explosion Detonation Blast royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/explosion-detonation-blast-burst-147909/)
 ' boss-battle.mp3 - Neon Dreams: A Retro-Futuristic Synthwave Track - MP3 Mixdown (https://freesound.org/people/Robbnix/sounds/685538/)
+' bow-and-arrow.png and arrow.png - Arrow Bow Weapon royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/arrow-bow-weapon-medieval-weapon-161517/)
 ' bunny.jpg -  Rabbit, Field, Animal image. Free for use. by SvenZiegler (https://pixabay.com/photos/rabbit-field-animal-field-hare-6063733/)
 ' bunny2.jpg - Hare, Animal, Mammal image. Free for use. by apnear40 (https://pixabay.com/photos/hare-animal-mammal-wildlife-fauna-8585802/)
 ' castle.mp3 - Royal vibes (harp guitar and tuba) (https://freesound.org/people/kbrecordzz/sounds/595865/)
 ' castle-interior.jpg - Ai Generated Gothic Castle royalty-free stock illustration. Free for use & download. (https://pixabay.com/illustrations/ai-generated-gothic-castle-room-8469399/)
 ' cat-meow.wav - my hungry cat meowing (https://freesound.org/people/tuberatanka/sounds/110010/)
 ' cat-meowing.mp3 - meow of a cat (https://freesound.org/people/lextrack/sounds/333916/)
+' cat-missile-left.png and cat-missile-right.png - Cat Kitten Animal royalty-free vector graphic. Free for use & download. (https://pixabay.com/vectors/cat-kitten-lazy-tired-sleepy-pet-8633535/)
 ' clouds.png - OpenClipart-Vectors (https://pixabay.com/vectors/sunrise-clouds-rising-sun-sky-sun-153600/)
 ' death.mp3 - Dramatic Scene Character Death Separation Melancholy Sadness (https://freesound.org/people/UNIVERSFIELD/sounds/697083/)
 ' dragon.mp3 - The Roar of a 5-Headed Dragon (https://freesound.org/people/bevibeldesign/sounds/366095/)
@@ -78,6 +80,7 @@
 ' woods.jpg - Secret, Forest, Darkness image. Free for use. by jplenio (https://pixabay.com/photos/secret-forest-darkness-nature-3120483/)
 ' woods2.jpg - Forest, Darkness, Trees image. Free for use. by Tomegos (https://pixabay.com/photos/forest-darkness-trees-dark-nature-7543646/)
 ' woods.mp3 - forestsurroundings.mp3 (https://freesound.org/people/Luftrum/sounds/48411/)
+' zap.mp3 - Tesla coil sound. Synthesized. (https://freesound.org/people/YvesSch/sounds/143565/)
 ' zara.mp3 - 050816 a crowded grocery store Sapporo.mp3 (https://freesound.org/people/pflanigan/sounds/390254/)
 
 ' Declare that arrays are dynamic
@@ -190,6 +193,7 @@ End Type
 Type Sprite
     action1 As String
     action2 As String
+    action3 As String
     direction As Integer
     image As Long
     name As String
@@ -1512,14 +1516,16 @@ Sub DisplayStoryPage (game As Book, scene As Scene, page As String, action As St
                     backgroundImageFile$ = ListPiece$(tagValue$, "+", 1)
                     storySoundFile$ = ListPiece$(tagValue$, "+", 2)
                     playerImageFile$ = ListPiece$(tagValue$, "+", 3)
-                    monsterImageFile$ = ListPiece$(tagValue$, "+", 4)
-                    isMonsterVisible% = Val(ListPiece$(tagValue$, "+", 5))
-                    monsterSoundFile$ = ListPiece$(tagValue$, "+", 6)
+                    missileLeftImageFile$ = ListPiece$(tagValue$, "+", 4)
+                    missileRightImageFile$ = ListPiece$(tagValue$, "+", 5)
+                    monsterImageFile$ = ListPiece$(tagValue$, "+", 6)
+                    isMonsterVisible% = Val(ListPiece$(tagValue$, "+", 7))
+                    monsterSoundFile$ = ListPiece$(tagValue$, "+", 8)
                     While keepPlaying% = 1
-                        success% = MonsterShooter%(game, backgroundImageFile$, storySoundFile$, playerImageFile$, monsterImageFile$, isMonsterVisible%, monsterSoundFile$)
+                        success% = MonsterShooter%(game, backgroundImageFile$, storySoundFile$, playerImageFile$, missileLeftImageFile$, missileRightImageFile$, monsterImageFile$, isMonsterVisible%, monsterSoundFile$)
+                        Call PressAnyKey(game, 1)
                         keepPlaying% = 0
                         If success% = 0 Then
-                            Call PressAnyKey(game, 1)
                             Call TurnPage(game, 1)
                             promptLabel$ = "Defeated By Boss"
                             formattedChoices$ = "Abort,Retry,Fail"
@@ -2569,20 +2575,24 @@ End Sub
 ' backgroundImageFile - File for the image of the background
 ' storySoundFile - File for the cool boss battle music
 ' playerImageFile - File for the image of the player
+' missileLeftImageFile - File for the image of the missile that starts on the left-hand side of the player
+' missileRightImageFile - File for the image of the missile that starts on the right-hand side of the player
 ' monsterImageFile - File for the image of the monster
 ' isMonsterVisible - Is the monster visible? (1/0)  If not, the monster's image will not be displayed.
 ' monsterSoundFile - File for the sound the monster makes
 '
 ' Returns:
 ' Success? (1/0)
-Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoundFile As String, playerImageFile As String, monsterImageFile As String, isMonsterVisible As Integer, monsterSoundFile As String)
+Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoundFile As String, playerImageFile As String, missileLeftImageFile As String, missileRightImageFile As String, monsterImageFile As String, isMonsterVisible As Integer, monsterSoundFile As String)
     'Sub ArcadeShooter (game As Book, playerImageFile As String, playerAttackImageFile As String, monsterImageFile As String, monsterAttackImageFile As String, monsterAttackSoundFile As String)
 
     ' TODO - Clean up all of this code
 
-    ' TODO - Use a timer to track duration between inbound missile launches.  After X seconds, put an image of the next missile that is ready to go.
+    ' TODO - Use a timer to track duration between inbound missile launches.  After X seconds, put an image (cat-missile-left.png and cat-missile-right.png and arrow.png) of the next missile that is ready to go.  Alternate between left and right sides of the player.
+    ' Play cat-meowing.mp3 or
     ' TODO - When the user presses the spacebar, a missile will only launch if one is ready.
     ' TODO - (Need to move ready missile with player when they move.  Also need to explode that missile if a fireball hits it.)
+    ' TODO - Move the non-static missiles up and shrink them as they ascend.  Handle hitting either a fireball (play zap.mp3) or the bottom of the monster if the monster has static fireballs.
 
     ' Refresh the screen, blanking out both the story page and the control page
     Call TurnPage(game, 1)
@@ -2616,6 +2626,8 @@ Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoun
     backgroundImage& = _LoadImage(backgroundImageFile)
     playerImage& = _LoadImage(playerImageFile)
     monsterImage& = _LoadImage(monsterImageFile)
+    missileLeftImage& = _LoadImage(missileLeftImageFile)
+    missileRightImage& = _LoadImage(missileLeftImageFile)
     boomImage& = _LoadImage("boom.png")
     explodeImage& = _LoadImage("explode.png")
 
@@ -2624,6 +2636,8 @@ Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoun
     monsterSound& = PlaySound&(monsterSoundFile, 1, 0) ' Load and play monster's vocal challenge to the player
     pauseSound& = _SndOpen("pause.mp3") ' Load pause-the-game sound
     _SndVol pauseSound&, 1
+    zapSound& = _SndOpen("zap.mp3") ' Load the fireball-missile collision sound
+    _SndVol zapSound&, 1
 
     ' Display the story page and screen capture it so it can be easily redrawn without redrawing the whole screen
     Locate startingRow%, startingCol%
@@ -2644,6 +2658,8 @@ Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoun
     ' Initialize the monster's starting position, movement, and health
     monsterX% = (leftEdgeX% + rightEdgeX%) / 2
     monsterY% = (startingRow% * _FontHeight) + buffer% ' Buffer ensures monster is inside of background image
+    monsterWidth% = _Width(monsterImage&)
+    monsterHeight% = _Height(monsterImage&)
     monsterDirection% = 1 ' 1 = Move to the right, -1 = Move to the left
     Randomize Timer
     randomNumber% = Int(Rnd * 400) + 1
@@ -2659,36 +2675,36 @@ Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoun
     monsterHP% = 100
 
     ' Initialize the fireball templates
-    multiplier# = .125 ' 1/8
+    multiplier! = .125 ' 1/8
     Dim fireballTemplate(4) As Sprite
     fireballTemplate(1).direction = -1
     fireballTemplate(1).name = "hot"
     fireballTemplate(1).image = _LoadImage("fireball1.png")
-    fireballTemplate(1).size = _Width(monsterImage&) * multiplier#
+    fireballTemplate(1).size = _Width(monsterImage&) * multiplier!
     fireballTemplate(1).speed = 4
     fireballTemplate(1).y = monsterY% + (_Height(monsterImage&) * .25)
     fireballTemplate(2).direction = -1
     fireballTemplate(2).name = "blazin"
     fireballTemplate(2).image = _LoadImage("fireball3.png")
-    fireballTemplate(2).size = _Width(monsterImage&) * multiplier#
+    fireballTemplate(2).size = _Width(monsterImage&) * multiplier!
     fireballTemplate(2).speed = 3
     fireballTemplate(2).y = monsterY% + (_Height(monsterImage&) * .5)
     fireballTemplate(3).direction = 1
     fireballTemplate(3).name = "inferno"
     fireballTemplate(3).image = _LoadImage("fireball4.png")
-    fireballTemplate(3).size = _Width(monsterImage&) * multiplier#
+    fireballTemplate(3).size = _Width(monsterImage&) * multiplier!
     fireballTemplate(3).speed = 3
     fireballTemplate(3).y = monsterY% + (_Height(monsterImage&) * .5)
     fireballTemplate(4).direction = 1
     fireballTemplate(4).name = "hotter"
     fireballTemplate(4).image = _LoadImage("fireball2.png")
-    fireballTemplate(4).size = _Width(monsterImage&) * multiplier#
+    fireballTemplate(4).size = _Width(monsterImage&) * multiplier!
     fireballTemplate(4).speed = 4
     fireballTemplate(4).y = monsterY% + (_Height(monsterImage&) * .25)
     If game.difficulty = HARD Then
-        growthRate# = .4
+        growthRate! = .4
     Else
-        growthRate# = .2
+        growthRate! = .2
     End If
 
     ' Initialize the fireballs
@@ -2697,6 +2713,43 @@ Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoun
     fireballCount% = 0
     fireballsSpawned% = 0
     fireballsUnleashed% = 0
+
+    ' Initialize the missile templates
+    multiplier! = .25 ' 1/4
+    Dim missileTemplate(4) As Sprite
+    missileTemplate(1).name = "normal"
+    missileTemplate(1).image = _LoadImage(missileLeftImageFile)
+    missileTemplate(1).size = playerSizeY% * .75 ' 3/4
+    missileTemplate(1).speed = 4
+    missileTemplate(1).y = playerY%
+    missileTemplate(2).name = "normal"
+    missileTemplate(2).image = _LoadImage(missileRightImageFile)
+    missileTemplate(2).size = playerSizeY% * .75 ' 3/4
+    missileTemplate(2).speed = 4
+    missileTemplate(2).y = playerY%
+    missileTemplate(3).name = "whopper"
+    missileTemplate(3).image = _LoadImage(missileLeftImageFile)
+    missileTemplate(3).size = playerSizeY%
+    missileTemplate(3).speed = 3
+    missileTemplate(3).y = playerY%
+    missileTemplate(4).name = "whopper"
+    missileTemplate(4).image = _LoadImage(missileRightImageFile)
+    missileTemplate(4).size = playerSizeY%
+    missileTemplate(4).speed = 3
+    missileTemplate(4).y = playerY%
+
+    ' Initialize the missiles
+    Dim missile(50) As Sprite
+    missileIndex% = 0
+    missileCount% = 0
+    missileSpawned% = 0
+    nextMissileSpawn! = Timer + 1
+    If nextMissileSpawn! > 86399 Then
+        nextMissileSpawn! = 1 ' Handle going past midnight
+    End If
+    nextMissileDirection% = -1
+    missileWidthRatio! = _Width(missileLeftImage&) / _Height(missileLeftImage&)
+    whopperCounter% = 0
 
     Do
         If game.difficulty = HARD Then
@@ -2720,7 +2773,15 @@ Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoun
                 End If
             Next i%
         End If
-        ' TODO - Display each missile
+
+        ' Display each missile
+        If missileIndex% >= 1 Then
+            For i% = 1 To missileCount%
+                If missile(i%).visible = 1 Then
+                    _PutImage (missile(i%).x, missile(i%).y)-(missile(i%).x + (missile(i%).size * missileWidthRatio!), missile(i%).y + missile(i%).size), missile(i%).image
+                End If
+            Next i%
+        End If
 
         ' Move the monster
         spawnFireballs% = 0
@@ -2781,7 +2842,7 @@ Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoun
                         fireball(i%).x = fireball(i%).x + fireball(i%).direction
                         fireball(i%).y = fireball(i%).y + fireball(i%).speed
                         ' TODO - Rotate the fireball as it descends (https://www.qb64tutorial.com/lesson17)
-                        fireball(i%).size = fireball(i%).size + growthRate#
+                        fireball(i%).size = fireball(i%).size + growthRate!
                         If (fireball(i%).x < leftEdgeX%) Or ((fireball(i%).x + fireball(i%).size) > rightEdgeX%) Or ((fireball(i%).y + fireball(i%).size) > bottomEdgeY%) Then
                             fireball(i%).visible = 0
                         End If
@@ -2828,6 +2889,7 @@ Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoun
         ' TODO - Move each missile
 
         ' Move player based on input
+        oldPlayerX% = playerX%
         keyHit% = _KeyHit
         If _KeyDown(19200) Then
             ' Move player left
@@ -2842,20 +2904,82 @@ Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoun
             End If
         End If
         If keyHit% = 32 Then
-            ' TODO - Spacebar... fire missile
+            ' Spacebar... fire missile
+            If missileIndex% > 0 Then
+                If missile(missileIndex%).action1 = "static" Then
+                    missile(missileIndex%).action1 = "unleashed"
+                    ' Calculate the next missile
+                    nextMissileSpawn! = Timer + 1
+                    If nextMissileSpawn! > 86399 Then
+                        nextMissileSpawn! = 1 ' Handle going past midnight
+                    End If
+                    nextMissileDirection% = nextMissileDirection% * -1 ' Toggle between being a left-hand missile and a right-hand missile
+                    whopperCounter% = whopperCounter% + 1
+                    If whopperCounter% >= 3 Then
+                        whopperCounter% = 0
+                    End If
+                    missileSpawned% = 0
+                End If
+            End If
+        End If
+        playerXDelta% = playerX% - oldPlayerX%
+
+        ' Move each visible missile
+        If missileIndex% >= 1 Then
+            For i% = 1 To missileCount%
+                If missile(i%).visible = 1 Then
+                    If missile(i%).action1 = "static" Then
+                        ' New missiles move the same direction and amount as the player
+                        missile(i%).x = missile(i%).x + playerXDelta%
+                    Else
+                        ' Unleashed missiles ascend
+                        missile(i%).y = missile(i%).y - fireball(i%).speed
+                        missile(i%).size = missile(i%).size - growthRate!
+                        If missile(i%).y < topEdgeY% Then
+                            missile(i%).visible = 0
+                        End If
+                    End If
+                End If
+            Next i%
         End If
 
+        ' For each visible fireball, compute whether the fireball is now touching either a missile or the player (and show explode or BOOMM)
         playerX2% = playerX% + playerSizeX%
         playerMiddleX% = (playerX% + playerX2%) / 2
         playerY2% = playerY% + playerSizeY%
         playerMiddleY% = (playerY% + playerY2%) / 2
-
-        ' For each visible fireball, compute whether the fireball is now touching either a missile or the player (and show explode or BOOMM)
         If fireballIndex% >= 1 Then
             For i% = 1 To fireballCount%
                 If fireball(i%).visible = 1 Then
+                    ' Calculate the center of the fireball
+                    fireballMiddleX% = (fireball(i%).x + fireball(i%).x + fireball(i%).size) / 2
+                    fireballMiddleY% = (fireball(i%).y + fireball(i%).y + fireball(i%).size) / 2
+                    halfFireballWidth% = fireball(i%).size / 2
+
+                    isCollision% = 0
+
+                    ' Is the fireball touching a missile?
+                    If missileIndex% >= 1 Then
+                        For j% = 1 To missileCount%
+                            If missile(j%).visible = 1 Then
+                                If IsOverlap%(missile(j%).x, missile(j%).y, missile(j%).x + (missile(j%).size * missileWidthRatio!), missile(j%).y + missile(j%).size, fireball(i%).x, fireball(i%).y, fireball(i%).x + fireball(i%).size, fireball(i%).y + fireball(i%).size) Then
+                                    isCollision% = 1
+                                    collisionImage& = explodeImage&
+                                    objectMiddleX% = (missile(j%).x + missile(j%).x + (missile(j%).size * missileWidthRatio!)) / 2
+                                    objectMiddleY% = (missile(j%).y + missile(j%).y + missile(j%).size) / 2
+                                    fireball(i%).action2 = "hit missile"
+                                    fireball(i%).action3 = "exploding"
+                                    missile(j%).action2 = "hit fireball"
+                                    missile(j%).action3 = "burning"
+                                    Call ReplaySound(zapSound&, 1, 0)
+                                    Exit For
+                                End If
+                            End If
+                        Next j%
+                    End If
+
                     ' Is the fireball touching the player?
-                    If IsOverlap%(playerX%, playerY%, playerX2%, playerY2%, fireball(i%).x, fireball(i%).y, fireball(i%).x + fireball(i%).size, fireball(i%).y + fireball(i%).size) Then
+                    If (isCollision% = 0) And (IsOverlap%(playerX%, playerY%, playerX2%, playerY2%, fireball(i%).x, fireball(i%).y, fireball(i%).x + fireball(i%).size, fireball(i%).y + fireball(i%).size)) Then
                         If fireball(i%).action2 <> "hit player" Then
                             ' Decrease hit points, but only once per fireball
                             fireball(i%).action2 = "hit player"
@@ -2880,21 +3004,128 @@ Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoun
                             _PutImage (controlX%, controlY%), controlPage&, 0
                             Call RefreshControlPage(game, instructions$)
                         End If
-                        ' Calculate the center of each object, then center the BOOMM between the two objects
-                        fireballMiddleX% = (fireball(i%).x + fireball(i%).x + fireball(i%).size) / 2
-                        fireballMiddleY% = (fireball(i%).y + fireball(i%).y + fireball(i%).size) / 2
+                        isCollision% = 1
+                        collisionImage& = boomImage&
+                        objectMiddleX% = playerMiddleX%
+                        objectMiddleY% = playerMiddleY%
+                    End If
 
-                        halfFireballWidth% = fireball(i%).size / 2
-                        boomCenterX% = (playerMiddleX% + fireballMiddleX%) / 2
-                        boomCenterY% = (playerMiddleY% + fireballMiddleY%) / 2
-                        boomLeftX% = boomCenterX% - halfFireballWidth%
-                        boomRightX% = boomCenterX% + halfFireballWidth%
-                        boomTopY% = boomCenterY% - halfFireballWidth%
-                        boomBottomY% = boomCenterY% + halfFireballWidth%
-                        _PutImage (boomLeftX%, boomTopY%)-(boomRightX%, boomBottomY%), boomImage&
+                    If isCollision% = 1 Then
+                        ' Center the collision between the two objects and display it
+                        collisionCenterX% = (objectMiddleX% + fireballMiddleX%) / 2
+                        collisionCenterY% = (objectMiddleY% + fireballMiddleY%) / 2
+                        collisionLeftX% = collisionCenterX% - halfFireballWidth%
+                        collisionRightX% = collisionCenterX% + halfFireballWidth%
+                        collisionTopY% = collisionCenterY% - halfFireballWidth% ' Fireballs are circular so using the width here is okay
+                        collisionBottomY% = collisionCenterY% + halfFireballWidth% ' Fireballs are circular so using the width here is okay
+                        _PutImage (collisionLeftX%, collisionTopY%)-(collisionRightX%, collisionBottomY%), collisionImage&
                     End If
                 End If
             Next i%
+        End If
+
+        ' Destroy any fireballs that were hit by a missile but are no longer exploding
+        If fireballIndex% >= 1 Then
+            For i% = 1 To fireballCount%
+                If fireball(i%).visible = 1 Then
+                    If fireball(i%).action2 = "hit missile" Then
+                        If fireball(i%).action3 = "exploding" Then
+                            fireball(i%).action3 = ""
+                        Else
+                            fireball(i%).visible = 0
+                        End If
+                    End If
+                End If
+            Next i%
+        End If
+
+        ' Destroy any missiles that were hit by a fireball but are no longer burning
+        If missileIndex% >= 1 Then
+            For i% = 1 To missileCount%
+                If missile(i%).visible = 1 Then
+                    If missile(i%).action2 = "hit fireball" Then
+                        If missile(i%).action3 = "burning" Then
+                            missile(i%).action3 = ""
+                        Else
+                            missile(i%).visible = 0
+                        End If
+                    End If
+                End If
+            Next i%
+        End If
+
+        ' For each visible missile, compute whether the missile is now touching the monster (and show BOOMM)
+        monsterX2% = monsterX% + monsterWidth%
+        monsterMiddleX% = (monsterX% + monsterX2%) / 2
+        monsterY2% = monsterY% + monsterHeight%
+        monsterMiddleY% = (monsterY% + monsterY2%) / 2
+        If missileIndex% >= 1 Then
+            For i% = 1 To missileCount%
+                If missile(i%).visible = 1 Then
+                    ' Calculate the center of the missile
+                    If IsOverlap%(missile(i%).x, missile(i%).y, missile(i%).x + (missile(i%).size * missileWidthRatio!), missile(i%).y + missile(i%).size, monsterX%, monsterY%, monsterX2%, monsterY2%) Then
+                        If missile(i%).action2 = "" Then
+                            missile(i%).action2 = "hit monster"
+                            If missile(i%).name = "whopper" Then
+                                Call ReplaySound(game.heavyHitSound, 1, 0)
+                                monsterHP% = monsterHP% - 20
+                            Else
+                                Call ReplaySound(game.hitSound, 1, 0)
+                                monsterHP% = monsterHP% - 10
+                            End If
+                        End If
+                        missileMiddleX% = (missile(i%).x + missile(i%).x + (missile(i%).size * missileWidthRatio!)) / 2
+                        missileMiddleY% = (missile(i%).y + missile(i%).y + missile(i%).size) / 2
+
+                        ' Center the collision between the two objects and display it
+                        halfMissileSize% = missile(i%).size / 2
+                        collisionCenterX% = (missileMiddleX% + monsterMiddleX%) / 2
+                        collisionCenterY% = (missileMiddleY% + monsterMiddleY%) / 2
+                        collisionLeftX% = collisionCenterX% - halfMissileSize%
+                        collisionRightX% = collisionCenterX% + halfMissileSize%
+                        collisionTopY% = collisionCenterY% - halfMissileSize%
+                        collisionBottomY% = collisionCenterY% + halfMissileSize%
+                        _PutImage (collisionLeftX%, collisionTopY%)-(collisionRightX%, collisionBottomY%), boomImage&
+                    End If
+                End If
+            Next i%
+        End If
+
+        ' Spawn a new missile
+        If (missileSpawned% = 0) And (Timer >= nextMissileSpawn!) Then
+            If missileIndex% >= 50 Then
+                missileIndex% = 0
+            End If
+
+            If nextMissileDirection% = -1 Then
+                template% = 1
+            Else
+                template% = 2
+            End If
+            If whopperCounter% = 2 Then
+                template% = template% + 2
+            End If
+
+            missileIndex% = missileIndex% + 1
+            missile(missileIndex%).action1 = "static"
+            missile(missileIndex%).name = missileTemplate(template%).name
+            missile(missileIndex%).image = missileTemplate(template%).image
+            missile(missileIndex%).size = missileTemplate(template%).size
+            missile(missileIndex%).speed = missileTemplate(template%).speed
+            If (template% = 1) Or (template% = 3) Then
+                missile(missileIndex%).x = playerX% ' Left-hand side missile
+            End If
+            If (template% = 2) Or (template% = 4) Then
+                missile(missileIndex%).x = playerX% + playerSizeX% - (missile(missileIndex%).size * missileWidthRatio!) - 1 ' Right-hand side missile
+            End If
+            missile(missileIndex%).y = missileTemplate(template%).y
+            missile(missileIndex%).visible = 1
+
+            If missileCount% < missileIndex% Then
+                missileCount% = missileIndex%
+            End If
+
+            missileSpawned% = 1
         End If
 
         ' TODO - For each visible missile, compute whether the missile is touching the monster (and show boom)
@@ -2939,6 +3170,8 @@ Function MonsterShooter% (game As Book, backgroundImageFile As String, storySoun
     _FreeImage backgroundImage&
     _FreeImage playerImage&
     _FreeImage monsterImage&
+    _FreeImage missileLeftImage&
+    _FreeImage missileRightImage&
     _FreeImage boomImage&
     _FreeImage explodeImage&
     For i% = 1 To 4
@@ -3065,6 +3298,7 @@ Sub PressAnyKey (game As Book, isPageBreak As Integer)
     End If
     ' TODO - Refactor this so the mouse can be used to click the text
     ' Suspend program execution until the any key is pressed
+    _KeyClear
     Sleep
     _KeyClear
     If isPageBreak <> 0 Then
